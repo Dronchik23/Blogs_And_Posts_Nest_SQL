@@ -30,6 +30,7 @@ export class CommentsService {
     const post: PostViewModel | null = await this.postsRepository.findPostById(
       postId,
     );
+    console.log('это юзер', user);
     if (!post) {
       return null;
     }
@@ -41,6 +42,7 @@ export class CommentsService {
       postId.toString(),
       new LikesInfoType(),
     );
+    console.log('это коммент', newComment);
     return await this.commentsRepository.createComment(newComment);
   }
 

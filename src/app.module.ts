@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersController } from './users/users.controller';
@@ -45,6 +45,7 @@ import {
   TokenBlackListSchema,
   UserSchema,
 } from './types and models/schemas';
+import { AuthJwtMiddleware } from './middlewares/bearer-auth-middleware';
 
 @Module({
   imports: [

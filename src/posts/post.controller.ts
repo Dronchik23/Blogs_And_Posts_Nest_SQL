@@ -75,7 +75,7 @@ export class PostsController {
     @Req() req: Request,
     @Res() res: Response<CommentViewModel | ErrorType>,
   ) {
-    const postId = new ObjectId(id);
+    const postId = new ObjectId(req.params.id);
     const content = body.content;
     const user = req.user;
 
