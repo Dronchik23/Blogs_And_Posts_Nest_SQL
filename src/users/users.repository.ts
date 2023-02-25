@@ -138,9 +138,9 @@ export class UsersRepository {
     return result.deletedCount === 1;
   }
 
-  // async deleteAllUsers() {
-  //   return this.usersModel.deleteMany({});
-  // }
+  async deleteAllUsers() {
+    return this.usersModel.deleteMany({});
+  }
 
   async updateConfirmationCodeByUserId(
     userId: ObjectId,

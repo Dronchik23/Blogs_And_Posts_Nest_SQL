@@ -46,6 +46,7 @@ import {
   UserSchema,
 } from './types and models/schemas';
 import { AuthJwtMiddleware } from './middlewares/bearer-auth-middleware';
+import { TestingController } from './testing/testing.controller';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { AuthJwtMiddleware } from './middlewares/bearer-auth-middleware';
     MongooseModule.forRoot('mongodb://localhost/nest'),
   ],
   controllers: [
+    TestingController,
     AppController,
     UsersController,
     EmailController,
