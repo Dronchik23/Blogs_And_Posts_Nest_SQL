@@ -9,6 +9,7 @@ import {
 import { BlogViewModel, PostViewModel } from '../types and models/models';
 import { PostsRepository } from './post.repository';
 import { BlogsService } from '../blogs/blog.service';
+import { filter } from 'rxjs';
 
 @Injectable()
 export class PostsService {
@@ -101,8 +102,8 @@ export class PostsService {
 
   async findPostsByBlogId(
     blogId: string,
-    pageNumber: any,
-    pageSize: any,
+    pageNumber: number,
+    pageSize: number,
     sortBy: any,
     sortDirection: any,
     userId?: ObjectId,
@@ -116,7 +117,7 @@ export class PostsService {
       userId,
     );
 
-    const totalCount = await this.postsRepository.getPostsCountByBlogId(blogId);
+    const totalCount = await this.postsRepository.getPostsCount({});
 
     return {
       pagesCount: Math.ceil(totalCount / pageSize),

@@ -57,6 +57,8 @@ export class BlogDBType {
     public description: string,
     public websiteUrl: string,
     public createdAt: Date,
+
+    public isMembership: boolean,
   ) {}
 }
 export class PostDBType {

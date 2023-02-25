@@ -134,6 +134,9 @@ export class Blog {
 
   @Prop()
   createdAt: Date;
+
+  @Prop()
+  isMembership: boolean;
 }
 
 export const BlogSchema = SchemaFactory.createForClass(Blog);

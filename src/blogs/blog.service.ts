@@ -54,6 +54,7 @@ export class BlogsService {
       description,
       websiteUrl,
       createdAt: new Date(),
+      isMembership: false,
     });
     return await this.blogsRepository.createBlog(newBlog);
   }

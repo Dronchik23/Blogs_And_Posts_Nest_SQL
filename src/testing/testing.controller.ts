@@ -1,4 +1,4 @@
-import { Controller, Delete } from '@nestjs/common';
+import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blog.repository';
 import { UsersRepository } from '../users/users.repository';
 import { DevicesRepository } from '../devices/device.repository';
@@ -20,6 +20,7 @@ export class TestingController {
   ) {}
 
   @Delete('all-data')
+  @HttpCode(204)
   async deleteAllData() {
     await this.blogsRepository.deleteAllBlogs();
     await this.usersRepository.deleteAllUsers();
@@ -28,6 +29,5 @@ export class TestingController {
     await this.commentsRepository.deleteAllComments();
     await this.likesRepository.deleteAllLikes();
     await this.attemptsRepository.deleteAllAttempts();
-    return { statusCode: 204 };
   }
 }
