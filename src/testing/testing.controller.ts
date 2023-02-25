@@ -1,11 +1,11 @@
 import { Controller, Delete } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blog.repository';
-import { PostsRepository } from '../posts/post.repository';
 import { UsersRepository } from '../users/users.repository';
 import { DevicesRepository } from '../devices/device.repository';
-import { AttemptsRepository } from '../attempts/attempts.repository';
-import { LikesRepository } from '../likes/like.repository';
 import { CommentsRepository } from '../comments/comment.repository';
+import { LikesRepository } from '../likes/like.repository';
+import { AttemptsRepository } from '../attempts/attempts.repository';
+import { PostsRepository } from '../posts/post.repository';
 
 @Controller('testing')
 export class TestingController {
