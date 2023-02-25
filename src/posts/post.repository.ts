@@ -142,7 +142,7 @@ export class PostsRepository {
   }
 
   async getPostsCount(filter: Filter<PostDBType>) {
-    return this.postsModel.countDocuments({});
+    return this.postsModel.countDocuments({ filter });
   }
   async deleteAllPosts(): Promise<any> {
     return this.postsModel.deleteMany({});

@@ -14,7 +14,7 @@ export class BlogsService {
   ) {}
 
   async findAllBlogs(
-    searchNameTerm: any,
+    searchNameTerm: string,
     pageSize: number,
     sortBy: string,
     sortDirection: string,

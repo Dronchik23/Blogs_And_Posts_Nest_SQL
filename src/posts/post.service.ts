@@ -9,7 +9,6 @@ import {
 import { BlogViewModel, PostViewModel } from '../types and models/models';
 import { PostsRepository } from './post.repository';
 import { BlogsService } from '../blogs/blog.service';
-import { filter } from 'rxjs';
 
 @Injectable()
 export class PostsService {
@@ -104,11 +103,11 @@ export class PostsService {
     blogId: string,
     pageNumber: number,
     pageSize: number,
-    sortBy: any,
-    sortDirection: any,
+    sortBy: string,
+    sortDirection: string,
     userId?: ObjectId,
   ): Promise<PaginationType> {
-    const foundPostsByBlogId = await this.postsRepository.findPostsByBlogId(
+    const allPosts = await this.postsRepository.findPostsByBlogId(
       blogId,
       pageNumber,
       pageSize,
@@ -117,14 +116,28 @@ export class PostsService {
       userId,
     );
 
-    const totalCount = await this.postsRepository.getPostsCount({});
+    const totalCount = await this.postsRepository.getPostsCount({ blogId });
+    console.log('totalCount', totalCount);
 
-    return {
+    if (
+      pageNumber === 0 ||
+      pageNumber === null ||
+      typeof pageNumber === 'undefined'
+    ) {
+      pageNumber = 1;
+    }
+    if (pageSize <= 9 || typeof pageSize === 'undefined') {
+      pageSize = 10;
+    }
+
+    const result = {
       pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize,
-      totalCount,
-      items: foundPostsByBlogId,
+      totalCount: totalCount,
+      items: allPosts,
     };
+    console.log('result', result);
+    return result;
   }
 }

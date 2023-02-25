@@ -64,7 +64,10 @@ export class BlogsController {
     @Req() req: Request,
   ): Promise<any> {
     const userId = new ObjectId(req.userId!);
-    const { pageNumber, pageSize, sortBy, sortDirection } = query;
+    const pageNumber = query.pageNumber;
+    const pageSize = query.pageSize;
+    const sortBy = query.sortBy;
+    const sortDirection = query.sortDirection;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
@@ -77,6 +80,7 @@ export class BlogsController {
       sortDirection,
       userId,
     );
+    console.log('controller', posts);
     return posts;
   }
 
