@@ -1,5 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
-import bcrypt from 'bcrypt';
+import { Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
@@ -14,6 +13,7 @@ import { UserViewModel } from '../types and models/models';
 import { UsersRepository } from './users.repository';
 import { EmailService } from '../email/email.controller';
 import { inject } from 'inversify';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -95,7 +95,10 @@ export class UsersService {
   }
 
   async deleteUserByUserId(id: string) {
-    return await this.usersRepository.deleteUserByUserId(id);
+    const isDelete = await this.usersRepository.deleteUserByUserId(id);
+    if (!isDelete) {
+      return null;
+    }
   }
 
   async findUserByEmail(email: string) {

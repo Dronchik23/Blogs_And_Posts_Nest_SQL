@@ -24,6 +24,7 @@
     "@nestjs/core": "^9.0.0",
     "@nestjs/mongoose": "^9.2.1",
     "@nestjs/platform-express": "^9.0.0",
+    "@types/bcrypt": "^5.0.0",
     "bcrypt": "^5.1.0",
     "date-fns": "^2.29.3",
     "express-validator": "^6.15.0",

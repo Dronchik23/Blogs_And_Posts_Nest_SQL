@@ -28,15 +28,19 @@ export class BlogsService {
       pageNumber,
     );
 
+    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
+    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
+
     const totalCount = await this.blogsRepository.getBlogsCount(searchNameTerm);
-    const pagesCount = Math.ceil(totalCount / pageSize);
-    return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount,
+
+    const result = {
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
-      pageSize: pageSize,
+      pageSize,
       totalCount: totalCount,
       items: allBlogs,
     };
+    return result;
   }
 
   async findBlogById(id: string): Promise<BlogViewModel | null> {
@@ -64,6 +68,9 @@ export class BlogsService {
   }
 
   async deleteBlogByBlogId(id: string) {
-    return await this.blogsRepository.deleteBlogByBlogId(id);
+    const isDeleted = await this.blogsRepository.deleteBlogByBlogId(id);
+    if (!isDeleted) {
+      return null;
+    }
   }
 }

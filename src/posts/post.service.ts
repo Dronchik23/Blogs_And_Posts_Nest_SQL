@@ -95,8 +95,11 @@ export class PostsService {
     );
   }
 
-  async deletePostById(id: string): Promise<PostViewModel | boolean> {
-    return await this.postsRepository.deletePostById(id);
+  async deletePostById(id: string): Promise<PostViewModel | void> {
+    const isDeleted = await this.postsRepository.deletePostById(id);
+    if (!isDeleted) {
+      return null;
+    }
   }
 
   async findPostsByBlogId(
@@ -116,19 +119,10 @@ export class PostsService {
       userId,
     );
 
-    const totalCount = await this.postsRepository.getPostsCount({ blogId });
-    console.log('totalCount', totalCount);
+    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
+    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
 
-    if (
-      pageNumber === 0 ||
-      pageNumber === null ||
-      typeof pageNumber === 'undefined'
-    ) {
-      pageNumber = 1;
-    }
-    if (pageSize <= 9 || typeof pageSize === 'undefined') {
-      pageSize = 10;
-    }
+    const totalCount = await this.postsRepository.getPostsCount({ blogId });
 
     const result = {
       pagesCount: Math.ceil(totalCount / pageSize),
@@ -137,7 +131,7 @@ export class PostsService {
       totalCount: totalCount,
       items: allPosts,
     };
-    console.log('result', result);
+
     return result;
   }
 }

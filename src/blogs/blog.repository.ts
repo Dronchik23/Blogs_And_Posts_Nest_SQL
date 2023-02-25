@@ -48,26 +48,17 @@ export class BlogsRepository {
     pageNumber: number,
   ): Promise<any> {
     const filter = this.searchNameTermFilter(searchNameTerm);
-    const totalCount = await this.getBlogsCount(searchNameTerm);
-    const pagesCount = Math.ceil(totalCount / pageSize);
 
     const sortedBlogs = await this.blogsModel
       .find(filter)
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean()
-      .exec();
+      .lean();
 
-    const items = this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
+    if (!sortedBlogs) return null;
 
-    return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount,
-      page: pageNumber,
-      pageSize,
-      totalCount,
-      items,
-    };
+    return this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
   }
 
   async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
@@ -109,7 +100,7 @@ export class BlogsRepository {
     return result.deletedCount === 1;
   }
 
-  async getBlogsCount(searchNameTerm?: any) {
+  async getBlogsCount(searchNameTerm?: string | null | undefined) {
     const filter = this.searchNameTermFilter(searchNameTerm);
     return this.blogsModel.countDocuments(filter);
   }

@@ -7,6 +7,7 @@ import {
   Query,
   Body,
   NotFoundException,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -64,8 +65,10 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   async deleteUserByUserId(@Param('id') id: string): Promise<void> {
     const isDeleted = await this.usersService.deleteUserByUserId(id);
+
     if (!isDeleted) {
       throw new NotFoundException();
     }

@@ -11,6 +11,8 @@ import {
   Res,
   HttpStatus,
   NotFoundException,
+  HttpCode,
+  HttpException,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
@@ -109,10 +111,7 @@ export class PostsController {
     @Req() req: Request,
     @Res() res: Response<PaginationType>,
   ) {
-    const pageNumber = query.pageNumber;
-    const pageSize = query.pageSize;
-    const sortBy = query.sortBy;
-    const sortDirection = query.sortDirection;
+    const { pageNumber, pageSize, sortBy, sortDirection } = query;
 
     const userId = new ObjectId(req.userId);
 
@@ -183,6 +182,7 @@ export class PostsController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   async deletePostByPostId(@Param('id') id: string): Promise<void> {
     const isDeleted = await this.postsService.deletePostById(id);
 
@@ -192,6 +192,7 @@ export class PostsController {
   }
 
   @Put(':id/like')
+  @HttpCode(204)
   async updateLikeStatus(
     @Param('id') id: string,
     @Body('likeStatus') likeStatus: LikeStatus,
