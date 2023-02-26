@@ -2,7 +2,7 @@ import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { BlogDBType } from '../types and models/types';
+import { BlogDBType, PaginationType } from '../types and models/types';
 import { BlogViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
@@ -46,7 +46,7 @@ export class BlogsRepository {
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
-  ): Promise<any> {
+  ): Promise<BlogViewModel[]> {
     const filter = this.searchNameTermFilter(searchNameTerm);
 
     const sortedBlogs = await this.blogsModel
@@ -55,8 +55,6 @@ export class BlogsRepository {
       .limit(pageSize)
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
-
-    //if (!sortedBlogs) return null;
 
     return this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
   }

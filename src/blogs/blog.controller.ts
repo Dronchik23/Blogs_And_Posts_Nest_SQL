@@ -23,7 +23,6 @@ import {
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { Request } from 'express';
-import { QueryParamsMiddleware } from '../middlewares/query-params-parsing.middleware';
 
 @Controller('blogs')
 export class BlogsController {
@@ -38,7 +37,7 @@ export class BlogsController {
   ): Promise<PaginationType> {
     const { searchNameTerm, pageNumber, pageSize, sortBy, sortDirection } =
       query;
-    console.log('tut', sortBy, pageNumber, pageSize);
+    console.log('tut', sortBy, pageNumber, pageSize, sortDirection);
     const allBlogs = await this.blogsService.findAllBlogs(
       searchNameTerm,
       pageSize,

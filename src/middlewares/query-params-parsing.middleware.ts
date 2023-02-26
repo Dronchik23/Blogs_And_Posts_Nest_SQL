@@ -1,35 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { IsInt, Min } from 'class-validator';
 
 @Injectable()
 export class QueryParamsMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const defaultSortBy = 'createdAt';
-    let sortBy = req.query.sortBy;
-    if (!sortBy) {
-      sortBy = defaultSortBy;
-    } else {
-      sortBy = sortBy;
-    }
-    req.query.sortBy = sortBy;
-    const defaultPageNumber = 1;
-    let pageNumber = req.query.pageNumber;
-    if (!pageNumber) {
-      pageNumber = defaultPageNumber.toString();
-    } else {
-      pageNumber = pageNumber.toString();
-    }
-    req.query.pageNumber = pageNumber;
+    req.query.sortBy = req.query.sortBy
+      ? req.query.sortBy.toString()
+      : defaultSortBy;
 
-    const defaultPageSize = 1;
-    let pageSize = req.query.pageSize;
-    if (!pageSize) {
-      pageSize = defaultPageSize.toString();
-    } else {
-      pageSize = pageSize.toString();
-    }
-    req.query.pageSize = pageSize;
+    const defaultPageNumber = 1;
+    req.query.pageNumber = req.query.pageNumber
+      ? req.query.pageNumber.toString()
+      : defaultPageNumber.toString();
+
+    const defaultPageSize = 10;
+    req.query.pageSize = req.query.pageSize
+      ? req.query.pageSize.toString()
+      : defaultPageSize.toString();
+
+    const defaultSortDirection = 'desc';
+    req.query.sortDirection = req.query.sortDirection
+      ? req.query.sortDirection.toString()
+      : defaultSortDirection;
 
     next();
   }
