@@ -98,7 +98,7 @@ export class PostsRepository {
     shortDescription: string,
     content: string,
     blogId: string,
-  ): Promise<PostViewModel | boolean> {
+  ): Promise<boolean> {
     const result = await this.postsModel.updateOne(
       { id: id },
       {
@@ -110,7 +110,10 @@ export class PostsRepository {
         },
       },
     );
-    return result.matchedCount === 1;
+    if (result.matchedCount === 1) {
+      return true;
+    }
+    return false;
   }
 
   async deletePostById(id: string): Promise<boolean> {

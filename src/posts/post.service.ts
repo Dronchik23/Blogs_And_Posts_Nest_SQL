@@ -84,7 +84,7 @@ export class PostsService {
     shortDescription: string,
     content: string,
     blogId: string,
-  ): Promise<PostViewModel | boolean> {
+  ): Promise<boolean> {
     const isUpdated = this.postsRepository.updatePostById(
       id,
       title,

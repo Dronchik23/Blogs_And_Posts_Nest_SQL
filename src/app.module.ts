@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersController } from './users/users.controller';
@@ -45,7 +45,6 @@ import {
   TokenBlackListSchema,
   UserSchema,
 } from './types and models/schemas';
-import { AuthJwtMiddleware } from './middlewares/bearer-auth-middleware';
 import { TestingController } from './testing/testing.controller';
 
 @Module({
@@ -114,10 +113,6 @@ import { TestingController } from './testing/testing.controller';
     },
     {
       provide: APP_GUARD,
-      useClass: QueryParamsMiddleware,
-    },
-    {
-      provide: APP_GUARD,
       useClass: RateLimiterMiddleware,
     },
     {
@@ -130,4 +125,8 @@ import { TestingController } from './testing/testing.controller';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(QueryParamsMiddleware).forRoutes('blogs');
+  }
+}

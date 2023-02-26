@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { query } from 'express-validator';
-
-const queryPageNumberValidation = query('pageNumber').toInt(10).default(1);
-const queryPageSizeValidation = query('pageSize').toInt(10).default(10);
+import { IsInt, Min } from 'class-validator';
 
 @Injectable()
 export class QueryParamsMiddleware {
@@ -16,12 +13,24 @@ export class QueryParamsMiddleware {
       sortBy = sortBy;
     }
     req.query.sortBy = sortBy;
+    const defaultPageNumber = 1;
+    let pageNumber = req.query.pageNumber;
+    if (!pageNumber) {
+      pageNumber = defaultPageNumber.toString();
+    } else {
+      pageNumber = pageNumber.toString();
+    }
+    req.query.pageNumber = pageNumber;
+
+    const defaultPageSize = 1;
+    let pageSize = req.query.pageSize;
+    if (!pageSize) {
+      pageSize = defaultPageSize.toString();
+    } else {
+      pageSize = pageSize.toString();
+    }
+    req.query.pageSize = pageSize;
+
     next();
   }
 }
-
-export const queryParamsMiddleware = [
-  queryPageNumberValidation,
-  queryPageSizeValidation,
-  QueryParamsMiddleware, // регистрация middleware
-];

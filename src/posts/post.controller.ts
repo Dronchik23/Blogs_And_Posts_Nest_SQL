@@ -12,7 +12,6 @@ import {
   HttpStatus,
   NotFoundException,
   HttpCode,
-  HttpException,
   UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
@@ -34,7 +33,6 @@ import {
 import { PostsService } from './post.service';
 import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
-import { QueryParamsMiddleware } from '../middlewares/query-params-parsing.middleware';
 
 @Controller('posts')
 export class PostsController {
@@ -45,7 +43,6 @@ export class PostsController {
   ) {}
 
   @Get(':id/comments')
-  @UseInterceptors(QueryParamsMiddleware)
   async getCommentByPostId(
     @Param('id') id: string,
     @Query() query: PaginationInputQueryModel,
@@ -109,7 +106,6 @@ export class PostsController {
   }
 
   @Get()
-  @UseInterceptors(QueryParamsMiddleware)
   async getAllPosts(
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,

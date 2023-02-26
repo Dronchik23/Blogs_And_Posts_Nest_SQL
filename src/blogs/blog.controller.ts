@@ -10,8 +10,6 @@ import {
   NotFoundException,
   Req,
   HttpCode,
-  HttpStatus,
-  UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { PaginationType } from 'src/types and models/types';
@@ -35,13 +33,12 @@ export class BlogsController {
   ) {}
 
   @Get()
-  @UseInterceptors(QueryParamsMiddleware)
   async getAllBlogs(
     @Query() query: PaginationInputQueryModel,
   ): Promise<PaginationType> {
     const { searchNameTerm, pageNumber, pageSize, sortBy, sortDirection } =
       query;
-
+    console.log('tut', sortBy, pageNumber, pageSize);
     const allBlogs = await this.blogsService.findAllBlogs(
       searchNameTerm,
       pageSize,
@@ -65,7 +62,6 @@ export class BlogsController {
   }
 
   @Get(':blogId/posts')
-  @UseInterceptors(QueryParamsMiddleware)
   async getPostByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: PaginationInputQueryModel,
@@ -145,9 +141,11 @@ export class BlogsController {
 
   @Delete(':blogId')
   @HttpCode(204)
-  async deleteBlogByBlogId(@Param('blogId') blogId: string): Promise<void> {
+  async deleteBlogByBlogId(@Param('blogId') blogId: string): Promise<boolean> {
     const isDeleted = await this.blogsService.deleteBlogByBlogId(blogId);
-    if (!isDeleted) {
+    if (isDeleted) {
+      return true;
+    } else {
       throw new NotFoundException();
     }
   }

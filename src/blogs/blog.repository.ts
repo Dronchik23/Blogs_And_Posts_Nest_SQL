@@ -93,11 +93,12 @@ export class BlogsRepository {
   }
 
   async deleteBlogByBlogId(id: string): Promise<boolean> {
-    const result = await this.blogsModel
-      .deleteOne({ _id: new ObjectId(id) })
-      .exec();
-
-    return result.deletedCount === 1;
+    const result = await this.blogsModel.deleteOne({ id: id });
+    if (result.deletedCount === 1) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   async getBlogsCount(searchNameTerm?: string | null | undefined) {

@@ -64,10 +64,7 @@ export class BlogsService {
     return await this.blogsRepository.updateBlogById(id, name, websiteUrl);
   }
 
-  async deleteBlogByBlogId(id: string) {
-    const isDeleted = await this.blogsRepository.deleteBlogByBlogId(id);
-    if (!isDeleted) {
-      return null;
-    }
+  async deleteBlogByBlogId(id: string): Promise<boolean> {
+    return await this.blogsRepository.deleteBlogByBlogId(id);
   }
 }
