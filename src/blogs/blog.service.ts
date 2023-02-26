@@ -28,9 +28,6 @@ export class BlogsService {
       pageNumber,
     );
 
-    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
-    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
-
     const totalCount = await this.blogsRepository.getBlogsCount(searchNameTerm);
 
     const result = {

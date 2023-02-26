@@ -16,7 +16,7 @@ export type PaginationType = {
     | BlogViewModel[]
     | PostViewModel[]
     | UserViewModel[]
-    | CommentViewModel
+    | CommentViewModel[]
     | DeviceType[];
 };
 export type ErrorType = {

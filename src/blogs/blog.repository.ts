@@ -56,7 +56,7 @@ export class BlogsRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    if (!sortedBlogs) return null;
+    //if (!sortedBlogs) return null;
 
     return this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
   }

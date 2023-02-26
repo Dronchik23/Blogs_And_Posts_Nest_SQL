@@ -57,9 +57,9 @@ export class PostsRepository {
 
   async findAllPosts(
     pageSize: number,
-    sortBy: any,
-    sortDirection: any,
-    pageNumber: any,
+    sortBy: string,
+    sortDirection: string,
+    pageNumber: number,
     userId?: ObjectId,
   ): Promise<PostViewModel[]> {
     const allPosts: PostDBType[] = await this.postsModel
@@ -130,15 +130,12 @@ export class PostsRepository {
     sortDirection: string,
     userId?: ObjectId,
   ) {
-    console.log('sortBy repo', sortBy);
     const foundPosts: PostDBType[] = await this.postsModel
       .find({ blogId: blogId })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
-
-    if (!foundPosts) return null;
 
     for (const post of foundPosts) {
       await this.getLikesInfoForPost(post, userId);
@@ -196,7 +193,7 @@ export class PostsRepository {
     return this.postsModel.countDocuments({ blogId });
   }
 
-  async getAllPost() {
+  async getAllPostCount() {
     return this.postsModel.countDocuments();
   }
 }

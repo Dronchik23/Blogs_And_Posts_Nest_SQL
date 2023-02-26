@@ -11,6 +11,7 @@ import {
   Req,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { PaginationType } from 'src/types and models/types';
@@ -20,9 +21,11 @@ import {
   BlogUpdateModel,
   BlogViewModel,
   PaginationInputQueryModel,
+  PostViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { Request } from 'express';
+import { QueryParamsMiddleware } from '../middlewares/query-params-parsing.middleware';
 
 @Controller('blogs')
 export class BlogsController {
@@ -32,6 +35,7 @@ export class BlogsController {
   ) {}
 
   @Get()
+  @UseInterceptors(QueryParamsMiddleware)
   async getAllBlogs(
     @Query() query: PaginationInputQueryModel,
   ): Promise<PaginationType> {
@@ -61,11 +65,12 @@ export class BlogsController {
   }
 
   @Get(':blogId/posts')
+  @UseInterceptors(QueryParamsMiddleware)
   async getPostByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,
-  ): Promise<any> {
+  ): Promise<PaginationType> {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
     const userId = new ObjectId(req.userId!);
     const blog = await this.blogsService.findBlogById(blogId);

@@ -44,9 +44,6 @@ export class UsersService {
       searchEmailTerm,
     );
 
-    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
-    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
-
     return {
       pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,

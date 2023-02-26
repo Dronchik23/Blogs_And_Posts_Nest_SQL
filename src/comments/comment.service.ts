@@ -6,6 +6,7 @@ import {
   CommentatorInfoType,
   CommentDBType,
   LikesInfoType,
+  PaginationType,
 } from '../types and models/types';
 import {
   CommentViewModel,
@@ -53,7 +54,7 @@ export class CommentsService {
     sortBy: string,
     sortDirection: string,
     userId: ObjectId,
-  ): Promise<any> {
+  ): Promise<PaginationType> {
     const foundComments = await this.commentsRepository.findCommentsByPostId(
       postId,
       pageNumber,

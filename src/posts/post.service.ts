@@ -31,19 +31,15 @@ export class PostsService {
       pageNumber,
       userId,
     );
-    const totalCount = await this.postsRepository.getAllPost();
+    const totalCount = await this.postsRepository.getAllPostCount();
 
-    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
-    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
-
-    const result = {
+    return {
       pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize,
       totalCount: totalCount,
       items: allPosts,
     };
-    return result;
   }
 
   async findPostByPostId(
@@ -115,8 +111,6 @@ export class PostsService {
     sortDirection: string,
     userId?: ObjectId,
   ): Promise<PaginationType> {
-    const defaultSortBy = 'createdAt';
-    sortBy = sortBy ? sortBy : defaultSortBy;
     const allPosts = await this.postsRepository.findPostsByBlogId(
       blogId,
       pageNumber,
@@ -125,9 +119,6 @@ export class PostsService {
       sortDirection,
       userId,
     );
-
-    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
-    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
 
     const totalCount = await this.postsRepository.getPostsCount({ blogId });
 

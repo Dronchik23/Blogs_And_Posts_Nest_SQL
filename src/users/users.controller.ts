@@ -8,6 +8,7 @@ import {
   Body,
   NotFoundException,
   HttpCode,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -17,12 +18,14 @@ import {
 } from '../types and models/models';
 import { PaginationType } from '../types and models/types';
 import { inject } from 'inversify';
+import { QueryParamsMiddleware } from '../middlewares/query-params-parsing.middleware';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @UseInterceptors(QueryParamsMiddleware)
   async getAllUsers(
     @Query() query: PaginationInputQueryModel,
   ): Promise<PaginationType> {

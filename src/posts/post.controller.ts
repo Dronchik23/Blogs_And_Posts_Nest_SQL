@@ -13,6 +13,7 @@ import {
   NotFoundException,
   HttpCode,
   HttpException,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
@@ -33,6 +34,7 @@ import {
 import { PostsService } from './post.service';
 import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
+import { QueryParamsMiddleware } from '../middlewares/query-params-parsing.middleware';
 
 @Controller('posts')
 export class PostsController {
@@ -43,6 +45,7 @@ export class PostsController {
   ) {}
 
   @Get(':id/comments')
+  @UseInterceptors(QueryParamsMiddleware)
   async getCommentByPostId(
     @Param('id') id: string,
     @Query() query: PaginationInputQueryModel,
@@ -50,16 +53,16 @@ export class PostsController {
     @Res() res: Response<PaginationType>,
   ) {
     const postId = new ObjectId(id);
+
     const post = await this.postsService.findPostByPostId(postId);
     if (!post) {
       return res.sendStatus(HttpStatus.NOT_FOUND);
     }
+
+    const { pageNumber, pageSize, sortBy, sortDirection } = query;
     const userId = new ObjectId(req.userId);
-    const pageNumber = query.pageNumber;
-    const pageSize = query.pageSize;
-    const sortBy = query.sortBy;
-    const sortDirection = query.sortDirection;
-    const comments = await this.commentsService.findCommentsByPostId(
+
+    const allComments = await this.commentsService.findCommentsByPostId(
       post.id,
       pageNumber,
       pageSize,
@@ -67,7 +70,7 @@ export class PostsController {
       sortDirection,
       userId,
     );
-    return res.send(comments);
+    return res.send(allComments);
   }
 
   @Post(':id/comments')
@@ -106,6 +109,7 @@ export class PostsController {
   }
 
   @Get()
+  @UseInterceptors(QueryParamsMiddleware)
   async getAllPosts(
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,
