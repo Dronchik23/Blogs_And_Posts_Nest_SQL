@@ -115,6 +115,8 @@ export class PostsService {
     sortDirection: string,
     userId?: ObjectId,
   ): Promise<PaginationType> {
+    const defaultSortBy = 'createdAt';
+    sortBy = sortBy ? sortBy : defaultSortBy;
     const allPosts = await this.postsRepository.findPostsByBlogId(
       blogId,
       pageNumber,
@@ -129,14 +131,12 @@ export class PostsService {
 
     const totalCount = await this.postsRepository.getPostsCount({ blogId });
 
-    const result = {
+    return {
       pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize,
       totalCount: totalCount,
       items: allPosts,
     };
-
-    return result;
   }
 }

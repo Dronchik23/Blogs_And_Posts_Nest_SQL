@@ -66,11 +66,8 @@ export class BlogsController {
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,
   ): Promise<any> {
+    const { pageNumber, pageSize, sortBy, sortDirection } = query;
     const userId = new ObjectId(req.userId!);
-    const pageNumber = query.pageNumber;
-    const pageSize = query.pageSize;
-    const sortBy = query.sortBy;
-    const sortDirection = query.sortDirection;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
@@ -83,7 +80,6 @@ export class BlogsController {
       sortDirection,
       userId,
     );
-    console.log('controller', posts);
     return posts;
   }
 

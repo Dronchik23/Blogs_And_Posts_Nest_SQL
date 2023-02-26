@@ -130,6 +130,7 @@ export class PostsRepository {
     sortDirection: string,
     userId?: ObjectId,
   ) {
+    console.log('sortBy repo', sortBy);
     const foundPosts: PostDBType[] = await this.postsModel
       .find({ blogId: blogId })
       .skip((pageNumber - 1) * pageSize)
