@@ -130,12 +130,16 @@ export class UsersRepository {
       searchLoginTerm,
       searchEmailTerm,
     );
-    return this.usersModel.countDocuments(filter);
+    return this.usersModel.countDocuments(filter, { skip: 1 });
   }
 
   async deleteUserByUserId(id: string) {
     const result = await this.usersModel.deleteOne({ id: id });
-    return result.deletedCount === 1;
+    if (result.deletedCount === 1) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   async deleteAllUsers(): Promise<any> {

@@ -113,9 +113,13 @@ export class PostsRepository {
     return result.matchedCount === 1;
   }
 
-  async deletePostById(id: string): Promise<PostViewModel | boolean> {
+  async deletePostById(id: string): Promise<boolean> {
     const result = await this.postsModel.deleteOne({ id: id });
-    return result.deletedCount === 1;
+    if (result.deletedCount === 1) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   async findPostsByBlogId(
@@ -142,7 +146,7 @@ export class PostsRepository {
   }
 
   async getPostsCount(filter: Filter<PostDBType>) {
-    return this.postsModel.countDocuments({ filter });
+    return this.postsModel.countDocuments({ filter }, { skip: 1 });
   }
   async deleteAllPosts(): Promise<any> {
     return this.postsModel.deleteMany({});
@@ -189,5 +193,9 @@ export class PostsRepository {
 
   async getPostsCountByBlogId(blogId: string) {
     return this.postsModel.countDocuments({ blogId });
+  }
+
+  async getAllPost() {
+    return this.postsModel.countDocuments();
   }
 }

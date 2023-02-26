@@ -31,16 +31,19 @@ export class PostsService {
       pageNumber,
       userId,
     );
-    const totalCount = await this.postsRepository.getPostsCount({});
-    const pagesCount = Math.ceil(totalCount / pageSize);
+    const totalCount = await this.postsRepository.getAllPost();
 
-    return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount,
+    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
+    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
+
+    const result = {
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize,
-      totalCount,
+      totalCount: totalCount,
       items: allPosts,
     };
+    return result;
   }
 
   async findPostByPostId(
@@ -86,20 +89,22 @@ export class PostsService {
     content: string,
     blogId: string,
   ): Promise<PostViewModel | boolean> {
-    return await this.postsRepository.updatePostById(
+    const isUpdated = this.postsRepository.updatePostById(
       id,
       title,
       shortDescription,
       content,
       blogId,
     );
+    if (isUpdated) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
-  async deletePostById(id: string): Promise<PostViewModel | void> {
-    const isDeleted = await this.postsRepository.deletePostById(id);
-    if (!isDeleted) {
-      return null;
-    }
+  async deletePostById(id: string): Promise<boolean> {
+    return await this.postsRepository.deletePostById(id);
   }
 
   async findPostsByBlogId(

@@ -164,10 +164,11 @@ export class PostsController {
   }
 
   @Put(':id')
+  @HttpCode(204)
   async updatePostByPostId(
     @Param('id') id: string,
     @Body() updatePostModel: PostUpdateModel,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const isUpdated = await this.postsService.updatePostById(
       id,
       updatePostModel.title,
@@ -178,15 +179,18 @@ export class PostsController {
 
     if (!isUpdated) {
       throw new NotFoundException();
+    } else {
+      return true;
     }
   }
 
   @Delete(':id')
   @HttpCode(204)
-  async deletePostByPostId(@Param('id') id: string): Promise<void> {
+  async deletePostByPostId(@Param('id') id: string): Promise<boolean> {
     const isDeleted = await this.postsService.deletePostById(id);
-
-    if (!isDeleted) {
+    if (isDeleted) {
+      return true;
+    } else {
       throw new NotFoundException();
     }
   }

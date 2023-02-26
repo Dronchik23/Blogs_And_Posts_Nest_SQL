@@ -66,10 +66,11 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(204)
-  async deleteUserByUserId(@Param('id') id: string): Promise<void> {
+  async deleteUserByUserId(@Param('id') id: string): Promise<boolean> {
     const isDeleted = await this.usersService.deleteUserByUserId(id);
-
-    if (!isDeleted) {
+    if (isDeleted) {
+      return true;
+    } else {
       throw new NotFoundException();
     }
   }

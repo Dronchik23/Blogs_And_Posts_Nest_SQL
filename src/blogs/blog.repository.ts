@@ -102,7 +102,7 @@ export class BlogsRepository {
 
   async getBlogsCount(searchNameTerm?: string | null | undefined) {
     const filter = this.searchNameTermFilter(searchNameTerm);
-    return this.blogsModel.countDocuments(filter);
+    return this.blogsModel.countDocuments(filter, { skip: 1 });
   }
 
   async deleteAllBlogs() {

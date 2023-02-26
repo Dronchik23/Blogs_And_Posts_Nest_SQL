@@ -23,9 +23,9 @@ export class UsersService {
   ) {}
 
   async findAllUsers(
-    searchLoginTerm: any,
-    searchEmailTerm: any,
-    pageNumber: any,
+    searchLoginTerm: string,
+    searchEmailTerm: string,
+    pageNumber: number,
     pageSize: number,
     sortBy: string,
     sortDirection: string,
@@ -43,10 +43,12 @@ export class UsersService {
       searchLoginTerm,
       searchEmailTerm,
     );
-    const pagesCount = Math.ceil(totalCount / pageSize);
+
+    pageNumber = pageNumber && pageNumber !== 0 ? pageNumber : 1;
+    pageSize = pageSize && pageSize > 9 ? pageSize : 10;
 
     return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount,
+      pagesCount: Math.ceil(totalCount / pageSize),
       page: pageNumber,
       pageSize: pageSize,
       totalCount: totalCount,
@@ -95,10 +97,7 @@ export class UsersService {
   }
 
   async deleteUserByUserId(id: string) {
-    const isDelete = await this.usersRepository.deleteUserByUserId(id);
-    if (!isDelete) {
-      return null;
-    }
+    return await this.usersRepository.deleteUserByUserId(id);
   }
 
   async findUserByEmail(email: string) {
