@@ -54,6 +54,8 @@ const searchLoginAndEmailTermFilter = (
 export class UsersRepository {
   constructor(@InjectModel('User') public usersModel: Model<UserDocument>) {}
 
+  private user = { _id: '123', accountData: { login: '123', email: '123' } };
+
   async getAllUsers(
     searchLoginTerm: string,
     searchEmailTerm: string,
@@ -69,9 +71,9 @@ export class UsersRepository {
 
     const sortedUsers = await this.usersModel
       .find(filter)
+      .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
     return fromUserDBTypeToUserViewModelWithPagination(sortedUsers);
