@@ -1,27 +1,29 @@
 import { UserDBType } from '../types and models/types';
-import { emailAdapter } from './email.adapter';
+import { EmailAdapter } from './email.adapter';
 
 export class EmailService {
+  constructor(private readonly emailAdapter: EmailAdapter) {}
+
   async sendEmail(email: any, subject: string, message: string) {
-    await emailAdapter.sendEmail(email, subject, message);
+    await this.emailAdapter.sendEmail(email, subject, message);
   }
   async sendEmailRegistrationMessage(user: UserDBType) {
     const code = user.emailConfirmation.confirmationCode;
-    await emailAdapter.sendEmail(
+    await this.emailAdapter.sendEmail(
       user.accountData.email,
       'Confirm your email',
       `<a href='https://blogs-and-posts-ver2-dgfu.vercel.app/auth/registration-confirmation?code=${code}'>complete registration</a>`,
     );
   }
   async resendingEmailMessage(email: string, code: string) {
-    await emailAdapter.sendEmail(
+    await this.emailAdapter.sendEmail(
       email,
       'Its yours new confirmation code',
       `<a href='https://blogs-and-posts-ver2-dgfu.vercel.app/auth/registration-email-resending?code=${code}'>new confirmation code</a>`,
     );
   }
   async recoveryCodeMessage(email: string, code: string) {
-    await emailAdapter.sendEmail(
+    await this.emailAdapter.sendEmail(
       email,
       'Its yours new confirmation code',
       ` <h1>Password recovery</h1>

@@ -3,7 +3,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class EmailService {
+export class EmailAdapter {
   constructor(
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
