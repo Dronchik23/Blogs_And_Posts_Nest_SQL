@@ -130,7 +130,7 @@ export class UsersRepository {
       searchLoginTerm,
       searchEmailTerm,
     );
-    return this.usersModel.countDocuments(filter, { skip: 1 });
+    return this.usersModel.countDocuments(filter);
   }
 
   async deleteUserByUserId(id: string) {

@@ -66,6 +66,7 @@ export class UsersController {
   @Delete(':id')
   @HttpCode(204)
   async deleteUserByUserId(@Param('id') id: string): Promise<boolean> {
+    console.log(typeof id);
     const isDeleted = await this.usersService.deleteUserByUserId(id);
     if (isDeleted) {
       return true;

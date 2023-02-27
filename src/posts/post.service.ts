@@ -123,9 +123,9 @@ export class PostsService {
     const totalCount = await this.postsRepository.getPostsCount({ blogId });
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize,
+      pagesCount: Math.ceil(totalCount / +pageSize),
+      page: +pageNumber,
+      pageSize: +pageSize,
       totalCount: totalCount,
       items: allPosts,
     };

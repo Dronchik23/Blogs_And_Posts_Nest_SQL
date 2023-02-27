@@ -38,7 +38,6 @@ export class BlogsService {
       items: allBlogs,
     };
     return result;
-    console.log('result', result);
   }
 
   async findBlogById(id: string): Promise<BlogViewModel | null> {
