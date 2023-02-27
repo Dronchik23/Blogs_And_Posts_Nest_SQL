@@ -101,7 +101,7 @@ export class BlogsController {
       blogId: string;
       blogName: string;
     },
-  ): Promise<any> {
+  ): Promise<PostViewModel> {
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
