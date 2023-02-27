@@ -36,13 +36,13 @@ const searchLoginAndEmailTermFilter = (
     $and: [
       {
         'accountData.email': {
-          $regex: searchEmailTerm ? searchEmailTerm : '',
+          $regex: searchEmailTerm ?? '',
           $options: 'i',
         },
       },
       {
-        'accountData.userName': {
-          $regex: searchLoginTerm ? searchLoginTerm : '',
+        'accountData.login': {
+          $regex: searchLoginTerm ?? '',
           $options: 'i',
         },
       },
