@@ -14,17 +14,17 @@ export type BlogViewModel = {
   name: string;
   description: string;
   websiteUrl: string;
-  createdAt: Date;
+  createdAt: string;
   isMembership: boolean;
 };
 export type PaginationInputQueryModel = {
-  searchLoginTerm?: string;
-  searchEmailTerm?: string;
   searchNameTerm?: string;
-  pageNumber: number;
   pageSize: number;
   sortBy: string;
   sortDirection: string;
+  pageNumber: number;
+  searchLoginTerm?: string;
+  searchEmailTerm?: string;
 };
 export type PostCreateModel = {
   title: string;
@@ -46,7 +46,7 @@ export type PostViewModel = {
   content: string;
   blogId: string;
   blogName: string;
-  createdAt: Date;
+  createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
 };
 export type UserCreateModel = {
@@ -58,7 +58,7 @@ export type UserViewModel = {
   id: string;
   login: string;
   email: string;
-  createdAt: Date;
+  createdAt: string;
 };
 
 export type CommentCreateModel = {

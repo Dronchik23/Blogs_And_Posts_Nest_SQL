@@ -127,6 +127,8 @@ import { TestingController } from './testing/testing.controller';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(QueryParamsMiddleware).forRoutes('blogs');
+    consumer
+      .apply(QueryParamsMiddleware)
+      .forRoutes('blogs', 'posts', 'comments', 'users');
   }
 }

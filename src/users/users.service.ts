@@ -45,9 +45,9 @@ export class UsersService {
     );
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize: pageSize,
+      pagesCount: Math.ceil(totalCount / +pageSize),
+      page: +pageNumber,
+      pageSize: +pageSize,
       totalCount: totalCount,
       items: allUsers,
     };
@@ -61,7 +61,7 @@ export class UsersService {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generateHash(password, passwordSalt);
     const code = uuidv4();
-    const createdAt = new Date();
+    const createdAt = new Date().toISOString();
     const expirationDate = add(new Date(), { hours: 2, minutes: 3 });
     const user = new UserDBType(
       new ObjectId(),

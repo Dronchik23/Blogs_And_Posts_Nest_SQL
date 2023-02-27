@@ -31,7 +31,6 @@ export class CommentsService {
     const post: PostViewModel | null = await this.postsRepository.findPostById(
       postId,
     );
-    console.log('это юзер', user);
     if (!post) {
       return null;
     }
@@ -39,11 +38,10 @@ export class CommentsService {
       new ObjectId(),
       content,
       new CommentatorInfoType(new ObjectId(user.id), user.login),
-      new Date(),
+      new Date().toISOString(),
       postId.toString(),
       new LikesInfoType(),
     );
-    console.log('это коммент', newComment);
     return await this.commentsRepository.createComment(newComment);
   }
 
@@ -64,11 +62,11 @@ export class CommentsService {
       userId,
     );
     const totalCount = await this.commentsRepository.getPostsCount(postId);
-    const pagesCount = Math.ceil(totalCount / pageSize);
+    const pagesCount = Math.ceil(totalCount / +pageSize);
     return {
       pagesCount: pagesCount === 0 ? 1 : pagesCount,
-      page: pageNumber,
-      pageSize: pageSize,
+      page: +pageNumber,
+      pageSize: +pageSize,
       totalCount: totalCount,
       items: foundComments,
     };

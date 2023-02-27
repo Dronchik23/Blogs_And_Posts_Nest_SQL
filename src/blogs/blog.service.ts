@@ -31,13 +31,14 @@ export class BlogsService {
     const totalCount = await this.blogsRepository.getBlogsCount(searchNameTerm);
 
     const result = {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize,
+      pagesCount: Math.ceil(totalCount / +pageSize),
+      page: +pageNumber,
+      pageSize: +pageSize,
       totalCount: totalCount,
       items: allBlogs,
     };
     return result;
+    console.log('result', result);
   }
 
   async findBlogById(id: string): Promise<BlogViewModel | null> {
@@ -54,7 +55,7 @@ export class BlogsService {
       name,
       description,
       websiteUrl,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       isMembership: false,
     });
     return await this.blogsRepository.createBlog(newBlog);

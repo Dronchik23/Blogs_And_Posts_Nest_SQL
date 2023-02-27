@@ -56,8 +56,7 @@ export class BlogDBType {
     public name: string,
     public description: string,
     public websiteUrl: string,
-    public createdAt: Date,
-
+    public createdAt: string,
     public isMembership: boolean,
   ) {}
 }
@@ -69,7 +68,7 @@ export class PostDBType {
     public content: string,
     public blogId: string,
     public blogName: string,
-    public createdAt: Date,
+    public createdAt: string,
     public extendedLikesInfo: ExtendedLikesInfoType,
   ) {}
 }
@@ -87,7 +86,7 @@ export class CommentDBType {
     public _id: ObjectId,
     public content: string,
     public commentatorInfo: CommentatorInfoType,
-    public createdAt: Date,
+    public createdAt: string,
     public postId: string,
     public likesInfo: LikesInfoType,
   ) {}
@@ -97,7 +96,7 @@ export class AccountDataType {
     public login: string,
     public email: string,
     public passwordHash: string,
-    public createdAt: Date,
+    public createdAt: string,
   ) {}
 }
 export class EmailConfirmationType {

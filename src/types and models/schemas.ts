@@ -63,7 +63,7 @@ export class Comment {
   commentatorInfo: CommentatorInfoType;
 
   @Prop()
-  createdAt: Date;
+  createdAt: string;
 
   @Prop()
   postId: string;
@@ -97,7 +97,7 @@ export class Post {
   blogName: string;
 
   @Prop()
-  createdAt: Date;
+  createdAt: string;
 
   @Prop()
   extendedLikesInfo: ExtendedLikesInfoType;
@@ -133,7 +133,7 @@ export class Blog {
   websiteUrl: string;
 
   @Prop()
-  createdAt: Date;
+  createdAt: string;
 
   @Prop()
   isMembership: boolean;

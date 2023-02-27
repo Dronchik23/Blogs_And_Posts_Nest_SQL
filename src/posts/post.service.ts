@@ -34,9 +34,9 @@ export class PostsService {
     const totalCount = await this.postsRepository.getAllPostCount();
 
     return {
-      pagesCount: Math.ceil(totalCount / pageSize),
-      page: pageNumber,
-      pageSize,
+      pagesCount: Math.ceil(totalCount / +pageSize),
+      page: +pageNumber,
+      pageSize: +pageSize,
       totalCount: totalCount,
       items: allPosts,
     };
@@ -71,7 +71,7 @@ export class PostsService {
       content,
       blogId,
       blog.name,
-      new Date(),
+      new Date().toISOString(),
       new ExtendedLikesInfoType(0, 0, LikeStatus.None, []),
     );
 

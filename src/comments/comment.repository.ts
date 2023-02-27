@@ -33,7 +33,7 @@ export class CommentsRepository {
         userId: comment.commentatorInfo.userId.toString(),
         userLogin: comment.commentatorInfo.userLogin,
       },
-      createdAt: comment.createdAt.toISOString(),
+      createdAt: comment.createdAt.toString(),
       likesInfo: comment.likesInfo,
     };
   };
@@ -47,7 +47,7 @@ export class CommentsRepository {
         userId: comment.commentatorInfo.userId.toString(),
         userLogin: comment.commentatorInfo.userLogin,
       },
-      createdAt: comment.createdAt.toISOString(),
+      createdAt: comment.createdAt.toString(),
       likesInfo: comment.likesInfo,
     }));
   };
