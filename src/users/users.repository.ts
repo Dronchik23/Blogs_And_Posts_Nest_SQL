@@ -29,11 +29,11 @@ const fromUserDBTypeToUserViewModelWithPagination = (
 };
 
 const searchLoginAndEmailTermFilter = (
-  searchLoginTerm: searchLoginOrEmailTermType,
-  searchEmailTerm: searchLoginOrEmailTermType,
+  searchLoginTerm: string,
+  searchEmailTerm: string,
 ): FilterQuery<UserDBType> => {
   return {
-    $or: [
+    $and: [
       {
         'accountData.email': {
           $regex: searchEmailTerm ? searchEmailTerm : '',
@@ -53,8 +53,6 @@ const searchLoginAndEmailTermFilter = (
 @Injectable()
 export class UsersRepository {
   constructor(@InjectModel('User') public usersModel: Model<UserDocument>) {}
-
-  private user = { _id: '123', accountData: { login: '123', email: '123' } };
 
   async getAllUsers(
     searchLoginTerm: string,

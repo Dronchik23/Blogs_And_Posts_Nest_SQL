@@ -165,27 +165,27 @@ export const DeviceSchema = SchemaFactory.createForClass(Device);
 
 export type UserDocument = User & Document;
 
-@Schema({ _id: false, id: false })
-export class AccountData {
-  @Prop({ type: String, unique: true })
-  login: string;
-  @Prop({ type: String, unique: true })
-  email: string;
-  @Prop({ type: String })
-  passwordHash: string;
-  @Prop({ type: String })
-  createdAt: string;
-}
+// @Schema({ _id: false, id: false })
+// export class AccountData {
+//   @Prop({ type: String, unique: false })
+//   login: string;
+//   @Prop({ type: String, unique: false })
+//   email: string;
+//   @Prop({ type: String })
+//   passwordHash: string;
+//   @Prop({ type: String })
+//   createdAt: string;
+// }
 
-export const AccountDataSchema = SchemaFactory.createForClass(AccountData);
+// export const AccountDataSchema = SchemaFactory.createForClass(AccountData);
 
 @Schema()
 export class User {
   @Prop()
   _id: ObjectId;
 
-  @Prop({ type: AccountDataSchema })
-  accountData: AccountData;
+  @Prop()
+  accountData: AccountDataType;
 
   @Prop()
   emailConfirmation: EmailConfirmationType;
