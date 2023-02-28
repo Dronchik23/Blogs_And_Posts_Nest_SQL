@@ -33,7 +33,7 @@ const searchLoginAndEmailTermFilter = (
   searchEmailTerm: string,
 ): FilterQuery<UserDBType> => {
   return {
-    $and: [
+    $or: [
       {
         'accountData.email': {
           $regex: searchEmailTerm ?? '',

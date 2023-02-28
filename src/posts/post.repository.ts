@@ -99,23 +99,28 @@ export class PostsRepository {
     content: string,
     blogId: string,
   ): Promise<boolean> {
-    const result = await this.postsModel.updateOne(
-      { id: id },
-      {
-        $set: {
-          title: title,
-          shortDescription: shortDescription,
-          content: content,
-          blogId: blogId,
+    try {
+      const result = await this.postsModel.updateOne(
+        {
+          _id: new mongoose.Types.ObjectId(id),
         },
-      },
-    );
-    if (result.matchedCount === 1) {
-      return true;
+        {
+          $set: {
+            title: title,
+            shortDescription: shortDescription,
+            content: content,
+            blogId: blogId,
+          },
+        },
+      );
+      if (result.matchedCount === 1) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
-    return false;
   }
-
   async deletePostById(id: string): Promise<boolean> {
     try {
       const result = await this.postsModel.deleteOne({
