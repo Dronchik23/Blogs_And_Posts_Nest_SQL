@@ -1,7 +1,7 @@
 import { Filter, ObjectId } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import {
   LikeDbType,
   LikeStatus,
@@ -117,10 +117,16 @@ export class PostsRepository {
   }
 
   async deletePostById(id: string): Promise<boolean> {
-    const result = await this.postsModel.deleteOne({ id: id });
-    if (result.deletedCount === 1) {
-      return true;
-    } else {
+    try {
+      const result = await this.postsModel.deleteOne({
+        _id: new mongoose.Types.ObjectId(id),
+      });
+      if (result.deletedCount === 1) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
   }

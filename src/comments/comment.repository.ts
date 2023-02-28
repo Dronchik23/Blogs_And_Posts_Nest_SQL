@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import {
   CommentDBType,
   LikeDbType,
@@ -141,12 +141,20 @@ export class CommentsRepository {
     return this.commentsModel.countDocuments({ postId: postId });
   }
 
-  async deleteCommentById(commentId: string, user: UserViewModel) {
-    const result = await this.commentsModel.deleteOne({
-      _id: new ObjectId(commentId),
-      'commentatorInfo.userId': new ObjectId(user.id),
-    });
-    return result.deletedCount === 1;
+  async deleteCommentById(id: string, user: UserViewModel) {
+    try {
+      const result = await this.commentsModel.deleteOne({
+        _id: new mongoose.Types.ObjectId(id),
+        'commentatorInfo.userId': new ObjectId(user.id),
+      });
+      if (result.deletedCount === 1) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 
   async deleteAllComments() {

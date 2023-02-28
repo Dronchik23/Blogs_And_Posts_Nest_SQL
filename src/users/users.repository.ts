@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { UserDBType } from '../types and models/types';
 import { UserViewModel } from '../types and models/models';
@@ -134,10 +134,16 @@ export class UsersRepository {
   }
 
   async deleteUserByUserId(id: string) {
-    const result = await this.usersModel.deleteOne({ id: id });
-    if (result.deletedCount === 1) {
-      return true;
-    } else {
+    try {
+      const result = await this.usersModel.deleteOne({
+        _id: new mongoose.Types.ObjectId(id),
+      });
+      if (result.deletedCount === 1) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
       return false;
     }
   }

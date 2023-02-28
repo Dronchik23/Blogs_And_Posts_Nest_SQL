@@ -78,7 +78,9 @@ export class BlogsRepository {
     websiteUrl: string,
   ): Promise<BlogViewModel | boolean> {
     const result = await this.blogsModel.updateOne(
-      { _id: new ObjectId(id) },
+      {
+        _id: new mongoose.Types.ObjectId(id),
+      },
       {
         $set: {
           name,
@@ -91,9 +93,6 @@ export class BlogsRepository {
   }
 
   async deleteBlogByBlogId(id: string): Promise<boolean> {
-    // console.log('id', id);
-    // const blogId = new mongoose.Types.ObjectId();
-    // console.log('blogId', blogId);
     try {
       const result = await this.blogsModel.deleteOne({
         _id: new mongoose.Types.ObjectId(id),
