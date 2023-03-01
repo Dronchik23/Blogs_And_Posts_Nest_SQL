@@ -76,11 +76,13 @@ export class PostsRepository {
     return this.fromPostDBTypeToPostViewModelWithPagination(allPosts);
   }
   async findPostById(
-    postId: ObjectId,
+    postId: string,
     userId?: ObjectId,
   ): Promise<PostViewModel | null> {
     const post: PostDBType = await this.postsModel
-      .findOne({ _id: postId })
+      .findOne({
+        _id: new mongoose.Types.ObjectId(postId),
+      })
       .lean();
     if (!post) return null;
     const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);

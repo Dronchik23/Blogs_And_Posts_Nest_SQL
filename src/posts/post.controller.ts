@@ -49,9 +49,7 @@ export class PostsController {
     @Req() req: Request,
     @Res() res: Response<PaginationType>,
   ) {
-    const postId = new ObjectId(id);
-
-    const post = await this.postsService.findPostByPostId(postId);
+    const post = await this.postsService.findPostByPostId(id);
     if (!post) {
       return res.sendStatus(HttpStatus.NOT_FOUND);
     }
@@ -77,11 +75,11 @@ export class PostsController {
     @Req() req: Request,
     @Res() res: Response<CommentViewModel | ErrorType>,
   ) {
-    const postId = new ObjectId(req.params.id);
+    const postId = req.params.id;
     const content = body.content;
     const user = req.user;
 
-    const post = await this.postsService.findPostByPostId(postId);
+    const post = await this.postsService.findPostByPostId(id);
     if (!post) {
       return res.sendStatus(HttpStatus.NOT_FOUND);
     }
@@ -154,7 +152,7 @@ export class PostsController {
 
   @Get(':id')
   async getPostByPostId(@Param('id') id: string): Promise<PostViewModel> {
-    const post = await this.postsService.findPostByPostId(new ObjectId(id));
+    const post = await this.postsService.findPostByPostId(id);
 
     if (post) {
       return post;
@@ -168,7 +166,7 @@ export class PostsController {
   async updatePostByPostId(
     @Param('id') id: string,
     @Body() updatePostModel: PostUpdateModel,
-  ): Promise<boolean> {
+  ): Promise<void> {
     const isUpdated = await this.postsService.updatePostById(
       id,
       updatePostModel.title,
@@ -176,11 +174,8 @@ export class PostsController {
       updatePostModel.content,
       updatePostModel.blogId,
     );
-
     if (!isUpdated) {
       throw new NotFoundException();
-    } else {
-      return true;
     }
   }
 
@@ -204,10 +199,7 @@ export class PostsController {
     @Res() res: Response<LikeDbType>,
   ): Promise<void> {
     const userId = new ObjectId(req.userId!);
-    const post = await this.postsService.findPostByPostId(
-      new ObjectId(id),
-      userId,
-    );
+    const post = await this.postsService.findPostByPostId(id, userId);
 
     if (!post) {
       throw new NotFoundException();

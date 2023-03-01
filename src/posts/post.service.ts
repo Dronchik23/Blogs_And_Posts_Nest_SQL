@@ -43,7 +43,7 @@ export class PostsService {
   }
 
   async findPostByPostId(
-    id: ObjectId,
+    id: string,
     userId?: ObjectId,
   ): Promise<PostViewModel | null> {
     return this.postsRepository.findPostById(id, userId);

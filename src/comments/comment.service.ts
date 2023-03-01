@@ -24,7 +24,7 @@ export class CommentsService {
   ) {}
 
   async createComment(
-    postId: ObjectId,
+    postId: string,
     content: string,
     user: UserViewModel,
   ): Promise<CommentViewModel | null> {
