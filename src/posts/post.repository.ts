@@ -115,6 +115,7 @@ export class PostsRepository {
           },
         },
       );
+      console.log('result repo', result);
       if (result.matchedCount === 1) {
         return true;
       }

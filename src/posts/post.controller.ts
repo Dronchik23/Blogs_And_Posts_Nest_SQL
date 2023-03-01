@@ -167,6 +167,10 @@ export class PostsController {
     @Param('id') id: string,
     @Body() updatePostModel: PostUpdateModel,
   ): Promise<void> {
+    const post = await this.postsService.findPostByPostId(id);
+    if (!post) {
+      throw new NotFoundException();
+    }
     const isUpdated = await this.postsService.updatePostById(
       id,
       updatePostModel.title,
@@ -174,6 +178,7 @@ export class PostsController {
       updatePostModel.content,
       updatePostModel.blogId,
     );
+    console.log('isUpdated controller', isUpdated);
     if (!isUpdated) {
       throw new NotFoundException();
     }

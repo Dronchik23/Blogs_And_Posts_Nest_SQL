@@ -92,6 +92,7 @@ export class PostsService {
       content,
       blogId,
     );
+    console.log('isUpdated service', isUpdated);
     if (isUpdated) {
       return true;
     } else {
