@@ -46,6 +46,9 @@ import {
   UserSchema,
 } from './types and models/schemas';
 import { TestingController } from './testing/testing.controller';
+import { EmailAdapter } from './email/email.adapter';
+import { MailerModule, MailerService } from '@nestjs-modules/mailer';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -64,6 +67,16 @@ import { TestingController } from './testing/testing.controller';
       { name: 'Attempt', schema: AttemptSchema },
     ]),
     MongooseModule.forRoot('mongodb://localhost/nest'),
+    ConfigModule.forRoot({}),
+    MailerModule.forRoot({
+      transport: {
+        service: 'gmail',
+        auth: {
+          user: 'bonjorim@gmail.com',
+          pass: 'nronmxaommldkjpc',
+        },
+      },
+    }),
   ],
   controllers: [
     TestingController,
@@ -81,6 +94,7 @@ import { TestingController } from './testing/testing.controller';
     UsersService,
     UsersRepository,
     EmailService,
+    EmailAdapter,
     BlogsService,
     BlogsRepository,
     PostsService,
@@ -95,6 +109,7 @@ import { TestingController } from './testing/testing.controller';
     AttemptsRepository,
     TokensRepository,
     JwtService,
+
     {
       provide: APP_GUARD,
       useClass: AttemptsControlMiddleware,

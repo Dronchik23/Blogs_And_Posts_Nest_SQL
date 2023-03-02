@@ -18,6 +18,7 @@ export class AuthController {
   @Post('login')
   async login(@Req() req: Request, @Res() res: Response) {
     const ip = req.ip;
+    console.log('ip', ip);
     const title = req.headers['user-agent']!;
     const loginOrEmail = req.body.loginOrEmail;
     const password = req.body.password;

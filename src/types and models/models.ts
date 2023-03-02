@@ -1,23 +1,19 @@
 import { ExtendedLikesInfoType, LikeStatus } from './types';
+import { IsString, Length, Matches } from 'class-validator';
 
-export type BlogCreateModel = {
-  name: string;
-  description: string;
-  websiteUrl: string;
-};
-export type BlogUpdateModel = {
+export class BlogUpdateModel {
   name: string;
   websiteUrl: string;
-};
-export type BlogViewModel = {
+}
+export class BlogViewModel {
   id: string;
   name: string;
   description: string;
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
-};
-export type PaginationInputQueryModel = {
+}
+export class PaginationInputQueryModel {
   searchNameTerm?: string;
   pageSize: number;
   sortBy: string;
@@ -25,21 +21,21 @@ export type PaginationInputQueryModel = {
   pageNumber: number;
   searchLoginTerm?: string;
   searchEmailTerm?: string;
-};
-export type PostCreateModel = {
+}
+export class PostCreateModel {
   title: string;
   shortDescription: string;
   content: string;
   blogId: string;
   blogName: string;
-};
-export type PostUpdateModel = {
+}
+export class PostUpdateModel {
   title: string;
   shortDescription: string;
   content: string;
   blogId: string;
-};
-export type PostViewModel = {
+}
+export class PostViewModel {
   id: string;
   title: string;
   shortDescription: string;
@@ -48,23 +44,23 @@ export type PostViewModel = {
   blogName: string;
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
-};
-export type UserCreateModel = {
+}
+export class UserCreateModel {
   login: string;
   email: string;
   password: string;
-};
-export type UserViewModel = {
+}
+export class UserViewModel {
   id: string;
   login: string;
   email: string;
   createdAt: string;
-};
+}
 
-export type CommentCreateModel = {
+export class CommentCreateModel {
   content: string;
-};
-export type CommentViewModel = {
+}
+export class CommentViewModel {
   id: string;
   content: string;
   commentatorInfo: {
@@ -77,4 +73,19 @@ export type CommentViewModel = {
     dislikesCount: number;
     myStatus: LikeStatus;
   };
-};
+}
+
+export class BlogCreateModel {
+  @IsString()
+  @Length(1, 15)
+  name: string;
+  @IsString()
+  @Length(1, 100)
+  description: string;
+  @IsString()
+  @Length(0, 100)
+  @Matches(
+    /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
+  )
+  websiteUrl: string;
+}

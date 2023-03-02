@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { injectable } from 'inversify';
 import { UsersRepository } from '../users/users.repository';

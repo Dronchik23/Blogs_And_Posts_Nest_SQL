@@ -37,13 +37,6 @@ export class BlogsController {
   ): Promise<PaginationType> {
     const { searchNameTerm, pageNumber, pageSize, sortBy, sortDirection } =
       query;
-    console.log(
-      'tut',
-      typeof sortBy,
-      typeof pageNumber,
-      typeof pageSize,
-      typeof sortDirection,
-    );
 
     const allBlogs = await this.blogsService.findAllBlogs(
       searchNameTerm,

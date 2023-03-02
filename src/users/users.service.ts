@@ -13,6 +13,7 @@ import { UserViewModel } from '../types and models/models';
 import { UsersRepository } from './users.repository';
 import { EmailService } from '../email/email.controller';
 import { inject } from 'inversify';
+//import bcrypt from 'bcrypt';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -76,7 +77,6 @@ export class UsersService {
     } catch (err) {
       console.error(err);
     }
-
     return result;
   }
 
