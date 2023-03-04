@@ -54,12 +54,12 @@ export class UsersController {
 
   @Post()
   async createUser(
-    @Body() createUserData: UserCreateModel,
+    @Body() createUserDTO: UserCreateModel,
   ): Promise<UserViewModel> {
     return this.usersService.createUser(
-      createUserData.login,
-      createUserData.email,
-      createUserData.password,
+      createUserDTO.login,
+      createUserDTO.email,
+      createUserDTO.password,
     );
   }
 

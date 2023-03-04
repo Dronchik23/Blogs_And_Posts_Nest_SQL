@@ -13,7 +13,6 @@ import { UserViewModel } from '../types and models/models';
 import { UsersRepository } from './users.repository';
 import { EmailService } from '../email/email.controller';
 import { inject } from 'inversify';
-//import bcrypt from 'bcrypt';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -97,7 +96,7 @@ export class UsersService {
     return await this.usersRepository.deleteUserByUserId(id);
   }
 
-  async findUserByEmail(email: string) {
+  async findUserByEmail(email: string): Promise<boolean> {
     return await this.usersRepository.findByEmail(email);
   }
 

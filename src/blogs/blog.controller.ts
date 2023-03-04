@@ -50,12 +50,12 @@ export class BlogsController {
 
   @Post()
   async createBlog(
-    @Body() createBlogDto: BlogCreateModel,
+    @Body() createBlogDTO: BlogCreateModel,
   ): Promise<BlogViewModel> {
     const newBlog = await this.blogsService.createBlog(
-      createBlogDto.name,
-      createBlogDto.description,
-      createBlogDto.websiteUrl,
+      createBlogDTO.name,
+      createBlogDTO.description,
+      createBlogDTO.websiteUrl,
     );
     return newBlog;
   }

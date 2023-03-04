@@ -1,10 +1,11 @@
 import { Controller, Post, Body, Req, Res, Get } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UsersService } from '../users/users.service';
-import { TokenType } from '../types and models/types';
+import { TokenType, UserDBType } from '../types and models/types';
 import { AuthService } from './auth.service';
 import { JwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
+import { LoginInputModel, UserCreateModel } from '../types and models/models';
 
 @Controller('auth')
 export class AuthController {
@@ -16,12 +17,16 @@ export class AuthController {
   ) {}
 
   @Post('login')
-  async login(@Req() req: Request, @Res() res: Response) {
+  async login(
+    @Body() loginInputModelDto: LoginInputModel,
+    @Req() req: Request,
+    @Res() res: Response,
+  ) {
     const ip = req.ip;
     console.log('ip', ip);
     const title = req.headers['user-agent']!;
-    const loginOrEmail = req.body.loginOrEmail;
-    const password = req.body.password;
+    const loginOrEmail = loginInputModelDto.loginOrEmail;
+    const password = loginInputModelDto.password;
     const tokens = await this.authService.login(
       loginOrEmail,
       password,
@@ -54,7 +59,7 @@ export class AuthController {
 
   @Post('passwordRecovery')
   async passwordRecovery(@Body('email') email: string, @Res() res: Response) {
-    const user = await this.usersService.findUserByEmail(email);
+    const user: any = await this.usersService.findUserByEmail(email);
     if (user) {
       await this.authService.sendRecoveryCode(user.accountData.email);
       return res.sendStatus(204);
@@ -76,7 +81,7 @@ export class AuthController {
     return res.sendStatus(204);
   }
 
-  @Post('registrationConfirmation')
+  @Post('registration-confirmation')
   async registrationConfirmation(
     @Body('code') code: string,
     @Res() res: Response,
@@ -90,9 +95,12 @@ export class AuthController {
   }
 
   @Post('registration')
-  async registration(@Body('email') email: string, @Res() res: Response) {
-    const existingUser = await this.usersService.findUserByEmail(email);
-    if (existingUser) {
+  async registration(
+    @Body() createUserDTO: UserCreateModel,
+    @Res() res: Response,
+  ): Promise<any> {
+    const user = await this.usersService.findUserByEmail(createUserDTO.email);
+    if (user) {
       return res.status(400).send({
         errorsMessages: [
           {
@@ -105,12 +113,22 @@ export class AuthController {
     return res.sendStatus(204);
   }
 
-  @Post('registrationEmailResending')
+  @Post('registration-email-resending')
   async registrationEmailResending(
     @Body('email') email: string,
     @Res() res: Response,
   ) {
     await this.authService.resendConfirmationCode(email);
+    if (null) {
+      return res.status(400).send({
+        errorsMessages: [
+          {
+            message: 'E-mail already confirmed',
+            field: 'email',
+          },
+        ],
+      });
+    }
     return res.sendStatus(204);
   }
 

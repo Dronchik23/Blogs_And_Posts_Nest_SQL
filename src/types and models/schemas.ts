@@ -71,11 +71,9 @@ export class Comment {
   @Prop()
   likesInfo: LikesInfoType;
 }
-
 export const CommentSchema = SchemaFactory.createForClass(Comment);
 
 export type PostDocument = Post & Document;
-
 @Schema()
 export class Post {
   @Prop()
@@ -102,11 +100,9 @@ export class Post {
   @Prop()
   extendedLikesInfo: ExtendedLikesInfoType;
 }
-
 export const PostSchema = SchemaFactory.createForClass(Post);
 
 export type TokenBlackListDocument = TokenBlackList & Document;
-
 @Schema()
 export class TokenBlackList {
   @Prop()
@@ -117,7 +113,6 @@ export const TokenBlackListSchema =
   SchemaFactory.createForClass(TokenBlackList);
 
 export type BlogDocument = Blog & Document;
-
 @Schema()
 export class Blog {
   @Prop()
@@ -138,11 +133,9 @@ export class Blog {
   @Prop()
   isMembership: boolean;
 }
-
 export const BlogSchema = SchemaFactory.createForClass(Blog);
 
 export type DeviceDocument = Device & Document;
-
 @Schema()
 export class Device {
   @Prop()
@@ -160,25 +153,21 @@ export class Device {
   @Prop()
   userId: string;
 }
-
 export const DeviceSchema = SchemaFactory.createForClass(Device);
+@Schema()
+export class AccountData {
+  @Prop()
+  login: string;
+  @Prop()
+  email: string;
+  @Prop()
+  passwordHash: string;
+  @Prop()
+  createdAt: string;
+}
+export const AccountDataSchema = SchemaFactory.createForClass(AccountData);
 
 export type UserDocument = User & Document;
-
-// @Schema({ _id: false, id: false })
-// export class AccountData {
-//   @Prop({ type: String, unique: false })
-//   login: string;
-//   @Prop({ type: String, unique: false })
-//   email: string;
-//   @Prop({ type: String })
-//   passwordHash: string;
-//   @Prop({ type: String })
-//   createdAt: string;
-// }
-
-// export const AccountDataSchema = SchemaFactory.createForClass(AccountData);
-
 @Schema()
 export class User {
   @Prop()
@@ -196,5 +185,4 @@ export class User {
   @Prop()
   passwordSalt?: string;
 }
-
 export const UserSchema = SchemaFactory.createForClass(User);

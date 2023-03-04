@@ -80,7 +80,7 @@ export class AuthService {
   ): Promise<EmailConfirmationType | boolean> {
     const user = await this.usersRepository.findByEmail(email);
     if (!user) return false;
-    if (user.emailConfirmation.isConfirmed) return false;
+    if (user.emailConfirmation.isConfirmed) return null;
     const newCode = randomUUID();
     await this.usersRepository.updateConfirmationCodeByUserId(
       user._id,

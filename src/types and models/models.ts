@@ -45,11 +45,6 @@ export class PostViewModel {
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
 }
-export class UserCreateModel {
-  login: string;
-  email: string;
-  password: string;
-}
 export class UserViewModel {
   id: string;
   login: string;
@@ -88,4 +83,23 @@ export class BlogCreateModel {
     /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
   )
   websiteUrl: string;
+}
+
+export class LoginInputModel {
+  @IsString()
+  loginOrEmail: string;
+  @IsString()
+  password: string;
+}
+export class UserCreateModel {
+  @IsString()
+  @Length(3, 10)
+  login: string;
+  @IsString()
+  @Length(6, 20)
+  password: string;
+
+  @IsString()
+  @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+  email: string;
 }

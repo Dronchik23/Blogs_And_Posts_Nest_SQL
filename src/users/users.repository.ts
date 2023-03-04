@@ -100,8 +100,12 @@ export class UsersRepository {
     });
   }
 
-  async findByEmail(email: string) {
-    return this.usersModel.findOne({ 'accountData.email': email });
+  async findByEmail(email: string): Promise<any> {
+    const user = await this.usersModel.findOne({
+      'accountData.email': email,
+    });
+    console.log('user repo', user);
+    return user;
   }
 
   async findUserByPasswordRecoveryCode(code: string) {
