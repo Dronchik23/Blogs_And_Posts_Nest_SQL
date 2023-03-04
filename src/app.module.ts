@@ -32,7 +32,7 @@ import { BasicAuthMiddleware } from './middlewares/basic-auth.middleware';
 import { DeviceMiddleware } from './middlewares/device.middleware';
 import { InputValidationMiddleware } from './middlewares/input-validation.middleware';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
-import { RateLimiterMiddleware } from './middlewares/rate-limiter.middleware';
+//import { RateLimiterMiddleware } from './middlewares/rate-limiter.middleware';
 import { RefreshTokenMiddleware } from './middlewares/refresh-token.middleware';
 import { Validator } from './middlewares/validations';
 import {
@@ -126,10 +126,10 @@ import { ConfigModule } from '@nestjs/config';
       provide: APP_GUARD,
       useClass: InputValidationMiddleware,
     },
-    {
-      provide: APP_GUARD,
-      useClass: RateLimiterMiddleware,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RateLimiterMiddleware,
+    // },
     {
       provide: APP_GUARD,
       useClass: RefreshTokenMiddleware,
