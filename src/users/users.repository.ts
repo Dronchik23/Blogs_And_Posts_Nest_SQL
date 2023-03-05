@@ -101,18 +101,21 @@ export class UsersRepository {
   }
 
   async findByEmail(email: string): Promise<any> {
-    const user = await this.usersModel.findOne({
+    return this.usersModel.findOne({
       'accountData.email': email,
     });
-    console.log('user repo', user);
-    return user;
+  }
+  async findByLogin(login: string): Promise<any> {
+    return this.usersModel.findOne({
+      'accountData.login': login,
+    });
   }
 
   async findUserByPasswordRecoveryCode(code: string) {
     return this.usersModel.findOne({ 'passwordRecovery.recoveryCode': code });
   }
 
-  async findUserByConfirmationCode(code: string) {
+  async findUserByConfirmationCode(code: string): Promise<any> {
     return this.usersModel.findOne({
       'emailConfirmation.confirmationCode': code,
     });
@@ -142,11 +145,7 @@ export class UsersRepository {
       const result = await this.usersModel.deleteOne({
         _id: new mongoose.Types.ObjectId(id),
       });
-      if (result.deletedCount === 1) {
-        return true;
-      } else {
-        return false;
-      }
+      return result.deletedCount === 1;
     } catch (e) {
       return false;
     }

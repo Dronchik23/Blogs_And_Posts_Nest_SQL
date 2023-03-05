@@ -34,7 +34,6 @@ import { InputValidationMiddleware } from './middlewares/input-validation.middle
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
 //import { RateLimiterMiddleware } from './middlewares/rate-limiter.middleware';
 import { RefreshTokenMiddleware } from './middlewares/refresh-token.middleware';
-import { Validator } from './middlewares/validations';
 import {
   AttemptSchema,
   BlogSchema,
@@ -49,6 +48,18 @@ import { TestingController } from './testing/testing.controller';
 import { EmailAdapter } from './email/email.adapter';
 import { MailerModule, MailerService } from '@nestjs-modules/mailer';
 import { ConfigModule } from '@nestjs/config';
+import {
+  IsEmailAlreadyConfirmedConstraint,
+  IsEmailAlreadyExistConstraint,
+  IsLoginAlreadyExistConstraint,
+  isCodeAlreadyConfirmedConstraint,
+} from './validator';
+import {
+  useContainer,
+  Validator,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+import { Container } from 'typedi';
 
 @Module({
   imports: [
@@ -109,7 +120,10 @@ import { ConfigModule } from '@nestjs/config';
     AttemptsRepository,
     TokensRepository,
     JwtService,
-
+    IsEmailAlreadyExistConstraint,
+    IsLoginAlreadyExistConstraint,
+    IsEmailAlreadyConfirmedConstraint,
+    isCodeAlreadyConfirmedConstraint,
     {
       provide: APP_GUARD,
       useClass: AttemptsControlMiddleware,
@@ -134,16 +148,17 @@ import { ConfigModule } from '@nestjs/config';
       provide: APP_GUARD,
       useClass: RefreshTokenMiddleware,
     },
-    {
-      provide: APP_GUARD,
-      useClass: Validator,
-    },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(QueryParamsMiddleware)
-      .forRoutes('blogs', 'posts', 'comments', 'users');
+      .forRoutes('blogs', 'posts', 'comments', 'users')
+      .apply(BasicAuthMiddleware)
+      .forRoutes('users');
   }
 }
+
+useContainer(Container);
+//const validator = Container.get(Validator);

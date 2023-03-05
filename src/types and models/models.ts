@@ -1,5 +1,11 @@
 import { ExtendedLikesInfoType, LikeStatus } from './types';
-import { IsString, Length, Matches } from 'class-validator';
+import { IsEmail, IsString, IsUUID, Length, Matches } from 'class-validator';
+import {
+  IsCodeAlreadyConfirmed,
+  IsEmailAlreadyConfirmed,
+  IsEmailAlreadyExist,
+  IsLoginAlreadyExist,
+} from '../validator';
 
 export class BlogUpdateModel {
   name: string;
@@ -92,6 +98,7 @@ export class LoginInputModel {
   password: string;
 }
 export class UserCreateModel {
+  @IsLoginAlreadyExist()
   @IsString()
   @Length(3, 10)
   login: string;
@@ -99,7 +106,20 @@ export class UserCreateModel {
   @Length(6, 20)
   password: string;
 
+  @IsEmailAlreadyExist()
   @IsString()
   @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
   email: string;
+}
+
+export class RegistrationEmailResendingModel {
+  @IsEmailAlreadyConfirmed()
+  @IsEmail()
+  email: string;
+}
+export class CodeInputModel {
+  @IsCodeAlreadyConfirmed()
+  @IsString()
+  @IsUUID()
+  code: string;
 }

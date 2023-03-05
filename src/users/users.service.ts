@@ -96,8 +96,8 @@ export class UsersService {
     return await this.usersRepository.deleteUserByUserId(id);
   }
 
-  async findUserByEmail(email: string): Promise<boolean> {
-    return await this.usersRepository.findByEmail(email);
+  async findUserByEmail(email: string): Promise<UserDBType | null> {
+    return await this.usersRepository.findByLoginOrEmail(email);
   }
 
   async findUserByRecoveryCode(recoveryCode: string) {
@@ -111,5 +111,9 @@ export class UsersService {
     const passwordHash = await this._generateHash(password, passwordSalt);
     await this.usersRepository.updatePassword(passwordHash, userId);
     return;
+  }
+
+  async findUserByLogin(login: string): Promise<UserDBType | null> {
+    return await this.usersRepository.findByLogin(login);
   }
 }

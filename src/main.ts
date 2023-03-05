@@ -4,9 +4,11 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { UserViewModel } from './types and models/models';
 import { JWTPayloadType } from './types and models/types';
 import { HttpExceptionFilter } from './exeption.filter';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({

@@ -5,7 +5,12 @@ import { TokenType, UserDBType } from '../types and models/types';
 import { AuthService } from './auth.service';
 import { JwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
-import { LoginInputModel, UserCreateModel } from '../types and models/models';
+import {
+  CodeInputModel,
+  LoginInputModel,
+  RegistrationEmailResendingModel,
+  UserCreateModel,
+} from '../types and models/models';
 
 @Controller('auth')
 export class AuthController {
@@ -83,10 +88,10 @@ export class AuthController {
 
   @Post('registration-confirmation')
   async registrationConfirmation(
-    @Body('code') code: string,
+    @Body() codeInputModelDTO: CodeInputModel,
     @Res() res: Response,
   ) {
-    const result = await this.authService.confirmEmail(code);
+    const result = await this.authService.confirmEmail(codeInputModelDTO.code);
     if (result) {
       return res.sendStatus(204);
     } else {
@@ -115,15 +120,19 @@ export class AuthController {
 
   @Post('registration-email-resending')
   async registrationEmailResending(
-    @Body('email') email: string,
-    @Res() res: Response,
+    @Body() registrationEmailResendingDTO: RegistrationEmailResendingModel,
+    @Res()
+    res: Response,
   ) {
-    await this.authService.resendConfirmationCode(email);
-    if (null) {
+    const haveAnyEmailLikeThis = await this.authService.resendConfirmationCode(
+      registrationEmailResendingDTO.email,
+    );
+    console.log('haveAnyEmailLikeThis', haveAnyEmailLikeThis);
+    if (!haveAnyEmailLikeThis) {
       return res.status(400).send({
         errorsMessages: [
           {
-            message: 'E-mail already confirmed',
+            message: 'E-mail not found',
             field: 'email',
           },
         ],

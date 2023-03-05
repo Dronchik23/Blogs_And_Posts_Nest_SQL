@@ -1,7 +1,6 @@
 import { UserDBType } from '../types and models/types';
 import { EmailAdapter } from './email.adapter';
 import { Injectable } from '@nestjs/common';
-
 @Injectable()
 export class EmailService {
   constructor(private readonly emailAdapter: EmailAdapter) {}

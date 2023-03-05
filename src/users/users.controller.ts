@@ -8,6 +8,7 @@ import {
   Body,
   NotFoundException,
   HttpCode,
+  Res,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -16,6 +17,7 @@ import {
   UserViewModel,
 } from '../types and models/models';
 import { PaginationType } from '../types and models/types';
+import { Response } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -55,7 +57,8 @@ export class UsersController {
   @Post()
   async createUser(
     @Body() createUserDTO: UserCreateModel,
-  ): Promise<UserViewModel> {
+    @Res() res: Response,
+  ) {
     return this.usersService.createUser(
       createUserDTO.login,
       createUserDTO.email,
