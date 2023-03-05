@@ -29,7 +29,6 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const ip = req.ip;
-    console.log('ip', ip);
     const title = req.headers['user-agent']!;
     const loginOrEmail = loginInputModelDto.loginOrEmail;
     const password = loginInputModelDto.password;
@@ -55,7 +54,7 @@ export class AuthController {
     );
     if (!tokens) return res.sendStatus(401);
     return res
-      .status(200)
+      .status(201)
       .cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: true,
