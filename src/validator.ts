@@ -50,9 +50,7 @@ export class IsEmailAlreadyConfirmedConstraint
   constructor(private readonly usersRepository: UsersRepository) {}
 
   async validate(email: string) {
-    const user: UserDBType = await this.usersRepository.findByLoginOrEmail(
-      email,
-    );
+    const user: UserDBType = await this.usersRepository.findByEmail(email);
     const isEmailNotConfirmed =
       user && user.emailConfirmation.isConfirmed === true;
     return !isEmailNotConfirmed;

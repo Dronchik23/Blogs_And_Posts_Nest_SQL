@@ -121,7 +121,7 @@ export class AuthController {
       createUserDTO.email,
       createUserDTO.password,
     );
-    return newUser;
+    return res.sendStatus(204);
   }
 
   @Post('registration-email-resending')
@@ -133,7 +133,6 @@ export class AuthController {
     const haveAnyEmailLikeThis = await this.authService.resendConfirmationCode(
       registrationEmailResendingDTO.email,
     );
-    console.log('haveAnyEmailLikeThis', haveAnyEmailLikeThis);
     if (!haveAnyEmailLikeThis) {
       return res.status(400).send({
         errorsMessages: [
