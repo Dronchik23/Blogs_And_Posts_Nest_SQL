@@ -58,7 +58,7 @@ export class JwtService {
   }
 
   getLastActiveDate(refreshToken: string): string {
-    const payload: any = jwt.decode(refreshToken);
+    const payload: any = jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET);
     return new Date(payload.iat * 1000).toISOString();
   }
 }
