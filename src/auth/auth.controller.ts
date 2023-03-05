@@ -43,7 +43,7 @@ export class AuthController {
       httpOnly: true,
       secure: true,
     });
-    return res.send({ accessToken: tokens.accessToken });
+    return res.status(200).send({ accessToken: tokens.accessToken });
   }
 
   @Post('refreshToken')
