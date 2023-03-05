@@ -10,6 +10,7 @@ import {
   LoginInputModel,
   RegistrationEmailResendingModel,
   UserCreateModel,
+  UserViewModel,
 } from '../types and models/models';
 
 @Controller('auth')
@@ -115,7 +116,12 @@ export class AuthController {
         ],
       });
     }
-    return res.sendStatus(204);
+    const newUser = await this.usersService.createUser(
+      createUserDTO.login,
+      createUserDTO.email,
+      createUserDTO.password,
+    );
+    return newUser;
   }
 
   @Post('registration-email-resending')

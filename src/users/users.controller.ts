@@ -62,7 +62,6 @@ export class UsersController {
       createUserDTO.email,
       createUserDTO.password,
     );
-    console.log('user contrl', user);
     return user;
   }
 
