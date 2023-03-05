@@ -53,17 +53,17 @@ export class UsersController {
     }
     return user;
   }
-
   @Post()
   async createUser(
     @Body() createUserDTO: UserCreateModel,
-    @Res() res: Response,
-  ) {
-    return this.usersService.createUser(
+  ): Promise<UserViewModel> {
+    const user = await this.usersService.createUser(
       createUserDTO.login,
       createUserDTO.email,
       createUserDTO.password,
     );
+    console.log('user contrl', user);
+    return user;
   }
 
   @Delete(':id')

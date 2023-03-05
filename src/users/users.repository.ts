@@ -78,8 +78,8 @@ export class UsersRepository {
   }
 
   async createUser(userForSave: UserDBType): Promise<UserViewModel> {
-    await this.usersModel.create(userForSave);
-    return fromUserDBTypeToUserViewModel(userForSave);
+    const newUser = await this.usersModel.create(userForSave);
+    return fromUserDBTypeToUserViewModel(newUser);
   }
 
   async findUserByUserId(id: string): Promise<UserViewModel | null> {
@@ -106,9 +106,10 @@ export class UsersRepository {
     });
   }
   async findByLogin(login: string): Promise<any> {
-    return this.usersModel.findOne({
+    const user = this.usersModel.findOne({
       'accountData.login': login,
     });
+    return user;
   }
 
   async findUserByPasswordRecoveryCode(code: string) {

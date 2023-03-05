@@ -91,23 +91,6 @@ export class IsEmailAlreadyExistConstraint
   }
 }
 
-@ValidatorConstraint({ async: true })
-@injectable()
-export class IsLoginAlreadyExistConstraint
-  implements ValidatorConstraintInterface
-{
-  constructor(private readonly usersRepository: UsersRepository) {}
-
-  async validate(login: string) {
-    const user = await this.usersRepository.findByLoginOrEmail(login);
-    return !user;
-  }
-
-  defaultMessage(args: ValidationArguments) {
-    return 'Login already exists';
-  }
-}
-
 export function IsEmailAlreadyExist(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
     registerDecorator({
@@ -118,6 +101,24 @@ export function IsEmailAlreadyExist(validationOptions?: ValidationOptions) {
       validator: IsEmailAlreadyExistConstraint,
     });
   };
+}
+@ValidatorConstraint({ async: true })
+@injectable()
+export class IsLoginAlreadyExistConstraint
+  implements ValidatorConstraintInterface
+{
+  constructor(private readonly usersRepository: UsersRepository) {}
+
+  async validate(login: string) {
+    console.log('login valid', login);
+    const user = await this.usersRepository.findByLogin(login);
+    console.log('user valid', user);
+    return !user;
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'Login already exists';
+  }
 }
 
 export function IsLoginAlreadyExist(validationOptions?: ValidationOptions) {

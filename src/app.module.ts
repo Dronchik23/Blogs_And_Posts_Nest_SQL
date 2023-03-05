@@ -161,4 +161,3 @@ export class AppModule implements NestModule {
 }
 
 useContainer(Container);
-//const validator = Container.get(Validator);

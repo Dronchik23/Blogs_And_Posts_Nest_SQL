@@ -98,17 +98,17 @@ export class LoginInputModel {
   password: string;
 }
 export class UserCreateModel {
-  @IsLoginAlreadyExist()
   @IsString()
   @Length(3, 10)
+  @IsLoginAlreadyExist()
   login: string;
   @IsString()
   @Length(6, 20)
   password: string;
 
-  @IsEmailAlreadyExist()
   @IsString()
   @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+  @IsEmailAlreadyExist()
   email: string;
 }
 
