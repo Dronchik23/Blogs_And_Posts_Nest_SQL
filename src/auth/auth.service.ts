@@ -50,7 +50,6 @@ export class AuthService {
   ): Promise<any> {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
     if (!user) return null;
-    console.log(user);
     if (!user.passwordRecovery.isConfirmed) return null;
     const isHashIsEquals = await this.isPasswordCorrect(
       password,
