@@ -26,7 +26,7 @@ export class CommentsService {
   async createComment(
     postId: string,
     content: string,
-    user: UserViewModel,
+    user: any,
   ): Promise<CommentViewModel | null> {
     const post: PostViewModel | null = await this.postsRepository.findPostById(
       postId,

@@ -28,7 +28,6 @@ import { TokensRepository } from './tokens/tokens.repository';
 import { JwtService } from './jwt/jwt.service';
 import { AttemptsControlMiddleware } from './middlewares/attempt.middleware';
 import { APP_GUARD } from '@nestjs/core';
-import { BasicAuthMiddleware } from './middlewares/basic-auth.middleware';
 import { DeviceMiddleware } from './middlewares/device.middleware';
 import { InputValidationMiddleware } from './middlewares/input-validation.middleware';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
@@ -60,6 +59,11 @@ import {
   ValidatorConstraintInterface,
 } from 'class-validator';
 import { Container } from 'typedi';
+import { BasicAuthStrategy } from './auth/guards/basic-auth.guard';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { settings } from './jwt/jwt.settings';
+import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 
 @Module({
   imports: [
@@ -87,6 +91,11 @@ import { Container } from 'typedi';
           pass: 'nronmxaommldkjpc',
         },
       },
+    }),
+    PassportModule,
+    JwtModule.register({
+      secret: settings.JWT_SECRET, // секретный ключ для подписи токенов
+      signOptions: { expiresIn: '7m' }, // время жизни токенов
     }),
   ],
   controllers: [
@@ -120,17 +129,16 @@ import { Container } from 'typedi';
     AttemptsRepository,
     TokensRepository,
     JwtService,
+
     IsEmailAlreadyExistConstraint,
     IsLoginAlreadyExistConstraint,
     IsEmailAlreadyConfirmedConstraint,
     isCodeAlreadyConfirmedConstraint,
+    BasicAuthStrategy,
+    JwtStrategy,
     {
       provide: APP_GUARD,
       useClass: AttemptsControlMiddleware,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: BasicAuthMiddleware,
     },
     {
       provide: APP_GUARD,
@@ -154,9 +162,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(QueryParamsMiddleware)
-      .forRoutes('blogs', 'posts', 'comments', 'users')
-      .apply(BasicAuthMiddleware)
-      .forRoutes('users');
+      .forRoutes('blogs', 'posts', 'comments', 'users');
   }
 }
 

@@ -24,16 +24,6 @@ export class JwtService {
       const result = jwt.verify(token, settings.JWT_SECRET) as {
         userId: string;
       };
-      console.log('getUserIdByToken result', result);
-      return result.userId;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  async getUserIdByRefreshToken(refreshToken: string) {
-    try {
-      const result: any = jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET);
       return result.userId;
     } catch (error) {
       return null;

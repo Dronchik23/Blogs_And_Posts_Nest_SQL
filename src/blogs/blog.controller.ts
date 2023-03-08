@@ -10,6 +10,7 @@ import {
   NotFoundException,
   Req,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { PaginationType } from 'src/types and models/types';
@@ -23,6 +24,7 @@ import {
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { Request } from 'express';
+import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 
 @Controller('blogs')
 export class BlogsController {
@@ -47,7 +49,7 @@ export class BlogsController {
     );
     return allBlogs;
   }
-
+  @UseGuards(BasicAuthGuard)
   @Post()
   async createBlog(
     @Body() createBlogDTO: BlogCreateModel,
@@ -59,7 +61,7 @@ export class BlogsController {
     );
     return newBlog;
   }
-
+  @UseGuards(BasicAuthGuard)
   @Get(':blogId/posts')
   async getPostByBlogId(
     @Param('blogId') blogId: string,
@@ -121,7 +123,7 @@ export class BlogsController {
     }
     return blog;
   }
-
+  @UseGuards(BasicAuthGuard)
   @Put(':blogId')
   @HttpCode(204)
   async updateBlogById(
@@ -137,7 +139,7 @@ export class BlogsController {
       throw new NotFoundException();
     }
   }
-
+  @UseGuards(BasicAuthGuard)
   @Delete(':blogId')
   @HttpCode(204)
   async deleteBlogByBlogId(@Param('blogId') blogId: string): Promise<boolean> {

@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Delete,
-  Param,
-  Req,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Delete, Param, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { DevicesService } from './device.service';
 
@@ -17,7 +9,7 @@ export class DevicesController {
   //@UseGuards(AuthGuard('jwt'))
   @Get()
   async getAllDevices(@Req() req: Request, @Res() res: Response) {
-    const userId = req.user!.id;
+    const userId = req.userId.toString();
     const allDevices = await this.devicesService.findAllDevicesByUserId(userId);
     return res.send(allDevices);
   }

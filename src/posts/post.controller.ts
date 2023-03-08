@@ -12,7 +12,7 @@ import {
   HttpStatus,
   NotFoundException,
   HttpCode,
-  UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
@@ -33,6 +33,8 @@ import {
 import { PostsService } from './post.service';
 import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
+import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
+import { UsersService } from '../users/users.service';
 
 @Controller('posts')
 export class PostsController {
@@ -40,6 +42,8 @@ export class PostsController {
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
     private readonly likesService: LikesService,
+
+    private readonly usersService: UsersService,
   ) {}
 
   @Get(':id/comments')
@@ -123,7 +127,7 @@ export class PostsController {
 
     return res.send(allPosts);
   }
-
+  @UseGuards(BasicAuthGuard)
   @Post()
   async createPost(
     @Body() createPostModel: PostCreateModel,
@@ -160,7 +164,7 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
-
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(204)
   async updatePostByPostId(
@@ -183,7 +187,7 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
-
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   async deletePostByPostId(@Param('id') id: string): Promise<boolean> {
@@ -211,12 +215,11 @@ export class PostsController {
     }
 
     const parentId = new ObjectId(post.id);
-    const userLogin = req.user!.login;
-
+    const user = await this.usersService.getUserByUserId(req.userId);
     await this.likesService.updateLikeStatus(
       parentId,
       userId,
-      userLogin,
+      user.login,
       likeStatus,
     );
   }

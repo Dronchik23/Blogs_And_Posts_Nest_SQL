@@ -9,6 +9,7 @@ import {
   NotFoundException,
   HttpCode,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -17,12 +18,13 @@ import {
   UserViewModel,
 } from '../types and models/models';
 import { PaginationType } from '../types and models/types';
-import { Response } from 'express';
+import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @UseGuards(BasicAuthGuard)
   @Get()
   async getAllUsers(
     @Query() query: PaginationInputQueryModel,
@@ -44,7 +46,7 @@ export class UsersController {
       sortDirection,
     );
   }
-
+  @UseGuards(BasicAuthGuard)
   @Get(':id')
   async getUserByUserId(@Param('id') id: string): Promise<UserViewModel> {
     const user = await this.usersService.getUserByUserId(id);
@@ -64,7 +66,7 @@ export class UsersController {
     );
     return user;
   }
-
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   async deleteUserByUserId(@Param('id') id: string): Promise<boolean> {

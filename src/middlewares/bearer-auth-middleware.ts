@@ -22,7 +22,6 @@ export class AuthJwtMiddleware {
     }
 
     const token = auth.split(' ')[1];
-    console.log('token authJwtMiddleware', token);
     const userId = await this.jwtService.getUserIdByToken(token);
     if (userId) {
       req.userId = userId;

@@ -39,10 +39,21 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
-      user: UserViewModel | null;
+      user?: User | null;
       userId: string | null;
       deviceId: string | null;
       jwtPayload: JWTPayloadType | null;
     }
   }
 }
+
+// declare global {
+//   // eslint-disable-next-line @typescript-eslint/no-namespace
+//   namespace Express {
+//     interface User {
+//       id: number;
+//       name: string;
+//       email: string;
+//     }
+//   }
+// }

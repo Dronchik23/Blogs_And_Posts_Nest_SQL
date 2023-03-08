@@ -7,11 +7,13 @@ import {
   Put,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { LikeStatus } from '../types and models/types';
 import { ObjectId } from 'mongodb';
 import { CommentsService } from './comment.service';
 import { LikesService } from '../likes/like.service';
+import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
 
 @Controller('comments')
 export class CommentsController {
@@ -20,7 +22,7 @@ export class CommentsController {
     private readonly likesService: LikesService,
   ) {}
 
-  //@UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Put(':id/like')
   async updateLikeStatus(
     @Param('id') id: string,

@@ -19,7 +19,7 @@ export class DeviceMiddleware {
       return res.sendStatus(404);
     }
 
-    if (device!.userId !== req.user!.id) return res.sendStatus(403);
+    if (device!.userId !== req.userId) return res.sendStatus(403);
 
     // const decodedToken = this.jwtService.decodeToken(req.headers.authorization);
     // if (device.userId !== decodedToken.id) {

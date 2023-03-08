@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Req, Res, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Req,
+  Res,
+  Get,
+  UseGuards,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UsersService } from '../users/users.service';
 import { TokenType, UserDBType } from '../types and models/types';
@@ -10,8 +18,8 @@ import {
   LoginInputModel,
   RegistrationEmailResendingModel,
   UserCreateModel,
-  UserViewModel,
 } from '../types and models/models';
+import { JwtAuthGuard } from './strategys/bearer-strategy';
 
 @Controller('auth')
 export class AuthController {
@@ -144,10 +152,10 @@ export class AuthController {
     }
     return res.sendStatus(204);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@Req() req: Request, @Res() res: Response) {
-    const user = req.user;
+    const user: any = req.user;
     return res.send({
       login: user.login,
       email: user.email,
