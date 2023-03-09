@@ -23,10 +23,11 @@ import {
   PaginationType,
 } from '../types and models/types';
 import {
-  CommentCreateModel,
+  CommentInputModel,
   CommentViewModel,
+  LikeInputModel,
   PaginationInputQueryModel,
-  PostCreateModel,
+  PostInputModel,
   PostUpdateModel,
   PostViewModel,
 } from '../types and models/models';
@@ -36,6 +37,10 @@ import { LikesService } from '../likes/like.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
+import {
+  CurrentUser,
+  CurrentUserId,
+} from '../auth/current-user-param.decorator';
 
 @Controller('posts')
 export class PostsController {
@@ -43,7 +48,6 @@ export class PostsController {
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
     private readonly likesService: LikesService,
-
     private readonly usersService: UsersService,
   ) {}
 
@@ -52,11 +56,11 @@ export class PostsController {
     @Param('id') id: string,
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,
-    @Res() res: Response<PaginationType>,
+    //@Res() res: Response<PaginationType>,
   ) {
     const post = await this.postsService.findPostByPostId(id);
     if (!post) {
-      return res.sendStatus(HttpStatus.NOT_FOUND);
+      return HttpStatus.NOT_FOUND;
     }
 
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
@@ -70,41 +74,45 @@ export class PostsController {
       sortDirection,
       userId,
     );
-    return res.send(allComments);
+    return allComments;
   }
+
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   async createCommentByPostId(
     @Param('id') id: string,
-    @Body() commentCreateDTO: CommentCreateModel,
+    @Body() commentCreateDTO: CommentInputModel,
+    @CurrentUser() currentUser,
     @Req() req: Request,
-    @Res() res: Response<CommentViewModel | ErrorType>,
+    // @Res() res: Response<CommentViewModel | ErrorType>,
   ) {
     const postId = req.params.id;
     const content = commentCreateDTO.content;
-    const user = req.user;
 
     const post = await this.postsService.findPostByPostId(id);
     if (!post) {
-      return res.sendStatus(HttpStatus.NOT_FOUND);
+      return HttpStatus.NOT_FOUND;
     }
 
     const newComment = await this.commentsService.createComment(
       postId,
       content,
-      user,
+      currentUser,
     );
     if (newComment) {
-      return res.status(HttpStatus.CREATED).send(newComment);
+      return HttpStatus.CREATED, newComment;
     } else {
-      return res.status(HttpStatus.UNAUTHORIZED).send({
-        errorsMessages: [
-          {
-            message: 'string',
-            field: 'postId',
-          },
-        ],
-      });
+      return (
+        HttpStatus.UNAUTHORIZED,
+        {
+          errorsMessages: [
+            {
+              message: 'string',
+              field: 'postId',
+            },
+          ],
+        }
+      );
     }
   }
 
@@ -112,7 +120,7 @@ export class PostsController {
   async getAllPosts(
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,
-    @Res() res: Response<PaginationType>,
+    //@Res() res: Response<PaginationType>,
   ) {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
 
@@ -126,12 +134,13 @@ export class PostsController {
       userId,
     );
 
-    return res.send(allPosts);
+    return allPosts;
   }
+
   @UseGuards(BasicAuthGuard)
   @Post()
   async createPost(
-    @Body() postCreateDTO: PostCreateModel,
+    @Body() postCreateDTO: PostInputModel,
   ): Promise<PostViewModel | ErrorType> {
     const newPost = await this.postsService.createPost(
       postCreateDTO.title,
@@ -164,6 +173,7 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
+
   @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(204)
@@ -186,6 +196,7 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
+
   @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
@@ -197,29 +208,27 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
+
   @UseGuards(JwtAuthGuard)
-  @Put(':id/like')
+  @Put(':id/like-status')
   @HttpCode(204)
   async updateLikeStatus(
     @Param('id') id: string,
-    @Body('likeStatus') likeStatus: LikeStatus,
-    @Req() req: Request,
-    @Res() res: Response<LikeDbType>,
-  ): Promise<void> {
-    const userId = req.userId!;
-    const post = await this.postsService.findPostByPostId(id, userId);
-
+    @Body() likeStatusDTO: LikeInputModel,
+    @CurrentUserId() currentUserId,
+    //@Res({ passthrough: true }) res: Response<LikeDbType>,
+  ): Promise<any> {
+    const post = await this.postsService.findPostByPostId(id, currentUserId);
     if (!post) {
       throw new NotFoundException();
     }
-
-    const parentId = new ObjectId(post.id);
-    const user = await this.usersService.getUserByUserId(req.userId);
+    const user = await this.usersService.getUserByUserId(currentUserId);
+    const parentId = post.id;
     await this.likesService.updateLikeStatus(
       parentId,
-      new ObjectId(userId),
+      currentUserId,
       user.login,
-      likeStatus,
+      likeStatusDTO.likeStatus,
     );
   }
 }

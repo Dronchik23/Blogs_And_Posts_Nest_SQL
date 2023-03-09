@@ -83,7 +83,9 @@ export class UsersRepository {
   }
 
   async findUserByUserId(id: string): Promise<UserViewModel | null> {
-    const user = await this.usersModel.findOne({ _id: new ObjectId(id) });
+    const user = await this.usersModel.findOne({
+      _id: new mongoose.Types.ObjectId(id),
+    });
     if (user) {
       return fromUserDBTypeToUserViewModel(user);
     } else {

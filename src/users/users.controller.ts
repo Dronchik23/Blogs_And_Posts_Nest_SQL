@@ -14,7 +14,7 @@ import {
 import { UsersService } from './users.service';
 import {
   PaginationInputQueryModel,
-  UserCreateModel,
+  UserInputModel,
   UserViewModel,
 } from '../types and models/models';
 import { PaginationType } from '../types and models/types';
@@ -57,7 +57,7 @@ export class UsersController {
   }
   @Post()
   async createUser(
-    @Body() createUserDTO: UserCreateModel,
+    @Body() createUserDTO: UserInputModel,
   ): Promise<UserViewModel> {
     const user = await this.usersService.createUser(
       createUserDTO.login,

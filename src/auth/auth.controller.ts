@@ -17,7 +17,7 @@ import {
   CodeInputModel,
   LoginInputModel,
   RegistrationEmailResendingModel,
-  UserCreateModel,
+  UserInputModel,
 } from '../types and models/models';
 import { JwtAuthGuard } from './strategys/bearer-strategy';
 
@@ -109,7 +109,7 @@ export class AuthController {
 
   @Post('registration')
   async registration(
-    @Body() createUserDTO: UserCreateModel,
+    @Body() createUserDTO: UserInputModel,
     @Res() res: Response,
   ): Promise<any> {
     const user = await this.usersService.findUserByEmail(createUserDTO.email);

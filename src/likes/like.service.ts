@@ -8,18 +8,21 @@ export class LikesService {
   constructor(private readonly likesRepository: LikesRepository) {}
 
   async updateLikeStatus(
-    parentId: ObjectId,
-    userId: ObjectId,
+    parentId: string,
+    userId: string,
     userLogin: string,
     newLikeStatus: LikeStatus,
-  ) {
+  ): Promise<any> {
     const newLike = new LikeDbType(
-      parentId,
-      userId,
+      new ObjectId(parentId),
+      new ObjectId(userId),
       userLogin,
       newLikeStatus,
       new Date().toISOString(),
     );
-    return await this.likesRepository.updateLikeStatus(newLike);
+    const isUpdated = await this.likesRepository.updateLikeStatus(newLike);
+    if (!isUpdated) {
+      return false;
+    }
   }
 }

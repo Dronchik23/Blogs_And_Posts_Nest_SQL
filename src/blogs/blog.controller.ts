@@ -15,16 +15,18 @@ import {
 import { PaginationType } from 'src/types and models/types';
 import { BlogsService } from './blog.service';
 import {
-  BlogCreateModel,
+  BlogInputModel,
+  BlogPostInputModel,
   BlogUpdateModel,
   BlogViewModel,
   PaginationInputQueryModel,
-  PostCreateModel,
+  PostInputModel,
   PostViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { Request } from 'express';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
+import { CurrentUserId } from '../auth/current-user-param.decorator';
 
 @Controller('blogs')
 export class BlogsController {
@@ -52,7 +54,7 @@ export class BlogsController {
   @UseGuards(BasicAuthGuard)
   @Post()
   async createBlog(
-    @Body() createBlogDTO: BlogCreateModel,
+    @Body() createBlogDTO: BlogInputModel,
   ): Promise<BlogViewModel> {
     const newBlog = await this.blogsService.createBlog(
       createBlogDTO.name,
@@ -66,10 +68,9 @@ export class BlogsController {
   async getPostByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: PaginationInputQueryModel,
-    @Req() req: Request,
+    @CurrentUserId() currentUserId,
   ): Promise<PaginationType> {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
-    const userId = req.userId!;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
@@ -80,25 +81,25 @@ export class BlogsController {
       pageSize,
       sortBy,
       sortDirection,
-      userId,
+      currentUserId,
     );
     return posts;
   }
-
+  @UseGuards(BasicAuthGuard)
   @Post(':blogId/posts')
   async createPostByBlogId(
     @Param('blogId') blogId: string,
-    @Body()
-    postCreateDTO: PostCreateModel,
+    @Body() blogPostCreateDTO: BlogPostInputModel,
   ): Promise<PostViewModel> {
+    debugger;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
     const newPost = await this.postsService.createPost(
-      postCreateDTO.title,
-      postCreateDTO.shortDescription,
-      postCreateDTO.content,
+      blogPostCreateDTO.title,
+      blogPostCreateDTO.shortDescription,
+      blogPostCreateDTO.content,
       blogId,
     );
     if (newPost) {

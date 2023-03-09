@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { UserViewModel } from './types and models/models';
 import { JWTPayloadType } from './types and models/types';
 import { HttpExceptionFilter } from './exeption.filter';
 import { useContainer } from 'class-validator';
@@ -12,7 +11,7 @@ async function bootstrap() {
   app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
-      stopAtFirstError: false,
+      stopAtFirstError: true,
       transform: true,
       exceptionFactory: (errors) => {
         const errorForResponse = [];

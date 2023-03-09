@@ -1,5 +1,13 @@
 import { ExtendedLikesInfoType, LikeStatus } from './types';
-import { IsEmail, IsString, IsUUID, Length, Matches } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsIn,
+  IsString,
+  IsUUID,
+  Length,
+  Matches,
+} from 'class-validator';
 import {
   IsCodeAlreadyConfirmed,
   IsEmailAlreadyConfirmed,
@@ -53,8 +61,7 @@ export class UserViewModel {
   email: string;
   createdAt: string;
 }
-
-export class CommentCreateModel {
+export class CommentInputModel {
   @Length(20, 300)
   @IsString()
   content: string;
@@ -73,8 +80,7 @@ export class CommentViewModel {
     myStatus: LikeStatus;
   };
 }
-
-export class BlogCreateModel {
+export class BlogInputModel {
   @Length(1, 15)
   @IsString()
   name: string;
@@ -88,7 +94,7 @@ export class BlogCreateModel {
   )
   websiteUrl: string;
 }
-export class PostCreateModel {
+export class PostInputModel {
   @Length(1, 30)
   @IsString()
   title: string;
@@ -100,6 +106,17 @@ export class PostCreateModel {
   content: string;
   @IsString()
   blogId: string;
+}
+export class BlogPostInputModel {
+  @Length(1, 30)
+  @IsString()
+  title: string;
+  @Length(1, 100)
+  @IsString()
+  shortDescription: string;
+  @Length(1, 1000)
+  @IsString()
+  content: string;
 }
 export class BlogUpdateModel {
   @Length(1, 15)
@@ -115,7 +132,7 @@ export class LoginInputModel {
   @IsString()
   password: string;
 }
-export class UserCreateModel {
+export class UserInputModel {
   @IsString()
   @Length(3, 10)
   @IsLoginAlreadyExist()
@@ -129,7 +146,10 @@ export class UserCreateModel {
   @IsEmailAlreadyExist()
   email: string;
 }
-
+export class LikeInputModel {
+  @IsEnum(LikeStatus)
+  likeStatus: LikeStatus;
+}
 export class RegistrationEmailResendingModel {
   @IsEmailAlreadyConfirmed()
   @IsEmail()
