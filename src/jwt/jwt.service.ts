@@ -9,7 +9,7 @@ export class JwtService {
 
   createJWT(userId: string, deviceId: string) {
     const accessToken = jwt.sign({ userId }, settings.JWT_SECRET, {
-      expiresIn: '7m',
+      expiresIn: '15m',
     });
     const refreshToken = jwt.sign(
       { userId, deviceId },

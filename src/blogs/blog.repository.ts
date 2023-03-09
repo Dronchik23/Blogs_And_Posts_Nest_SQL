@@ -2,7 +2,7 @@ import mongoose, { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { BlogDBType, PaginationType } from '../types and models/types';
+import { BlogDBType } from '../types and models/types';
 import { BlogViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
@@ -61,7 +61,9 @@ export class BlogsRepository {
 
   async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
     const blog = await this.blogsModel
-      .findOne({ _id: new ObjectId(id) })
+      .findOne({
+        _id: new ObjectId(id),
+      })
       .exec();
 
     return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;

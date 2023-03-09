@@ -35,6 +35,7 @@ import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { UsersService } from '../users/users.service';
+import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
 
 @Controller('posts')
 export class PostsController {
@@ -71,16 +72,16 @@ export class PostsController {
     );
     return res.send(allComments);
   }
-
+  @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   async createCommentByPostId(
     @Param('id') id: string,
-    @Body() body: CommentCreateModel,
+    @Body() commentCreateDTO: CommentCreateModel,
     @Req() req: Request,
     @Res() res: Response<CommentViewModel | ErrorType>,
   ) {
     const postId = req.params.id;
-    const content = body.content;
+    const content = commentCreateDTO.content;
     const user = req.user;
 
     const post = await this.postsService.findPostByPostId(id);
@@ -115,7 +116,7 @@ export class PostsController {
   ) {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
 
-    const userId = new ObjectId(req.userId);
+    const userId = req.userId;
 
     const allPosts = await this.postsService.findAllPosts(
       pageSize,
@@ -130,14 +131,13 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Post()
   async createPost(
-    @Body() createPostModel: PostCreateModel,
+    @Body() postCreateDTO: PostCreateModel,
   ): Promise<PostViewModel | ErrorType> {
     const newPost = await this.postsService.createPost(
-      createPostModel.title,
-      createPostModel.shortDescription,
-      createPostModel.content,
-      createPostModel.blogId,
-      createPostModel.blogName,
+      postCreateDTO.title,
+      postCreateDTO.shortDescription,
+      postCreateDTO.content,
+      postCreateDTO.blogId,
     );
 
     if (newPost) {
@@ -169,20 +169,19 @@ export class PostsController {
   @HttpCode(204)
   async updatePostByPostId(
     @Param('id') id: string,
-    @Body() updatePostModel: PostUpdateModel,
-  ): Promise<void> {
+    @Body() postUpdateDTO: PostUpdateModel,
+  ): Promise<any> {
     const post = await this.postsService.findPostByPostId(id);
     if (!post) {
       throw new NotFoundException();
     }
     const isUpdated = await this.postsService.updatePostById(
       id,
-      updatePostModel.title,
-      updatePostModel.shortDescription,
-      updatePostModel.content,
-      updatePostModel.blogId,
+      postUpdateDTO.title,
+      postUpdateDTO.shortDescription,
+      postUpdateDTO.content,
+      postUpdateDTO.blogId,
     );
-    console.log('isUpdated controller', isUpdated);
     if (!isUpdated) {
       throw new NotFoundException();
     }
@@ -198,7 +197,7 @@ export class PostsController {
       throw new NotFoundException();
     }
   }
-
+  @UseGuards(JwtAuthGuard)
   @Put(':id/like')
   @HttpCode(204)
   async updateLikeStatus(
@@ -207,7 +206,7 @@ export class PostsController {
     @Req() req: Request,
     @Res() res: Response<LikeDbType>,
   ): Promise<void> {
-    const userId = new ObjectId(req.userId!);
+    const userId = req.userId!;
     const post = await this.postsService.findPostByPostId(id, userId);
 
     if (!post) {
@@ -218,7 +217,7 @@ export class PostsController {
     const user = await this.usersService.getUserByUserId(req.userId);
     await this.likesService.updateLikeStatus(
       parentId,
-      userId,
+      new ObjectId(userId),
       user.login,
       likeStatus,
     );

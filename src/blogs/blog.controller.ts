@@ -12,7 +12,6 @@ import {
   HttpCode,
   UseGuards,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { PaginationType } from 'src/types and models/types';
 import { BlogsService } from './blog.service';
 import {
@@ -20,6 +19,7 @@ import {
   BlogUpdateModel,
   BlogViewModel,
   PaginationInputQueryModel,
+  PostCreateModel,
   PostViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
@@ -69,7 +69,7 @@ export class BlogsController {
     @Req() req: Request,
   ): Promise<PaginationType> {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
-    const userId = new ObjectId(req.userId!);
+    const userId = req.userId!;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
@@ -89,24 +89,17 @@ export class BlogsController {
   async createPostByBlogId(
     @Param('blogId') blogId: string,
     @Body()
-    createPostDto: {
-      title: string;
-      shortDescription: string;
-      content: string;
-      blogId: string;
-      blogName: string;
-    },
+    postCreateDTO: PostCreateModel,
   ): Promise<PostViewModel> {
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
     const newPost = await this.postsService.createPost(
-      createPostDto.title,
-      createPostDto.shortDescription,
-      createPostDto.content,
+      postCreateDTO.title,
+      postCreateDTO.shortDescription,
+      postCreateDTO.content,
       blogId,
-      createPostDto.blogName,
     );
     if (newPost) {
       return newPost;

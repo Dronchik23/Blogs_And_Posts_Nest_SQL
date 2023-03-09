@@ -7,10 +7,6 @@ import {
   IsLoginAlreadyExist,
 } from '../validator';
 
-export class BlogUpdateModel {
-  name: string;
-  websiteUrl: string;
-}
 export class BlogViewModel {
   id: string;
   name: string;
@@ -28,17 +24,17 @@ export class PaginationInputQueryModel {
   searchLoginTerm?: string;
   searchEmailTerm?: string;
 }
-export class PostCreateModel {
-  title: string;
-  shortDescription: string;
-  content: string;
-  blogId: string;
-  blogName: string;
-}
 export class PostUpdateModel {
+  @Length(1, 30)
+  @IsString()
   title: string;
+  @Length(1, 100)
+  @IsString()
   shortDescription: string;
+  @Length(1, 1000)
+  @IsString()
   content: string;
+  @IsString()
   blogId: string;
 }
 export class PostViewModel {
@@ -59,6 +55,8 @@ export class UserViewModel {
 }
 
 export class CommentCreateModel {
+  @Length(20, 300)
+  @IsString()
   content: string;
 }
 export class CommentViewModel {
@@ -77,8 +75,8 @@ export class CommentViewModel {
 }
 
 export class BlogCreateModel {
-  @IsString()
   @Length(1, 15)
+  @IsString()
   name: string;
   @IsString()
   @Length(1, 100)
@@ -90,7 +88,27 @@ export class BlogCreateModel {
   )
   websiteUrl: string;
 }
-
+export class PostCreateModel {
+  @Length(1, 30)
+  @IsString()
+  title: string;
+  @Length(1, 100)
+  @IsString()
+  shortDescription: string;
+  @Length(1, 1000)
+  @IsString()
+  content: string;
+  @IsString()
+  blogId: string;
+}
+export class BlogUpdateModel {
+  @Length(1, 15)
+  @IsString()
+  name: string;
+  @IsString()
+  @Length(1, 100)
+  websiteUrl: string;
+}
 export class LoginInputModel {
   @IsString()
   loginOrEmail: string;

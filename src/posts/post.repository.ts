@@ -1,4 +1,4 @@
-import { Filter, ObjectId } from 'mongodb';
+import { Filter } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -10,6 +10,7 @@ import {
 } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { LikeDocument, PostDocument } from '../types and models/schemas';
+import { ObjectId } from 'mongodb';
 
 @injectable()
 export class PostsRepository {
@@ -60,7 +61,7 @@ export class PostsRepository {
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<PostViewModel[]> {
     const allPosts: PostDBType[] = await this.postsModel
       .find({})
@@ -77,11 +78,11 @@ export class PostsRepository {
   }
   async findPostById(
     postId: string,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<PostViewModel | null> {
     const post: PostDBType = await this.postsModel
       .findOne({
-        _id: new mongoose.Types.ObjectId(postId),
+        _id: new ObjectId(postId),
       })
       .lean();
     if (!post) return null;
@@ -115,7 +116,7 @@ export class PostsRepository {
           },
         },
       );
-      console.log('result repo', result);
+
       if (result.matchedCount === 1) {
         return true;
       }
@@ -145,7 +146,7 @@ export class PostsRepository {
     pageSize: number,
     sortBy: string,
     sortDirection: string,
-    userId?: ObjectId,
+    userId?: string,
   ) {
     const foundPosts: PostDBType[] = await this.postsModel
       .find({ blogId: blogId })
@@ -173,7 +174,7 @@ export class PostsRepository {
       login: like.userLogin,
     }));
   }
-  private async getLikesInfoForPost(post: PostDBType, userId?: ObjectId) {
+  private async getLikesInfoForPost(post: PostDBType, userId?: string) {
     post.extendedLikesInfo.likesCount = await this.likesModel.countDocuments({
       parentId: post._id,
       status: LikeStatus.Like,
@@ -196,7 +197,7 @@ export class PostsRepository {
       const status: LikeDbType = await this.likesModel
         .findOne({
           parentId: post._id,
-          userId: new ObjectId(userId),
+          userId: new mongoose.Types.ObjectId(userId),
         })
         .lean();
       if (status) {

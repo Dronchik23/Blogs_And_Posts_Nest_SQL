@@ -11,14 +11,14 @@ export type BearerJwtPayloadType = {
 };
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private readonly userRepo: UsersRepository) {
+  constructor(private readonly usersRepository: UsersRepository) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: settings.JWT_SECRET,
     });
   }
   async validate(payload: BearerJwtPayloadType) {
-    const user = await this.userRepo.findUserByUserId(payload.userId);
+    const user = await this.usersRepository.findUserByUserId(payload.userId);
     if (!user) {
       throw new UnauthorizedException();
     }

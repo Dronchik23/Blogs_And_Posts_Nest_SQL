@@ -22,7 +22,7 @@ export class PostsService {
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<PaginationType> {
     const allPosts = await this.postsRepository.findAllPosts(
       pageSize,
@@ -44,7 +44,7 @@ export class PostsService {
 
   async findPostByPostId(
     id: string,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<PostViewModel | null> {
     return this.postsRepository.findPostById(id, userId);
   }
@@ -54,7 +54,6 @@ export class PostsService {
     shortDescription: string,
     content: string,
     blogId: string,
-    blogName: string,
   ): Promise<PostViewModel | null> {
     const blog: BlogViewModel | null = await this.blogsService.findBlogById(
       blogId,
@@ -110,7 +109,7 @@ export class PostsService {
     pageSize: number,
     sortBy: string,
     sortDirection: string,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<PaginationType> {
     const allPosts = await this.postsRepository.findPostsByBlogId(
       blogId,
