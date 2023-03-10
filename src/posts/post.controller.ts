@@ -8,7 +8,6 @@ import {
   Body,
   Query,
   Req,
-  Res,
   HttpStatus,
   NotFoundException,
   HttpCode,
@@ -16,12 +15,7 @@ import {
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
-import {
-  ErrorType,
-  LikeDbType,
-  LikeStatus,
-  PaginationType,
-} from '../types and models/types';
+import { ErrorType } from '../types and models/types';
 import {
   CommentInputModel,
   CommentViewModel,
@@ -38,6 +32,7 @@ import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
+  CurrentUser,
   CurrentUserId,
   CurrentUserIdFromToken,
 } from '../auth/current-user-param.decorator';
@@ -55,8 +50,7 @@ export class PostsController {
   async getCommentByPostId(
     @Param('id') id: string,
     @Query() query: PaginationInputQueryModel,
-    @Req() req: Request,
-    //@Res() res: Response<PaginationType>,
+    @CurrentUserIdFromToken() CurrentUserId,
   ) {
     const post = await this.postsService.findPostByPostId(id);
     if (!post) {
@@ -64,7 +58,6 @@ export class PostsController {
     }
 
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
-    const userId = new ObjectId(req.userId);
 
     const allComments = await this.commentsService.findCommentsByPostId(
       post.id,
@@ -72,7 +65,7 @@ export class PostsController {
       pageSize,
       sortBy,
       sortDirection,
-      userId,
+      CurrentUserId,
     );
     return allComments;
   }
@@ -80,19 +73,16 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @Post(':id/comments')
   async createCommentByPostId(
-    @Param('id') id: string,
+    @Param('id') postId: string,
     @Body() commentCreateDTO: CommentInputModel,
-    @CurrentUserIdFromToken() currentUser,
-    @Req() req: Request,
+    @CurrentUser() currentUser,
   ) {
-    const postId = req.params.id;
     const content = commentCreateDTO.content;
 
-    const post = await this.postsService.findPostByPostId(id);
+    const post = await this.postsService.findPostByPostId(postId);
     if (!post) {
       return HttpStatus.NOT_FOUND;
     }
-
     const newComment = await this.commentsService.createComment(
       postId,
       content,
@@ -118,7 +108,6 @@ export class PostsController {
   @Get()
   async getAllPosts(
     @Query() query: PaginationInputQueryModel,
-    @Req() req: Request,
     @CurrentUserIdFromToken() currentUserId,
   ) {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
@@ -161,8 +150,11 @@ export class PostsController {
   }
 
   @Get(':id')
-  async getPostByPostId(@Param('id') id: string): Promise<PostViewModel> {
-    const post = await this.postsService.findPostByPostId(id);
+  async getPostByPostId(
+    @Param('id') id: string,
+    @CurrentUserIdFromToken() CurrentUserId,
+  ): Promise<PostViewModel> {
+    const post = await this.postsService.findPostByPostId(id, CurrentUserId);
 
     if (post) {
       return post;

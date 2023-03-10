@@ -20,7 +20,10 @@ export const CurrentUser = createParamDecorator(
 export const CurrentUserIdFromToken = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization.split(' ')[1];
+    const token = request.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return null;
+    }
     const decoded = jwt.verify(token, settings.JWT_SECRET) as {
       userId: string;
     };

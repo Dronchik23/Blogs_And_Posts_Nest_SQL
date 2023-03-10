@@ -65,7 +65,7 @@ export class CommentsRepository {
     pageSize: number,
     sortBy: string,
     sortDirection: string,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<CommentViewModel[]> {
     const sortedComments: CommentDBType[] = await this.commentsModel
       .find({ postId: postId })
@@ -75,7 +75,7 @@ export class CommentsRepository {
       .lean();
     const commentsWithLikesInfo = await Promise.all(
       sortedComments.map(async (comment) => {
-        return this.getLikesInfoForComment(comment, userId);
+        return this.getLikesInfoForComment(comment, new ObjectId(userId));
       }),
     );
 
@@ -99,14 +99,14 @@ export class CommentsRepository {
     return result.modifiedCount === 1;
   }
 
-  async findCommentById(commentId: string, userId?: ObjectId) {
+  async findCommentById(commentId: string, userId?: string) {
     const comment: CommentDBType = await this.commentsModel
       .findOne({ _id: new ObjectId(commentId) })
       .lean();
     if (!comment) return null;
     const commentWithLikesInfo = await this.getLikesInfoForComment(
       comment,
-      userId,
+      new ObjectId(userId),
     );
     return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
   }

@@ -51,7 +51,7 @@ export class CommentsService {
     pageSize: number,
     sortBy: string,
     sortDirection: string,
-    userId: ObjectId,
+    userId: string,
   ): Promise<PaginationType> {
     const foundComments = await this.commentsRepository.findCommentsByPostId(
       postId,
@@ -86,7 +86,7 @@ export class CommentsService {
 
   async findCommentByCommentId(
     commentId: string,
-    userId?: ObjectId,
+    userId?: string,
   ): Promise<any> {
     return await this.commentsRepository.findCommentById(commentId, userId);
   }

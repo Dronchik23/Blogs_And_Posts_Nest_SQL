@@ -3,20 +3,21 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   Param,
   Put,
-  Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
-import { LikeDbType, LikeStatus } from '../types and models/types';
 import { ObjectId } from 'mongodb';
 import { CommentsService } from './comment.service';
 import { LikesService } from '../likes/like.service';
 import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
 import { LikeInputModel } from '../types and models/models';
-import { Response } from 'express';
-import { CurrentUser } from '../auth/current-user-param.decorator';
+import {
+  CurrentUser,
+  CurrentUserId,
+  CurrentUserIdFromToken,
+} from '../auth/current-user-param.decorator';
 
 @Controller('comments')
 export class CommentsController {
@@ -26,19 +27,18 @@ export class CommentsController {
   ) {}
 
   @UseGuards(JwtAuthGuard)
-  @Put(':id/like')
+  @Put(':id/like-status')
   async updateLikeStatus(
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUser() currentUser,
-    @Res({ passthrough: true }) res: Response<LikeDbType>,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(
       id,
       currentUser.id,
     );
     if (!comment) {
-      return res.sendStatus(404);
+      return HttpStatus.NOT_FOUND;
     }
 
     const parentId = comment.id;
@@ -49,7 +49,7 @@ export class CommentsController {
       likeStatusDTO.likeStatus,
     );
 
-    return res.sendStatus(204);
+    return HttpStatus.NO_CONTENT;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -57,37 +57,38 @@ export class CommentsController {
   async updateCommentByUserId(
     @Param('id') id: string,
     @Body('content') content: string,
-    @Res() res,
-    @Req() req,
+    @CurrentUser() currentUser,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(id);
     if (!comment) {
-      return res.sendStatus(404);
+      return HttpStatus.NOT_FOUND;
     }
 
     const isUpdated = await this.commentsService.updateCommentByUserId(
       id,
       content,
-      req.user,
+      currentUser,
     );
     if (isUpdated) {
-      return res.sendStatus(204);
+      return HttpStatus.NO_CONTENT;
     } else {
-      return res.sendStatus(403);
+      return HttpStatus.FORBIDDEN;
     }
   }
 
   @Get(':id')
-  async getCommentByCommentId(@Param('id') id: string, @Req() req, @Res() res) {
-    const userId = new ObjectId(req.user.userId);
+  async getCommentByCommentId(
+    @Param('id') id: string,
+    @CurrentUserIdFromToken() currentUserId,
+  ) {
     const comment = await this.commentsService.findCommentByCommentId(
       id,
-      userId,
+      currentUserId,
     );
     if (comment) {
-      return res.status(200).send(comment);
+      return HttpStatus.OK, comment;
     } else {
-      return res.sendStatus(404);
+      return HttpStatus.NOT_FOUND;
     }
   }
   @UseGuards(JwtAuthGuard)
@@ -95,12 +96,10 @@ export class CommentsController {
   async deleteCommentByCommentId(
     @Param('id') id: string,
     @CurrentUser() currentUser,
-    @Res() res,
-    @Req() req,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(id);
     if (!comment) {
-      return res.sendStatus(404);
+      return HttpStatus.NOT_FOUND;
     }
 
     const isDeleted = await this.commentsService.deleteCommentByCommentId(
@@ -108,9 +107,9 @@ export class CommentsController {
       currentUser,
     );
     if (isDeleted) {
-      return res.sendStatus(204);
+      return HttpStatus.NO_CONTENT;
     } else {
-      return res.sendStatus(403);
+      return HttpStatus.FORBIDDEN;
     }
   }
 }
