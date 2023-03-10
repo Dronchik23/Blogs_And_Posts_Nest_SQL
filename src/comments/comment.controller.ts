@@ -14,12 +14,9 @@ import { ObjectId } from 'mongodb';
 import { CommentsService } from './comment.service';
 import { LikesService } from '../likes/like.service';
 import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
-import {
-  CurrentUser,
-  CurrentUserId,
-} from '../auth/current-user-param.decorator';
 import { LikeInputModel } from '../types and models/models';
 import { Response } from 'express';
+import { CurrentUser } from '../auth/current-user-param.decorator';
 
 @Controller('comments')
 export class CommentsController {

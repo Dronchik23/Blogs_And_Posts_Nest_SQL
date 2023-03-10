@@ -38,8 +38,8 @@ import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
-  CurrentUser,
   CurrentUserId,
+  CurrentUserIdFromToken,
 } from '../auth/current-user-param.decorator';
 
 @Controller('posts')
@@ -82,9 +82,8 @@ export class PostsController {
   async createCommentByPostId(
     @Param('id') id: string,
     @Body() commentCreateDTO: CommentInputModel,
-    @CurrentUser() currentUser,
+    @CurrentUserIdFromToken() currentUser,
     @Req() req: Request,
-    // @Res() res: Response<CommentViewModel | ErrorType>,
   ) {
     const postId = req.params.id;
     const content = commentCreateDTO.content;
@@ -120,18 +119,16 @@ export class PostsController {
   async getAllPosts(
     @Query() query: PaginationInputQueryModel,
     @Req() req: Request,
-    //@Res() res: Response<PaginationType>,
+    @CurrentUserIdFromToken() currentUserId,
   ) {
     const { pageNumber, pageSize, sortBy, sortDirection } = query;
-
-    const userId = req.userId;
 
     const allPosts = await this.postsService.findAllPosts(
       pageSize,
       sortBy,
       sortDirection,
       pageNumber,
-      userId,
+      currentUserId,
     );
 
     return allPosts;
@@ -216,8 +213,8 @@ export class PostsController {
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUserId() currentUserId,
-    //@Res({ passthrough: true }) res: Response<LikeDbType>,
   ): Promise<any> {
+    debugger;
     const post = await this.postsService.findPostByPostId(id, currentUserId);
     if (!post) {
       throw new NotFoundException();

@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsIn,
+  IsNotEmpty,
   IsString,
   IsUUID,
   Length,
@@ -33,16 +34,24 @@ export class PaginationInputQueryModel {
   searchEmailTerm?: string;
 }
 export class PostUpdateModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 30)
-  @IsString()
+  @IsNotEmpty()
   title: string;
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 100)
-  @IsString()
+  @IsNotEmpty()
   shortDescription: string;
-  @Length(1, 1000)
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 1000)
+  @IsNotEmpty()
   content: string;
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @IsNotEmpty()
   blogId: string;
 }
 export class PostViewModel {
@@ -62,8 +71,10 @@ export class UserViewModel {
   createdAt: string;
 }
 export class CommentInputModel {
-  @Length(20, 300)
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(20, 300)
+  @IsNotEmpty()
   content: string;
 }
 export class CommentViewModel {
@@ -81,68 +92,99 @@ export class CommentViewModel {
   };
 }
 export class BlogInputModel {
-  @Length(1, 15)
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 15)
+  @IsNotEmpty()
   name: string;
   @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 100)
+  @IsNotEmpty()
   description: string;
   @IsString()
-  @Length(0, 100)
   @Matches(
     /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
   )
+  @Length(0, 100)
   websiteUrl: string;
 }
 export class PostInputModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 30)
-  @IsString()
+  @IsNotEmpty()
   title: string;
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 100)
-  @IsString()
+  @IsNotEmpty()
   shortDescription: string;
-  @Length(1, 1000)
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 1000)
+  @IsNotEmpty()
   content: string;
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @IsNotEmpty()
   blogId: string;
 }
 export class BlogPostInputModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 30)
-  @IsString()
+  @IsNotEmpty()
   title: string;
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(1, 100)
-  @IsString()
+  @IsNotEmpty()
   shortDescription: string;
-  @Length(1, 1000)
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 1000)
+  @IsNotEmpty()
   content: string;
 }
 export class BlogUpdateModel {
-  @Length(1, 15)
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 15)
+  @IsNotEmpty()
   name: string;
   @IsString()
-  @Length(1, 100)
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 1000)
+  @IsNotEmpty()
   websiteUrl: string;
 }
 export class LoginInputModel {
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @IsNotEmpty()
   loginOrEmail: string;
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @IsNotEmpty()
   password: string;
 }
 export class UserInputModel {
   @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(3, 10)
+  @IsNotEmpty()
   @IsLoginAlreadyExist()
   login: string;
   @IsString()
+  @Matches(/^(?!\s*$).+/)
   @Length(6, 20)
+  @IsNotEmpty()
   password: string;
 
   @IsString()
   @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/)
+  @IsNotEmpty()
   @IsEmailAlreadyExist()
   email: string;
 }
@@ -151,13 +193,13 @@ export class LikeInputModel {
   likeStatus: LikeStatus;
 }
 export class RegistrationEmailResendingModel {
-  @IsEmailAlreadyConfirmed()
   @IsEmail()
+  @IsEmailAlreadyConfirmed()
   email: string;
 }
 export class CodeInputModel {
-  @IsCodeAlreadyConfirmed()
   @IsString()
   @IsUUID()
+  @IsCodeAlreadyConfirmed()
   code: string;
 }

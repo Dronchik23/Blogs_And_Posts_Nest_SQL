@@ -20,6 +20,7 @@ export class LikesService {
       newLikeStatus,
       new Date().toISOString(),
     );
+    console.log(newLike, 'like service');
     const isUpdated = await this.likesRepository.updateLikeStatus(newLike);
     if (!isUpdated) {
       return false;

@@ -151,3 +151,8 @@ export class DeviceType {
 export class CommentatorInfoType {
   constructor(public userId: ObjectId, public userLogin: string) {}
 }
+export class BearerJwtPayloadType {
+  iat: number;
+  exp: number;
+  userId: string;
+}

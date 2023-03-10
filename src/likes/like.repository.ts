@@ -14,10 +14,11 @@ export class LikesRepository {
   async updateLikeStatus(newLike: LikeDbType): Promise<LikeDbType> {
     const filter = { userId: newLike.userId, parentId: newLike.parentId };
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-    return this.likeModel
+    const result = await this.likeModel
       .findOneAndUpdate(filter, newLike, options)
       .lean()
       .exec();
+    return void console.log('result', result);
   }
 
   async deleteAllLikes(): Promise<DeleteResult> {

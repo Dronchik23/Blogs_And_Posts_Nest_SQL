@@ -80,13 +80,17 @@ export class PostsRepository {
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
+    console.log(postId, 'repo postId');
+    console.log(userId, 'repo userId');
     const post: PostDBType = await this.postsModel
       .findOne({
-        _id: new ObjectId(postId),
+        _id: new mongoose.Types.ObjectId(postId),
       })
-      .lean();
+      .exec();
+    console.log(post, 'post repo');
     if (!post) return null;
     const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
+    console.log('postWithLikesInfo', postWithLikesInfo);
     return this.fromPostDBTypePostViewModel(postWithLikesInfo);
   }
 
