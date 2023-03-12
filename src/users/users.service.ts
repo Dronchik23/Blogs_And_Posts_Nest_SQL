@@ -2,23 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
+
+import { UserViewModel } from '../types and models/models';
+import { UsersRepository } from './users.repository';
+import { EmailService } from '../email/email.controller';
+import * as bcrypt from 'bcrypt';
 import {
   AccountDataType,
   EmailConfirmationType,
   PaginationType,
   PasswordRecoveryType,
   UserDBType,
-} from 'src/types and models/types';
-import { UserViewModel } from '../types and models/models';
-import { UsersRepository } from './users.repository';
-import { EmailService } from '../email/email.controller';
-import { inject } from 'inversify';
-import * as bcrypt from 'bcrypt';
+} from '../types and models/types';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @inject(UsersRepository) private readonly usersRepository: UsersRepository,
+    private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
   ) {}
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { LikeDbType, LikeStatus } from '../types and models/types';
 import { LikesRepository } from './like.repository';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class LikesService {
@@ -14,8 +14,8 @@ export class LikesService {
     newLikeStatus: LikeStatus,
   ): Promise<any> {
     const newLike = new LikeDbType(
-      new ObjectId(parentId),
-      new ObjectId(userId),
+      new mongoose.Types.ObjectId(parentId),
+      new mongoose.Types.ObjectId(userId),
       userLogin,
       newLikeStatus,
       new Date().toISOString(),

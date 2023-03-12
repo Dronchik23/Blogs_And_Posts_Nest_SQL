@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { settings } from './jwt.settings';
 import { TokensRepository } from '../tokens/tokens.repository';
 

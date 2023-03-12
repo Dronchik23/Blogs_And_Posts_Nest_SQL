@@ -4,32 +4,11 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { JWTPayloadType } from './types and models/types';
 import { HttpExceptionFilter } from './exeption.filter';
 import { useContainer } from 'class-validator';
+import { createApp } from './helpers/createApp';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  app.enableCors();
-  app.useGlobalPipes(
-    new ValidationPipe({
-      stopAtFirstError: true,
-      transform: true,
-      exceptionFactory: (errors) => {
-        const errorForResponse = [];
-
-        errors.forEach((e) => {
-          const constraintsKeys = Object.keys(e.constraints);
-          constraintsKeys.forEach((key) => {
-            errorForResponse.push({
-              message: e.constraints[key],
-              field: e.property,
-            });
-          });
-        });
-        throw new BadRequestException(errorForResponse);
-      },
-    }),
-  );
-  app.useGlobalFilters(new HttpExceptionFilter());
+  const rawApp = await NestFactory.create(AppModule);
+  const app = createApp(rawApp);
   await app.listen(3000);
 }
 bootstrap();

@@ -150,7 +150,7 @@ export class PostsController {
   @Get(':id')
   async getPostByPostId(
     @Param('id') id: string,
-    @CurrentUserIdFromToken() CurrentUserId,
+    @CurrentUserIdFromToken() CurrentUserId: string | null,
   ): Promise<PostViewModel> {
     const post = await this.postsService.findPostByPostId(id, CurrentUserId);
 
@@ -202,9 +202,8 @@ export class PostsController {
   async updateLikeStatus(
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
-    @CurrentUserId() currentUserId,
+    @CurrentUserId() currentUserId: string | null,
   ): Promise<any> {
-    debugger;
     const post = await this.postsService.findPostByPostId(id, currentUserId);
     if (!post) {
       throw new NotFoundException();

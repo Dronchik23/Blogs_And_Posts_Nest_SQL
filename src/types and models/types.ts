@@ -4,7 +4,8 @@ import {
   CommentViewModel,
   PostViewModel,
   UserViewModel,
-} from './/models';
+} from './models';
+import mongoose from 'mongoose';
 
 // types
 export type PaginationType = {
@@ -126,8 +127,8 @@ export class ExtendedLikesInfoType {
 }
 export class LikeDbType {
   constructor(
-    public parentId: ObjectId,
-    public userId: ObjectId,
+    public parentId: mongoose.Types.ObjectId,
+    public userId: mongoose.Types.ObjectId,
     public userLogin: string,
     public status: LikeStatus,
     public addedAt: string,

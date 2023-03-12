@@ -187,7 +187,7 @@ export class PostsRepository {
         status: LikeStatus.Dislike,
       },
     );
-    const newestLikes: LikeDbType[] = await this.likesModel
+    const newestLikes: any = await this.likesModel
       .find({ parentId: post._id, status: LikeStatus.Like })
       .sort({ addedAt: -1 })
       .limit(3)

@@ -46,7 +46,7 @@ export class PostsService {
     id: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
-    return this.postsRepository.findPostById(id, userId);
+    return await this.postsRepository.findPostById(id, userId);
   }
 
   async createPost(
