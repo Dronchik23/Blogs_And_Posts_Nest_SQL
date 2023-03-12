@@ -54,7 +54,7 @@ export type CommentDocument = Comment & Document;
 @Schema()
 export class Comment {
   @Prop()
-  _id: Types.ObjectId;
+  _id: ObjectId;
 
   @Prop()
   content: string;
@@ -66,7 +66,7 @@ export class Comment {
   createdAt: string;
 
   @Prop()
-  postId: string;
+  postId: ObjectId;
 
   @Prop()
   likesInfo: LikesInfoType;
@@ -89,7 +89,7 @@ export class Post {
   content: string;
 
   @Prop()
-  blogId: string;
+  blogId: ObjectId;
 
   @Prop()
   blogName: string;
@@ -148,10 +148,10 @@ export class Device {
   lastActiveDate: string;
 
   @Prop()
-  deviceId: string;
+  deviceId: ObjectId;
 
   @Prop()
-  userId: string;
+  userId: ObjectId;
 }
 export const DeviceSchema = SchemaFactory.createForClass(Device);
 @Schema()

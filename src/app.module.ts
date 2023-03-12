@@ -52,6 +52,8 @@ import {
   IsEmailAlreadyExistConstraint,
   IsLoginAlreadyExistConstraint,
   isCodeAlreadyConfirmedConstraint,
+  isBlogExistConstraint,
+  isCommentExistConstraint,
 } from './validator';
 import {
   useContainer,
@@ -76,7 +78,6 @@ import { JwtStrategy } from './auth/guards/bearer-auth.guard';
       { name: 'Post', schema: PostSchema },
       { name: 'Comment', schema: CommentSchema },
       { name: 'Device', schema: DeviceSchema },
-      { name: 'Like', schema: LikeSchema },
       { name: 'Like', schema: LikeSchema },
       { name: 'TokenBlackList', schema: TokenBlackListSchema },
       { name: 'Attempt', schema: AttemptSchema },
@@ -129,11 +130,12 @@ import { JwtStrategy } from './auth/guards/bearer-auth.guard';
     AttemptsRepository,
     TokensRepository,
     JwtService,
-
     IsEmailAlreadyExistConstraint,
     IsLoginAlreadyExistConstraint,
     IsEmailAlreadyConfirmedConstraint,
     isCodeAlreadyConfirmedConstraint,
+    isBlogExistConstraint,
+    isCommentExistConstraint,
     BasicAuthStrategy,
     JwtStrategy,
     {

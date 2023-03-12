@@ -18,13 +18,13 @@ import { Comment } from '../types and models/schemas';
 @injectable()
 export class CommentsRepository {
   constructor(
-    @InjectModel(Comment.name)
+    @InjectModel('Comment')
     private readonly commentsModel: Model<CommentDocument>,
-    @InjectModel(Like.name) private readonly likesModel: Model<LikeDocument>,
+    @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
   ) {}
 
   private fromCommentDBTypeToCommentViewModel = (
-    comment: CommentDBType,
+    comment: Comment,
   ): CommentViewModel => {
     return {
       id: comment._id.toString(),
@@ -75,7 +75,7 @@ export class CommentsRepository {
       .lean();
     const commentsWithLikesInfo = await Promise.all(
       sortedComments.map(async (comment) => {
-        return this.getLikesInfoForComment(comment, new ObjectId(userId));
+        return this.getLikesInfoForComment(comment, userId);
       }),
     );
 
@@ -99,22 +99,26 @@ export class CommentsRepository {
     return result.modifiedCount === 1;
   }
 
-  async findCommentById(commentId: string, userId?: string) {
-    const comment: CommentDBType = await this.commentsModel
-      .findOne({ _id: new ObjectId(commentId) })
-      .lean();
+  async findCommentByCommentId(
+    commentId: string,
+    userId?: string,
+  ): Promise<CommentViewModel | null> {
+    const comment = await this.commentsModel
+      .findOne({
+        _id: new mongoose.Types.ObjectId(commentId),
+      })
+      .exec();
+
     if (!comment) return null;
+
     const commentWithLikesInfo = await this.getLikesInfoForComment(
       comment,
-      new ObjectId(userId),
+      userId,
     );
     return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
   }
 
-  private async getLikesInfoForComment(
-    comment: CommentDBType,
-    userId?: ObjectId,
-  ) {
+  private async getLikesInfoForComment(comment: any, userId?: string) {
     comment.likesInfo.likesCount = await this.likesModel.countDocuments({
       parentId: comment._id,
       status: LikeStatus.Like,

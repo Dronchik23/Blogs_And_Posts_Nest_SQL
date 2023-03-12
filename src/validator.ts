@@ -8,6 +8,8 @@ import {
 import { UsersRepository } from './users/users.repository';
 import { inject, injectable } from 'inversify';
 import { UserDBType } from './types and models/types';
+import { BlogsRepository } from './blogs/blog.repository';
+import { CommentsRepository } from './comments/comment.repository';
 
 @ValidatorConstraint({ async: true })
 @injectable()
@@ -127,6 +129,69 @@ export function IsLoginAlreadyExist(validationOptions?: ValidationOptions) {
       options: validationOptions,
       constraints: [],
       validator: IsLoginAlreadyExistConstraint,
+    });
+  };
+}
+
+@ValidatorConstraint({ async: true })
+@injectable()
+export class isBlogExistConstraint implements ValidatorConstraintInterface {
+  constructor(private readonly blogsRepository: BlogsRepository) {}
+  async validate(blogId: string) {
+    try {
+      const blog = await this.blogsRepository.findBlogByBlogId(blogId);
+      if (blog) {
+        return true;
+      } else return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'blog does not exist';
+  }
+}
+export function IsBlogExist(validationOptions?: ValidationOptions) {
+  return (object: Record<string, any>, propertyName: string) => {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: isBlogExistConstraint,
+    });
+  };
+}
+@ValidatorConstraint({ async: true })
+@injectable()
+export class isCommentExistConstraint implements ValidatorConstraintInterface {
+  constructor(private readonly commentsRepository: CommentsRepository) {}
+  async validate(commentId: string) {
+    try {
+      const comment = await this.commentsRepository.findCommentByCommentId(
+        commentId,
+      );
+      if (comment) {
+        return true;
+      } else return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'comment does not exist';
+  }
+}
+export function IsCommentExist(validationOptions?: ValidationOptions) {
+  return (object: Record<string, any>, propertyName: string) => {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: isCommentExistConstraint,
     });
   };
 }

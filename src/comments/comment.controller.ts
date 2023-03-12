@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Put,
@@ -12,12 +13,18 @@ import { ObjectId } from 'mongodb';
 import { CommentsService } from './comment.service';
 import { LikesService } from '../likes/like.service';
 import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
-import { LikeInputModel } from '../types and models/models';
+import {
+  CommentParamInPutModel,
+  CommentUpdateModel,
+  CommentViewModel,
+  LikeInputModel,
+} from '../types and models/models';
 import {
   CurrentUser,
   CurrentUserId,
   CurrentUserIdFromToken,
 } from '../auth/current-user-param.decorator';
+import { ErrorType } from '../types and models/types';
 
 @Controller('comments')
 export class CommentsController {
@@ -28,6 +35,7 @@ export class CommentsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id/like-status')
+  @HttpCode(204)
   async updateLikeStatus(
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
@@ -56,7 +64,7 @@ export class CommentsController {
   @Put(':id')
   async updateCommentByUserId(
     @Param('id') id: string,
-    @Body('content') content: string,
+    @Body('content') commentInputDTO: CommentUpdateModel,
     @CurrentUser() currentUser,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(id);
@@ -66,7 +74,7 @@ export class CommentsController {
 
     const isUpdated = await this.commentsService.updateCommentByUserId(
       id,
-      content,
+      commentInputDTO.content,
       currentUser,
     );
     if (isUpdated) {
@@ -78,11 +86,11 @@ export class CommentsController {
 
   @Get(':id')
   async getCommentByCommentId(
-    @Param('id') id: string,
+    @Param('id') commentId: string,
     @CurrentUserIdFromToken() currentUserId,
-  ) {
+  ): Promise<CommentViewModel | HttpStatus> {
     const comment = await this.commentsService.findCommentByCommentId(
-      id,
+      commentId,
       currentUserId,
     );
     if (comment) {
@@ -94,16 +102,18 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteCommentByCommentId(
-    @Param('id') id: string,
+    @Param('id') commentIdDTO: CommentParamInPutModel,
     @CurrentUser() currentUser,
   ) {
-    const comment = await this.commentsService.findCommentByCommentId(id);
+    const comment = await this.commentsService.findCommentByCommentId(
+      commentIdDTO.commentId,
+    );
     if (!comment) {
       return HttpStatus.NOT_FOUND;
     }
 
     const isDeleted = await this.commentsService.deleteCommentByCommentId(
-      id,
+      commentIdDTO.commentId,
       currentUser,
     );
     if (isDeleted) {

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { DevicesService } from '../devices/device.service';
 import { JwtService } from '../jwt/jwt.service';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class DeviceMiddleware {
@@ -19,7 +20,7 @@ export class DeviceMiddleware {
       return res.sendStatus(404);
     }
 
-    if (device!.userId !== req.userId) return res.sendStatus(403);
+    if (device!.userId !== new ObjectId(req.userId)) return res.sendStatus(403);
 
     // const decodedToken = this.jwtService.decodeToken(req.headers.authorization);
     // if (device.userId !== decodedToken.id) {

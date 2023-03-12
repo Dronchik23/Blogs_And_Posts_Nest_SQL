@@ -45,14 +45,3 @@ declare global {
     }
   }
 }
-
-// declare global {
-//   // eslint-disable-next-line @typescript-eslint/no-namespace
-//   namespace Express {
-//     interface User {
-//       id: number;
-//       name: string;
-//       email: string;
-//     }
-//   }
-// }

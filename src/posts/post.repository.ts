@@ -9,7 +9,7 @@ import {
   PostDBType,
 } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
-import { LikeDocument, PostDocument } from '../types and models/schemas';
+import { LikeDocument, Post, PostDocument } from '../types and models/schemas';
 import { ObjectId } from 'mongodb';
 
 @injectable()
@@ -19,13 +19,13 @@ export class PostsRepository {
     @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
   ) {}
 
-  private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
+  private fromPostDBTypePostViewModel = (post: Post): PostViewModel => {
     return {
       id: post._id.toString(),
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
-      blogId: post.blogId,
+      blogId: post.blogId.toString(),
       blogName: post.blogName,
       createdAt: post.createdAt.toString(),
       extendedLikesInfo: {
@@ -80,17 +80,15 @@ export class PostsRepository {
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
-    console.log(postId, 'repo postId');
-    console.log(userId, 'repo userId');
-    const post: PostDBType = await this.postsModel
+    const post = await this.postsModel
       .findOne({
         _id: new mongoose.Types.ObjectId(postId),
       })
       .exec();
-    console.log(post, 'post repo');
     if (!post) return null;
+
     const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
-    console.log('postWithLikesInfo', postWithLikesInfo);
+
     return this.fromPostDBTypePostViewModel(postWithLikesInfo);
   }
 
@@ -178,7 +176,7 @@ export class PostsRepository {
       login: like.userLogin,
     }));
   }
-  private async getLikesInfoForPost(post: PostDBType, userId?: string) {
+  private async getLikesInfoForPost(post: any, userId?: string) {
     post.extendedLikesInfo.likesCount = await this.likesModel.countDocuments({
       parentId: post._id,
       status: LikeStatus.Like,

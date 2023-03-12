@@ -5,12 +5,15 @@ import {
   IsIn,
   IsNotEmpty,
   IsString,
+  IsUrl,
   IsUUID,
   Length,
   Matches,
 } from 'class-validator';
 import {
+  IsBlogExist,
   IsCodeAlreadyConfirmed,
+  IsCommentExist,
   IsEmailAlreadyConfirmed,
   IsEmailAlreadyExist,
   IsLoginAlreadyExist,
@@ -50,8 +53,8 @@ export class PostUpdateModel {
   @IsNotEmpty()
   content: string;
   @IsString()
-  @Matches(/^(?!\s*$).+/)
   @IsNotEmpty()
+  @IsBlogExist()
   blogId: string;
 }
 export class PostViewModel {
@@ -126,8 +129,8 @@ export class PostInputModel {
   @IsNotEmpty()
   content: string;
   @IsString()
-  @Matches(/^(?!\s*$).+/)
   @IsNotEmpty()
+  @IsBlogExist()
   blogId: string;
 }
 export class BlogPostInputModel {
@@ -154,7 +157,7 @@ export class BlogUpdateModel {
   @IsNotEmpty()
   name: string;
   @IsString()
-  @Matches(/^(?!\s*$).+/)
+  @IsUrl()
   @Length(1, 1000)
   @IsNotEmpty()
   websiteUrl: string;
@@ -202,4 +205,16 @@ export class CodeInputModel {
   @IsUUID()
   @IsCodeAlreadyConfirmed()
   code: string;
+}
+export class CommentParamInPutModel {
+  @IsCommentExist()
+  commentId: string;
+}
+
+export class CommentUpdateModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(20, 300)
+  @IsNotEmpty()
+  content: string;
 }
