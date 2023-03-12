@@ -1,8 +1,6 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { settings } from '../jwt/jwt.settings';
-import { JwtPayload } from 'jsonwebtoken';
-import { BearerJwtPayloadType } from '../types and models/types';
 
 export const CurrentUserId = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {

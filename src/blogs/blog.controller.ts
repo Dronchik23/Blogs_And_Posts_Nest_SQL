@@ -26,7 +26,11 @@ import {
 import { PostsService } from '../posts/post.service';
 import { Request } from 'express';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
-import { CurrentUserId } from '../auth/current-user-param.decorator';
+import {
+  CurrentUser,
+  CurrentUserId,
+  CurrentUserIdFromToken,
+} from '../auth/current-user-param.decorator';
 
 @Controller('blogs')
 export class BlogsController {
@@ -63,24 +67,22 @@ export class BlogsController {
     );
     return newBlog;
   }
-  @UseGuards(BasicAuthGuard)
   @Get(':blogId/posts')
   async getPostByBlogId(
     @Param('blogId') blogId: string,
-    @Query() query: PaginationInputQueryModel,
-    @CurrentUserId() currentUserId,
+    @Query() paginationInPutQueryDTO: PaginationInputQueryModel,
+    @CurrentUserIdFromToken() currentUserId,
   ): Promise<PaginationType> {
-    const { pageNumber, pageSize, sortBy, sortDirection } = query;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
     const posts = await this.postsService.findPostsByBlogId(
       blogId,
-      pageNumber,
-      pageSize,
-      sortBy,
-      sortDirection,
+      paginationInPutQueryDTO.pageNumber,
+      paginationInPutQueryDTO.pageSize,
+      paginationInPutQueryDTO.sortBy,
+      paginationInPutQueryDTO.sortDirection,
       currentUserId,
     );
     return posts;
@@ -91,7 +93,6 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Body() blogPostCreateDTO: BlogPostInputModel,
   ): Promise<PostViewModel> {
-    debugger;
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();

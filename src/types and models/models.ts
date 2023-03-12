@@ -3,6 +3,7 @@ import {
   IsEmail,
   IsEnum,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsString,
   IsUrl,
@@ -28,6 +29,10 @@ export class BlogViewModel {
   isMembership: boolean;
 }
 export class PaginationInputQueryModel {
+  constructor() {
+    this.sortBy = 'createdAt';
+    this.sortDirection = 'desc';
+  }
   searchNameTerm?: string;
   pageSize: number;
   sortBy: string;

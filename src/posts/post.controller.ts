@@ -49,7 +49,7 @@ export class PostsController {
   @Get(':id/comments')
   async getCommentByPostId(
     @Param('id') id: string,
-    @Query() query: PaginationInputQueryModel,
+    @Query() paginationInPutQueryDTO: PaginationInputQueryModel,
     @CurrentUserIdFromToken() CurrentUserId,
   ) {
     const post = await this.postsService.findPostByPostId(id);
@@ -57,14 +57,12 @@ export class PostsController {
       return HttpStatus.NOT_FOUND;
     }
 
-    const { pageNumber, pageSize, sortBy, sortDirection } = query;
-
     const allComments = await this.commentsService.findCommentsByPostId(
       post.id,
-      pageNumber,
-      pageSize,
-      sortBy,
-      sortDirection,
+      paginationInPutQueryDTO.pageNumber,
+      paginationInPutQueryDTO.pageSize,
+      paginationInPutQueryDTO.sortBy,
+      paginationInPutQueryDTO.sortDirection,
       CurrentUserId,
     );
     return allComments;
