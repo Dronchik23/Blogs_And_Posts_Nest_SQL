@@ -71,8 +71,9 @@ export class BlogsController {
   async getPostByBlogId(
     @Param('blogId') blogId: string,
     @Query() paginationInPutQueryDTO: PaginationInputQueryModel,
-    @CurrentUserIdFromToken() currentUserId,
+    @CurrentUserIdFromToken() currentUserId: string | null,
   ): Promise<PaginationType> {
+    console.log(currentUserId);
     const blog = await this.blogsService.findBlogById(blogId);
     if (!blog) {
       throw new NotFoundException();

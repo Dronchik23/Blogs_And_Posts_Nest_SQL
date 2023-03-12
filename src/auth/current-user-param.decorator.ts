@@ -18,13 +18,19 @@ export const CurrentUser = createParamDecorator(
 export const CurrentUserIdFromToken = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization?.split(' ')[1];
-    if (!token) {
+    const auth = request.headers.authorization;
+    if (!auth) {
       return null;
     }
-    const decoded = jwt.verify(token, settings.JWT_SECRET) as {
-      userId: string;
-    };
-    return decoded.userId;
+    const [authType, token] = auth.split(' ');
+    if (authType !== 'Bearer' || !token) {
+      return null;
+    }
+    try {
+      const decoded: any = jwt.decode(token);
+      return decoded.userId;
+    } catch {
+      return null;
+    }
   },
 );

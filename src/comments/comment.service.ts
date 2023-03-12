@@ -88,7 +88,10 @@ export class CommentsService {
     commentId: string,
     userId?: string,
   ): Promise<any> {
-    return this.commentsRepository.findCommentByCommentId(commentId);
+    return await this.commentsRepository.findCommentByCommentId(
+      commentId,
+      userId,
+    );
   }
 
   async deleteCommentByCommentId(commentId: string, user: UserViewModel) {

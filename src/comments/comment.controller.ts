@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  NotFoundException,
   Param,
   Put,
   UseGuards,
@@ -18,6 +19,7 @@ import {
   CommentUpdateModel,
   CommentViewModel,
   LikeInputModel,
+  UserViewModel,
 } from '../types and models/models';
 import {
   CurrentUser,
@@ -39,14 +41,14 @@ export class CommentsController {
   async updateLikeStatus(
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
-    @CurrentUser() currentUser,
+    @CurrentUser() currentUser: UserViewModel,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(
       id,
       currentUser.id,
     );
     if (!comment) {
-      return HttpStatus.NOT_FOUND;
+      throw new NotFoundException();
     }
 
     const parentId = comment.id;
@@ -105,8 +107,10 @@ export class CommentsController {
     @Param('id') commentIdDTO: CommentParamInPutModel,
     @CurrentUser() currentUser,
   ) {
+    debugger;
     const comment = await this.commentsService.findCommentByCommentId(
       commentIdDTO.commentId,
+      currentUser.userId,
     );
     if (!comment) {
       return HttpStatus.NOT_FOUND;

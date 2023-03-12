@@ -1,7 +1,7 @@
 import { Filter } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
   LikeDbType,
   LikeStatus,
@@ -163,8 +163,8 @@ export class PostsRepository {
     return this.fromPostDBTypeToPostViewModelWithPagination(foundPosts);
   }
 
-  async getPostsCount(filter: Filter<PostDBType>) {
-    return this.postsModel.countDocuments({ filter }, { skip: 1 });
+  async getPostsCount(filter: FilterQuery<PostDBType>) {
+    return this.postsModel.countDocuments(filter, { skip: 1 });
   }
   async deleteAllPosts(): Promise<any> {
     return this.postsModel.deleteMany({});
