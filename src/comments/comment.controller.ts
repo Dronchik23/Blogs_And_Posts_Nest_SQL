@@ -66,7 +66,7 @@ export class CommentsController {
   @Put(':id')
   async updateCommentByUserId(
     @Param('id') id: string,
-    @Body('content') commentInputDTO: CommentUpdateModel,
+    @Body() commentInputDTO: CommentUpdateModel,
     @CurrentUser() currentUser,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(id);
@@ -104,10 +104,9 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteCommentByCommentId(
-    @Param('id') commentIdDTO: CommentParamInPutModel,
+    @Param() commentIdDTO: CommentParamInPutModel,
     @CurrentUser() currentUser,
   ) {
-    debugger;
     const comment = await this.commentsService.findCommentByCommentId(
       commentIdDTO.commentId,
       currentUser.userId,

@@ -169,13 +169,12 @@ export class isCommentExistConstraint implements ValidatorConstraintInterface {
   constructor(private readonly commentsRepository: CommentsRepository) {}
   async validate(commentId: string) {
     try {
+      console.log(commentId);
       const comment = await this.commentsRepository.findCommentByCommentId(
         commentId,
       );
-      if (comment) {
-        return true;
-      } else return false;
-    } catch (e) {
+      return Boolean(comment);
+    } catch {
       return false;
     }
   }

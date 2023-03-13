@@ -212,14 +212,12 @@ export class CodeInputModel {
   code: string;
 }
 export class CommentParamInPutModel {
-  @IsCommentExist()
   commentId: string;
 }
-
 export class CommentUpdateModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)
-  @Length(20, 300)
+  @Length(20, 30)
   @IsNotEmpty()
   content: string;
 }
