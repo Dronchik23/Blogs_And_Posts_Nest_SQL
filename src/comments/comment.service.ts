@@ -94,7 +94,10 @@ export class CommentsService {
     );
   }
 
-  async deleteCommentByCommentId(commentId: string, user: UserViewModel) {
-    return await this.commentsRepository.deleteCommentById(commentId, user);
+  async deleteCommentByCommentId(commentId: string, userId: string) {
+    return await this.commentsRepository.deleteCommentByCommentId(
+      commentId,
+      userId,
+    );
   }
 }

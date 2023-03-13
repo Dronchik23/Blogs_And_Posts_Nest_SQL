@@ -122,7 +122,7 @@ export class BlogsController {
   @UseGuards(BasicAuthGuard)
   @Put(':blogId')
   @HttpCode(204)
-  async updateBlogById(
+  async updateBlogByBlogId(
     @Param('blogId') blogId: string,
     @Body() updateBlogDto: BlogUpdateModel,
   ): Promise<void> {

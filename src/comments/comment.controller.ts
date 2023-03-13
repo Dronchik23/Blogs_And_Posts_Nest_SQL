@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  HttpException,
   HttpStatus,
   NotFoundException,
   Param,
@@ -65,7 +66,8 @@ export class CommentsController {
 
   @UseGuards(JwtAuthGuard)
   @Put(':id')
-  async updateCommentByUserId(
+  @HttpCode(204)
+  async updateCommentByCommentId(
     @Param('id') id: string,
     @Body() commentInputDTO: CommentUpdateModel,
     @CurrentUser() currentUser,
@@ -80,9 +82,7 @@ export class CommentsController {
       commentInputDTO.content,
       currentUser,
     );
-    if (isUpdated) {
-      return HttpStatus.NO_CONTENT;
-    } else {
+    if (!isUpdated) {
       throw new ForbiddenException();
     }
   }
@@ -104,10 +104,12 @@ export class CommentsController {
   }
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
+  @HttpCode(204)
   async deleteCommentByCommentId(
     @Param() commentId: string,
     @CurrentUserId() currentUserId,
   ) {
+    debugger;
     const comment = await this.commentsService.findCommentByCommentId(
       commentId,
       currentUserId,
@@ -120,9 +122,7 @@ export class CommentsController {
       commentId,
       currentUserId,
     );
-    if (isDeleted) {
-      return HttpStatus.NO_CONTENT;
-    } else {
+    if (!isDeleted) {
       throw new ForbiddenException();
     }
   }

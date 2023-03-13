@@ -148,18 +148,17 @@ export class CommentsRepository {
     return this.commentsModel.countDocuments({ postId: postId });
   }
 
-  async deleteCommentById(id: string, user: UserViewModel) {
+  async deleteCommentByCommentId(commentId: string, userId: string) {
+    console.log('commentId repo', commentId);
+    console.log('user repo', userId);
     try {
       const result = await this.commentsModel.deleteOne({
-        _id: new mongoose.Types.ObjectId(id),
-        'commentatorInfo.userId': new ObjectId(user.id),
+        _id: new mongoose.Types.ObjectId(commentId),
+        'commentatorInfo.userId': new ObjectId(userId),
       });
-      if (result.deletedCount === 1) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
+      return result.deletedCount === 1 ? true : false;
+      console.log('result.deletedCount', result.deletedCount);
+    } catch {
       return false;
     }
   }
