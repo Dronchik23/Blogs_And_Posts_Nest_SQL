@@ -72,7 +72,7 @@ export class CommentsController {
   ) {
     const comment = await this.commentsService.findCommentByCommentId(id);
     if (!comment) {
-      return HttpStatus.NOT_FOUND;
+      throw new NotFoundException();
     }
 
     const isUpdated = await this.commentsService.updateCommentByUserId(

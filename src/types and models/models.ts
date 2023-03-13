@@ -217,7 +217,7 @@ export class CommentParamInPutModel {
 export class CommentUpdateModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)
-  @Length(20, 30)
+  @Length(20, 300)
   @IsNotEmpty()
   content: string;
 }
