@@ -106,9 +106,9 @@ export class CommentsController {
   @Delete(':id')
   @HttpCode(204)
   async deleteCommentByCommentId(
-    @Param() commentId: string,
+    @Param('id') commentId: string,
     @CurrentUserId() currentUserId,
-  ) {
+  ): Promise<any> {
     debugger;
     const comment = await this.commentsService.findCommentByCommentId(
       commentId,
