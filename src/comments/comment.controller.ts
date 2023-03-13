@@ -99,7 +99,7 @@ export class CommentsController {
     if (comment) {
       return HttpStatus.OK, comment;
     } else {
-      return HttpStatus.NOT_FOUND;
+      throw new NotFoundException();
     }
   }
   @UseGuards(JwtAuthGuard)

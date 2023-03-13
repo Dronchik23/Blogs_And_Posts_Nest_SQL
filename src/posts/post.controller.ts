@@ -54,7 +54,7 @@ export class PostsController {
   ) {
     const post = await this.postsService.findPostByPostId(id);
     if (!post) {
-      return HttpStatus.NOT_FOUND;
+      throw new NotFoundException();
     }
 
     const allComments = await this.commentsService.findCommentsByPostId(
