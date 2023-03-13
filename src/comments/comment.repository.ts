@@ -103,11 +103,14 @@ export class CommentsRepository {
     commentId: string,
     userId?: string,
   ): Promise<CommentViewModel | null> {
+    console.log('commentId repo', commentId);
+    console.log('userId repo', userId);
     const comment = await this.commentsModel
       .findOne({
         _id: new mongoose.Types.ObjectId(commentId),
       })
       .exec();
+    console.log('comment repo', comment);
 
     if (!comment) return null;
 

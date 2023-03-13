@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -82,7 +83,7 @@ export class CommentsController {
     if (isUpdated) {
       return HttpStatus.NO_CONTENT;
     } else {
-      return HttpStatus.FORBIDDEN;
+      throw new ForbiddenException();
     }
   }
 
@@ -104,25 +105,25 @@ export class CommentsController {
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async deleteCommentByCommentId(
-    @Param() commentIdDTO: CommentParamInPutModel,
-    @CurrentUser() currentUser,
+    @Param() commentId: string,
+    @CurrentUserId() currentUserId,
   ) {
     const comment = await this.commentsService.findCommentByCommentId(
-      commentIdDTO.commentId,
-      currentUser.userId,
+      commentId,
+      currentUserId,
     );
     if (!comment) {
       return HttpStatus.NOT_FOUND;
     }
 
     const isDeleted = await this.commentsService.deleteCommentByCommentId(
-      commentIdDTO.commentId,
-      currentUser,
+      commentId,
+      currentUserId,
     );
     if (isDeleted) {
       return HttpStatus.NO_CONTENT;
     } else {
-      return HttpStatus.FORBIDDEN;
+      throw new ForbiddenException();
     }
   }
 }
