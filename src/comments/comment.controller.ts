@@ -115,7 +115,7 @@ export class CommentsController {
       currentUserId,
     );
     if (!comment) {
-      return HttpStatus.NOT_FOUND;
+      throw new NotFoundException();
     }
 
     const isDeleted = await this.commentsService.deleteCommentByCommentId(
