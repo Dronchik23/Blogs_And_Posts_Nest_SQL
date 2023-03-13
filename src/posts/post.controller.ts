@@ -79,7 +79,7 @@ export class PostsController {
 
     const post = await this.postsService.findPostByPostId(postId);
     if (!post) {
-      return HttpStatus.NOT_FOUND;
+      throw new NotFoundException();
     }
     const newComment = await this.commentsService.createComment(
       postId,
