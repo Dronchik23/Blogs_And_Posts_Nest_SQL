@@ -1,5 +1,4 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-//import * as jwt from 'jsonwebtoken';
 import jwt from 'jsonwebtoken';
 
 export const CurrentUserId = createParamDecorator(
@@ -14,7 +13,6 @@ export const CurrentUser = createParamDecorator(
     return request.user;
   },
 );
-
 export const CurrentUserIdFromToken = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
@@ -32,5 +30,23 @@ export const CurrentUserIdFromToken = createParamDecorator(
     } catch {
       return null;
     }
+  },
+);
+export const JwtPayload = createParamDecorator(
+  (data: unknown, context: ExecutionContext) => {
+    const req = context.switchToHttp().getRequest();
+    return req.jwtPayload;
+  },
+);
+export const UserAgent = createParamDecorator(
+  (data: unknown, context: ExecutionContext) => {
+    const request = context.switchToHttp().getRequest();
+    return request.headers['user-agent'];
+  },
+);
+export const ClientIp = createParamDecorator(
+  (data: unknown, context: ExecutionContext) => {
+    const request = context.switchToHttp().getRequest();
+    return request.ip;
   },
 );

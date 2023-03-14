@@ -20,17 +20,12 @@ import {
   BlogUpdateModel,
   BlogViewModel,
   PaginationInputQueryModel,
-  PostInputModel,
   PostViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
-import { Request } from 'express';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
-import {
-  CurrentUser,
-  CurrentUserId,
-  CurrentUserIdFromToken,
-} from '../auth/current-user-param.decorator';
+import { CurrentUserIdFromToken } from '../auth/decorators';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('blogs')
 export class BlogsController {
@@ -38,7 +33,7 @@ export class BlogsController {
     private readonly blogsService: BlogsService,
     private readonly postsService: PostsService,
   ) {}
-
+  @SkipThrottle()
   @Get()
   async getAllBlogs(
     @Query() query: PaginationInputQueryModel,

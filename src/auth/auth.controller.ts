@@ -6,6 +6,12 @@ import {
   Res,
   Get,
   UseGuards,
+  UnauthorizedException,
+  HttpCode,
+  UseInterceptors,
+  HttpException,
+  HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UsersService } from '../users/users.service';
@@ -19,7 +25,10 @@ import {
   RegistrationEmailResendingModel,
   UserInputModel,
 } from '../types and models/models';
-import { JwtAuthGuard } from './strategys/bearer-strategy';
+import { BearerAuthGuard } from './strategys/bearer-strategy';
+import { SkipThrottle } from '@nestjs/throttler';
+import { ClientIp, CurrentUser, JwtPayload, UserAgent } from './decorators';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -31,13 +40,13 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @HttpCode(200)
   async login(
     @Body() loginInputModelDto: LoginInputModel,
-    @Req() req: Request,
-    @Res() res: Response,
+    @UserAgent() title,
+    @ClientIp() ip,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const ip = req.ip;
-    const title = req.headers['user-agent']!;
     const loginOrEmail = loginInputModelDto.loginOrEmail;
     const password = loginInputModelDto.password;
     const tokens = await this.authService.login(
@@ -46,21 +55,28 @@ export class AuthController {
       ip,
       title,
     );
-    if (!tokens) return res.sendStatus(401);
+    if (!tokens) {
+      throw new UnauthorizedException();
+    }
     res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
     });
-    return res.status(200).send({ accessToken: tokens.accessToken });
+    return {
+      accessToken: tokens.accessToken,
+    };
   }
 
+  @SkipThrottle()
   @Post('refreshToken')
   async refreshToken(@Req() req: Request, @Res() res: Response) {
     const jwtPayload = req.jwtPayload!;
     const tokens: TokenType | null = await this.authService.refreshToken(
       jwtPayload,
     );
-    if (!tokens) return res.sendStatus(401);
+    if (!tokens) {
+      throw new UnauthorizedException();
+    }
     return res
       .status(201)
       .cookie('refreshToken', tokens.refreshToken, {
@@ -71,50 +87,42 @@ export class AuthController {
   }
 
   @Post('passwordRecovery')
-  async passwordRecovery(@Body('email') email: string, @Res() res: Response) {
+  async passwordRecovery(@Body('email') email: string) {
     const user: any = await this.usersService.findUserByEmail(email);
     if (user) {
       await this.authService.sendRecoveryCode(user.accountData.email);
-      return res.sendStatus(204);
+      return HttpStatus.NO_CONTENT;
     }
-    return res.sendStatus(204);
+    return HttpStatus.NO_CONTENT;
   }
 
   @Post('newPassword')
   async newPassword(
     @Body() body: { newPassword: string; recoveryCode: string },
-    @Res() res: Response,
   ) {
     const { newPassword, recoveryCode } = body;
     const user = await this.usersService.findUserByRecoveryCode(recoveryCode);
     if (!user) {
-      return res.sendStatus(204);
+      return HttpStatus.NO_CONTENT;
     }
     await this.usersService.changePassword(newPassword, user!._id);
-    return res.sendStatus(204);
+    return HttpStatus.NO_CONTENT;
   }
 
   @Post('registration-confirmation')
-  async registrationConfirmation(
-    @Body() codeInputModelDTO: CodeInputModel,
-    @Res() res: Response,
-  ) {
+  @HttpCode(204)
+  async registrationConfirmation(@Body() codeInputModelDTO: CodeInputModel) {
     const result = await this.authService.confirmEmail(codeInputModelDTO.code);
-    if (result) {
-      return res.sendStatus(204);
-    } else {
-      return res.sendStatus(400);
+    if (!result) {
+      throw new BadRequestException();
     }
   }
 
   @Post('registration')
-  async registration(
-    @Body() createUserDTO: UserInputModel,
-    @Res() res: Response,
-  ): Promise<any> {
+  async registration(@Body() createUserDTO: UserInputModel): Promise<any> {
     const user = await this.usersService.findUserByEmail(createUserDTO.email);
     if (user) {
-      return res.status(400).send({
+      throw new BadRequestException({
         errorsMessages: [
           {
             message: 'E-mail already in use',
@@ -128,44 +136,43 @@ export class AuthController {
       createUserDTO.email,
       createUserDTO.password,
     );
-    return res.sendStatus(204);
+    return HttpStatus.NO_CONTENT;
   }
 
   @Post('registration-email-resending')
   async registrationEmailResending(
     @Body() registrationEmailResendingDTO: RegistrationEmailResendingModel,
-    @Res()
-    res: Response,
   ) {
     const haveAnyEmailLikeThis = await this.authService.resendConfirmationCode(
       registrationEmailResendingDTO.email,
     );
     if (!haveAnyEmailLikeThis) {
-      return res.status(400).send({
+      throw new BadRequestException({
         errorsMessages: [
           {
-            message: 'E-mail not found',
+            message: 'E-mail already in use',
             field: 'email',
           },
         ],
       });
     }
-    return res.sendStatus(204);
+    return HttpStatus.NO_CONTENT;
   }
-  @UseGuards(JwtAuthGuard)
+  @SkipThrottle()
+  @UseGuards(BearerAuthGuard)
   @Get('me')
-  async me(@Req() req: Request, @Res() res: Response) {
-    const user: any = req.user;
-    return res.send({
-      login: user.login,
-      email: user.email,
-      userId: user.id,
-    });
+  async me(@CurrentUser() currentUser) {
+    return {
+      login: currentUser.login,
+      email: currentUser.email,
+      userId: currentUser.id,
+    };
   }
-
+  @SkipThrottle()
+  @UseGuards(RefreshTokenGuard)
   @Post('logout')
-  async logout(@Req() req: Request, @Res() res: Response) {
-    const jwtPayload = req.jwtPayload;
+  @HttpCode(204)
+  async logout(@JwtPayload() jwtPayload) {
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
     const device =
       await this.devicesService.findAndDeleteDeviceByDeviceIdUserIdAndDate(
@@ -174,9 +181,7 @@ export class AuthController {
         lastActiveDate,
       );
     if (!device) {
-      return res.sendStatus(401);
-    } else {
-      return res.sendStatus(204);
+      throw new UnauthorizedException();
     }
   }
 }

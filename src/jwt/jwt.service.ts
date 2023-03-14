@@ -9,12 +9,12 @@ export class JwtService {
 
   createJWT(userId: string, deviceId: string) {
     const accessToken = jwt.sign({ userId }, settings.JWT_SECRET, {
-      expiresIn: '20m',
+      expiresIn: '10s',
     });
     const refreshToken = jwt.sign(
       { userId, deviceId },
       settings.JWT_REFRESH_SECRET,
-      { expiresIn: '30m' },
+      { expiresIn: '20s' },
     );
     return { accessToken, refreshToken };
   }

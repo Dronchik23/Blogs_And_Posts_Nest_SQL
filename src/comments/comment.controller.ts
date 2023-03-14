@@ -15,7 +15,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { CommentsService } from './comment.service';
 import { LikesService } from '../likes/like.service';
-import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
+import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
   CommentParamInPutModel,
   CommentUpdateModel,
@@ -27,7 +27,7 @@ import {
   CurrentUser,
   CurrentUserId,
   CurrentUserIdFromToken,
-} from '../auth/current-user-param.decorator';
+} from '../auth/decorators';
 import { ErrorType } from '../types and models/types';
 
 @Controller('comments')
@@ -37,7 +37,7 @@ export class CommentsController {
     private readonly likesService: LikesService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Put(':id/like-status')
   @HttpCode(204)
   async updateLikeStatus(
@@ -64,7 +64,7 @@ export class CommentsController {
     return HttpStatus.NO_CONTENT;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Put(':id')
   @HttpCode(204)
   async updateCommentByCommentId(
@@ -102,7 +102,7 @@ export class CommentsController {
       throw new NotFoundException();
     }
   }
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   async deleteCommentByCommentId(

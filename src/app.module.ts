@@ -31,7 +31,6 @@ import { APP_GUARD } from '@nestjs/core';
 import { DeviceMiddleware } from './middlewares/device.middleware';
 import { InputValidationMiddleware } from './middlewares/input-validation.middleware';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
-//import { RateLimiterMiddleware } from './middlewares/rate-limiter.middleware';
 import { RefreshTokenMiddleware } from './middlewares/refresh-token.middleware';
 import {
   AttemptSchema,
@@ -55,23 +54,25 @@ import {
   isBlogExistConstraint,
   isCommentExistConstraint,
 } from './validator';
-import {
-  useContainer,
-  Validator,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import { useContainer } from 'class-validator';
 import { Container } from 'typedi';
 import { BasicAuthStrategy } from './auth/guards/basic-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+//import { RefreshTokenGuard } from './auth/guards/refresh-token.guard';
 
 @Module({
   imports: [
     MongooseModule.forRoot(
       'mongodb+srv://solikamsk:solikamsk@cluster0.uu9g6jj.mongodb.net/?retryWrites=true&w=majority',
     ),
+    ThrottlerModule.forRoot({
+      ttl: 10,
+      limit: 5,
+    }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },
       { name: 'Blog', schema: BlogSchema },
@@ -111,6 +112,7 @@ import { JwtStrategy } from './auth/guards/bearer-auth.guard';
     DevicesController,
   ],
   providers: [
+    //LoggingInterceptor,
     AppService,
     UsersService,
     UsersRepository,
@@ -150,14 +152,18 @@ import { JwtStrategy } from './auth/guards/bearer-auth.guard';
       provide: APP_GUARD,
       useClass: InputValidationMiddleware,
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: RateLimiterMiddleware,
-    // },
     {
       provide: APP_GUARD,
       useClass: RefreshTokenMiddleware,
     },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: RefreshTokenGuard,
+    // },
   ],
 })
 export class AppModule implements NestModule {

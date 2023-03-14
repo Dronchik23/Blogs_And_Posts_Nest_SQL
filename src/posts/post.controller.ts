@@ -30,12 +30,12 @@ import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { UsersService } from '../users/users.service';
-import { JwtAuthGuard } from '../auth/strategys/bearer-strategy';
+import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
   CurrentUser,
   CurrentUserId,
   CurrentUserIdFromToken,
-} from '../auth/current-user-param.decorator';
+} from '../auth/decorators';
 
 @Controller('posts')
 export class PostsController {
@@ -68,7 +68,7 @@ export class PostsController {
     return allComments;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Post(':id/comments')
   async createCommentByPostId(
     @Param('id') postId: string,
@@ -196,7 +196,7 @@ export class PostsController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Put(':id/like-status')
   @HttpCode(204)
   async updateLikeStatus(

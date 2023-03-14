@@ -94,12 +94,15 @@ export class UsersRepository {
   }
 
   async findByLoginOrEmail(loginOrEmail: string): Promise<UserDBType | null> {
-    return this.usersModel.findOne({
+    debugger;
+    const result = this.usersModel.findOne({
       $or: [
         { 'accountData.email': loginOrEmail },
         { 'accountData.login': loginOrEmail },
       ],
     });
+    console.log(result);
+    return result;
   }
 
   async findByEmail(email: string): Promise<any> {
