@@ -22,6 +22,7 @@ export class DevicesRepository {
   }
 
   async findAllDevicesByUserId(userId: string): Promise<any> {
+    debugger;
     return this.devicesModel
       .find({ userId }, { projection: { _id: false, userId: false } })
       .lean();

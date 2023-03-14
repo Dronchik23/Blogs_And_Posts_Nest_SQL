@@ -62,7 +62,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-//import { RefreshTokenGuard } from './auth/guards/refresh-token.guard';
 
 @Module({
   imports: [
@@ -160,10 +159,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: RefreshTokenGuard,
-    // },
   ],
 })
 export class AppModule implements NestModule {

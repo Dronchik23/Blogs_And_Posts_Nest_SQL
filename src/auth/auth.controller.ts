@@ -55,6 +55,7 @@ export class AuthController {
       ip,
       title,
     );
+    console.log('tokens', tokens);
     if (!tokens) {
       throw new UnauthorizedException();
     }
@@ -68,9 +69,11 @@ export class AuthController {
   }
 
   @SkipThrottle()
-  @Post('refreshToken')
-  async refreshToken(@Req() req: Request, @Res() res: Response) {
-    const jwtPayload = req.jwtPayload!;
+  @Post('refresh-token')
+  async refreshToken(
+    @Res({ passthrough: true }) res: Response,
+    @JwtPayload() jwtPayload,
+  ) {
     const tokens: TokenType | null = await this.authService.refreshToken(
       jwtPayload,
     );

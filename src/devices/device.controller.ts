@@ -7,6 +7,7 @@ import {
   NotFoundException,
   HttpCode,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
@@ -19,11 +20,14 @@ export class DevicesController {
   @UseGuards(RefreshTokenGuard)
   @Get()
   async getAllDevices(@CurrentUserId() currentUserId) {
+    debugger;
+    console.log('currentUserId', currentUserId);
     const allDevices = await this.devicesService.findAllDevicesByUserId(
       currentUserId,
     );
     return allDevices;
   }
+
   @UseGuards(RefreshTokenGuard)
   @Delete('exclude-current')
   @HttpCode(204)
@@ -39,6 +43,7 @@ export class DevicesController {
       throw new NotFoundException();
     }
   }
+
   @UseGuards(RefreshTokenGuard)
   @Delete(':deviceId')
   async deleteDeviceByDeviceId(

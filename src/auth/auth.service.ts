@@ -25,7 +25,6 @@ export class AuthService {
     ip: string,
     title: string,
   ) {
-    debugger;
     const user = await this.checkCredentials(loginOrEmail, password);
     if (!user) return null;
     const userId = user._id.toString();
@@ -49,7 +48,6 @@ export class AuthService {
     loginOrEmail: string,
     password: string,
   ): Promise<any> {
-    debugger;
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
     if (!user) return null;
     if (!user.passwordRecovery.isConfirmed) return null;

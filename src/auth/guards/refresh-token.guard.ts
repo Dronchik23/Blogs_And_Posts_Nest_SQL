@@ -15,8 +15,10 @@ export class RefreshTokenGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    debugger;
     const req = context.switchToHttp().getRequest();
     const refreshToken = req.cookies && req.cookies.refreshToken;
+    console.log(req.cookies);
     if (!refreshToken) throw new UnauthorizedException();
     const payload: any = await this.jwtService.getPayloadByRefreshToken(
       refreshToken,
