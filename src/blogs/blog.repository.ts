@@ -62,7 +62,7 @@ export class BlogsRepository {
   async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
     const blog = await this.blogsModel
       .findOne({
-        _id: new ObjectId(id),
+        _x,
       })
       .exec();
 

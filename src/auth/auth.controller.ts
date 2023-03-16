@@ -120,7 +120,7 @@ export class AuthController {
       throw new BadRequestException();
     }
   }
-
+  @SkipThrottle()
   @Post('registration')
   async registration(@Body() createUserDTO: UserInputModel): Promise<any> {
     const user = await this.usersService.findUserByEmail(createUserDTO.email);
