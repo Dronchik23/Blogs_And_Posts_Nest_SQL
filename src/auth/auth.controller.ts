@@ -69,11 +69,13 @@ export class AuthController {
   }
 
   @SkipThrottle()
+  @UseGuards(RefreshTokenGuard)
   @Post('refresh-token')
   async refreshToken(
     @Res({ passthrough: true }) res: Response,
     @JwtPayload() jwtPayload,
   ) {
+    debugger;
     const tokens: TokenType | null = await this.authService.refreshToken(
       jwtPayload,
     );
