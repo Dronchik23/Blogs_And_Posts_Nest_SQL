@@ -71,6 +71,7 @@ export class AuthController {
   @SkipThrottle()
   @UseGuards(RefreshTokenGuard)
   @Post('refresh-token')
+  @HttpCode(200)
   async refreshToken(
     @Res({ passthrough: true }) res: Response,
     @JwtPayload() jwtPayload,
@@ -83,7 +84,6 @@ export class AuthController {
       throw new UnauthorizedException();
     }
     return res
-      .status(201)
       .cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: true,
