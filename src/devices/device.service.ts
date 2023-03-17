@@ -1,14 +1,12 @@
 import { injectable } from 'inversify';
-import { DeviceType } from '../types and models/types';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { DeviceDBType } from '../types and models/types';
 import { DevicesRepository } from './device.repository';
 import { JwtService } from '../jwt/jwt.service';
+import mongoose from 'mongoose';
 
 @injectable()
 export class DevicesService {
   constructor(
-    @InjectModel('Device') private readonly devicesModel: Model<DeviceType>,
     protected devicesRepository: DevicesRepository,
     protected jwtService: JwtService,
   ) {}
@@ -20,7 +18,13 @@ export class DevicesService {
     deviceId: string,
     userId: string,
   ) {
-    const device = new DeviceType(ip, title, lastActiveDate, deviceId, userId);
+    const device = new DeviceDBType(
+      ip,
+      title,
+      lastActiveDate,
+      deviceId,
+      userId,
+    );
     return this.devicesRepository.saveNewDevice(device);
   }
 
@@ -52,11 +56,14 @@ export class DevicesService {
         lastActiveDate,
       );
     if (!device) return null;
-    return this.devicesRepository.findAndDeleteDeviceByDeviceIdUserIdAndDate(
-      deviceId,
-      userId,
-      lastActiveDate,
-    );
+
+    const foundDevice =
+      this.devicesRepository.findAndDeleteDeviceByDeviceIdUserIdAndDate(
+        deviceId,
+        userId,
+        lastActiveDate,
+      );
+    return foundDevice;
   }
 
   async findDeviceByDeviceIdUserIdAndDate(

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { LikeDbType } from '../types and models/types';
+import { LikeDBType } from '../types and models/types';
 import { DeleteResult } from 'mongodb';
 import { LikeDocument } from '../types and models/schemas';
 
@@ -11,7 +11,7 @@ export class LikesRepository {
     @InjectModel('Like') private readonly likeModel: Model<LikeDocument>,
   ) {}
 
-  async updateLikeStatus(newLike: any): Promise<LikeDbType> {
+  async updateLikeStatus(newLike: any): Promise<LikeDBType> {
     const filter = { userId: newLike.userId, parentId: newLike.parentId };
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
     await this.likeModel

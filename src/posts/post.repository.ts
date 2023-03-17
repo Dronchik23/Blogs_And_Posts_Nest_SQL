@@ -1,16 +1,14 @@
-import { Filter } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
-  LikeDbType,
+  LikeDBType,
   LikeStatus,
   NewestLikesType,
   PostDBType,
 } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { LikeDocument, Post, PostDocument } from '../types and models/schemas';
-import { ObjectId } from 'mongodb';
 
 @injectable()
 export class PostsRepository {
@@ -169,7 +167,7 @@ export class PostsRepository {
   async deleteAllPosts(): Promise<any> {
     return this.postsModel.deleteMany({});
   }
-  private mapNewestLikes(likes: LikeDbType[]): NewestLikesType[] {
+  private mapNewestLikes(likes: LikeDBType[]): NewestLikesType[] {
     return likes.map((like) => ({
       addedAt: like.addedAt,
       userId: like.userId.toString(),
@@ -196,7 +194,7 @@ export class PostsRepository {
     post.extendedLikesInfo.newestLikes = this.mapNewestLikes(newestLikes);
 
     if (userId) {
-      const status: LikeDbType = await this.likesModel
+      const status: LikeDBType = await this.likesModel
         .findOne({
           parentId: post._id,
           userId: new mongoose.Types.ObjectId(userId),

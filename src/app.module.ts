@@ -26,12 +26,7 @@ import { LikesService } from './likes/like.service';
 import { LikesRepository } from './likes/like.repository';
 import { TokensRepository } from './tokens/tokens.repository';
 import { JwtService } from './jwt/jwt.service';
-import { AttemptsControlMiddleware } from './middlewares/attempt.middleware';
 import { APP_GUARD } from '@nestjs/core';
-import { DeviceMiddleware } from './middlewares/device.middleware';
-import { InputValidationMiddleware } from './middlewares/input-validation.middleware';
-import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
-import { RefreshTokenMiddleware } from './middlewares/refresh-token.middleware';
 import {
   AttemptSchema,
   BlogSchema,
@@ -44,7 +39,7 @@ import {
 } from './types and models/schemas';
 import { TestingController } from './testing/testing.controller';
 import { EmailAdapter } from './email/email.adapter';
-import { MailerModule, MailerService } from '@nestjs-modules/mailer';
+import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule } from '@nestjs/config';
 import {
   IsEmailAlreadyConfirmedConstraint,
@@ -62,6 +57,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
 
 @Module({
   imports: [
@@ -139,22 +135,6 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     isCommentExistConstraint,
     BasicAuthStrategy,
     JwtStrategy,
-    {
-      provide: APP_GUARD,
-      useClass: AttemptsControlMiddleware,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: DeviceMiddleware,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: InputValidationMiddleware,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RefreshTokenMiddleware,
-    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

@@ -1,5 +1,5 @@
 import { injectable } from 'inversify';
-import { DeviceType } from '../types and models/types';
+import { DeviceDBType } from '../types and models/types';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { DeviceDocument } from '../types and models/schemas';
@@ -11,14 +11,14 @@ export class DevicesRepository {
     @InjectModel('Device') private readonly devicesModel: Model<DeviceDocument>,
   ) {}
 
-  async saveNewDevice(device: DeviceType) {
-    return this.devicesModel.insertMany(device);
+  async saveNewDevice(device: DeviceDBType) {
+    return this.devicesModel.create(device);
   }
 
   async rewriteIssueAt(deviceId: string, data: string): Promise<any> {
     return this.devicesModel.updateOne(
       {
-        deviceId: new mongoose.Types.ObjectId(deviceId),
+        deviceId: deviceId,
       },
       { $set: { lastActiveDate: data } },
     );
@@ -29,7 +29,7 @@ export class DevicesRepository {
     return this.devicesModel
       .find(
         {
-          _id: new mongoose.Types.ObjectId(userId),
+          _id: userId,
         },
         { projection: { _id: false, userId: false } },
       )
@@ -38,7 +38,7 @@ export class DevicesRepository {
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: any) {
     const result = await this.devicesModel.deleteMany({
-      userId: new mongoose.Types.ObjectId(userId),
+      userId: userId,
       deviceId: { $ne: deviceId },
     });
     return result.acknowledged;
@@ -56,11 +56,13 @@ export class DevicesRepository {
     userId: string,
     lastActiveDate: string,
   ) {
-    return this.devicesModel.findOne({
-      deviceId: new mongoose.Types.ObjectId(deviceId),
-      userId: new mongoose.Types.ObjectId(userId),
-      lastActiveDate: lastActiveDate,
-    });
+    return await this.devicesModel
+      .findOne({
+        deviceId: deviceId,
+        userId: userId,
+        lastActiveDate: lastActiveDate,
+      })
+      .exec();
   }
 
   async updateLastActiveDateByDevice(
@@ -70,8 +72,8 @@ export class DevicesRepository {
   ): Promise<any> {
     return this.devicesModel.updateOne(
       {
-        deviceId: new mongoose.Types.ObjectId(deviceId),
-        userId: new mongoose.Types.ObjectId(userId),
+        deviceId: deviceId,
+        userId: userId,
       },
       { $set: { lastActiveDate: newLastActiveDate } },
     );
@@ -83,8 +85,8 @@ export class DevicesRepository {
     lastActiveDate: string,
   ): Promise<any> {
     return this.devicesModel.deleteOne({
-      deviceId: new mongoose.Types.ObjectId(deviceId),
-      userId: new mongoose.Types.ObjectId(userId),
+      deviceId: deviceId,
+      userId: userId,
       lastActiveDate: lastActiveDate,
     });
   }
@@ -95,7 +97,7 @@ export class DevicesRepository {
 
   async findDeviceByDeviceIdAndDate(deviceId: string) {
     return this.devicesModel.findOne({
-      deviceId: new mongoose.Types.ObjectId(deviceId),
+      deviceId: deviceId,
     });
   }
 }

@@ -18,7 +18,7 @@ export type PaginationType = {
     | PostViewModel[]
     | UserViewModel[]
     | CommentViewModel[]
-    | DeviceType[];
+    | DeviceDBType[];
 };
 export type ErrorType = {
   errorsMessages: [{ message: string; field: string }];
@@ -125,7 +125,7 @@ export class ExtendedLikesInfoType {
     public newestLikes: NewestLikesType[],
   ) {}
 }
-export class LikeDbType {
+export class LikeDBType {
   constructor(
     public parentId: mongoose.Types.ObjectId,
     public userId: mongoose.Types.ObjectId,
@@ -140,7 +140,7 @@ export class PasswordRecoveryType {
     public isConfirmed: boolean,
   ) {}
 }
-export class DeviceType {
+export class DeviceDBType {
   constructor(
     public ip: string,
     public title: string,

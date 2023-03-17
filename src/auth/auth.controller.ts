@@ -88,7 +88,9 @@ export class AuthController {
         httpOnly: true,
         secure: true,
       })
-      .send({ accessToken: tokens.accessToken });
+      .send({
+        accessToken: tokens.accessToken,
+      });
   }
 
   @Post('passwordRecovery')

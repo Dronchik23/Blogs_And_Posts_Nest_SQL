@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import {
   CommentDBType,
-  LikeDbType,
+  LikeDBType,
   LikeStatus,
 } from '../types and models/types';
 import { CommentViewModel, UserViewModel } from '../types and models/models';
@@ -131,7 +131,7 @@ export class CommentsRepository {
       status: LikeStatus.Dislike,
     });
     if (userId) {
-      const status: LikeDbType = await this.likesModel
+      const status: LikeDBType = await this.likesModel
         .findOne({
           parentId: comment._id,
           userId: new ObjectId(userId),

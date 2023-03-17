@@ -4,6 +4,7 @@ import { injectable } from 'inversify';
 import { UsersRepository } from '../users/users.repository';
 import { EmailService } from '../email/email.controller';
 import {
+  DeviceDBType,
   EmailConfirmationType,
   JWTPayloadType,
 } from '../types and models/types';
@@ -28,7 +29,7 @@ export class AuthService {
     const user = await this.checkCredentials(loginOrEmail, password);
     if (!user) return null;
     const userId = user._id.toString();
-    const deviceId = randomUUID();
+    const deviceId = randomUUID().toString();
     const { accessToken, refreshToken } = this.jwtService.createJWT(
       userId,
       deviceId,
@@ -95,9 +96,9 @@ export class AuthService {
   async refreshToken(jwtPayload: JWTPayloadType) {
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
     const device = await this.devicesService.findDeviceByDeviceIdUserIdAndDate(
-      jwtPayload.deviceId,
-      jwtPayload.userId,
-      lastActiveDate,
+      jwtPayload.deviceId.toString(),
+      jwtPayload.userId.toString(),
+      lastActiveDate.toString(),
     );
     if (!device) return null;
     const { accessToken, refreshToken } = this.jwtService.createJWT(

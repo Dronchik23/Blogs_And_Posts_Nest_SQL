@@ -221,3 +221,10 @@ export class CommentUpdateModel {
   @IsNotEmpty()
   content: string;
 }
+export class DeviceViewModel {
+  ip: string;
+  title: string;
+  LastActiveDate: string;
+
+  deviceId: string;
+}
