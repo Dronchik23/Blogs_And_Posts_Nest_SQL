@@ -20,8 +20,6 @@ export class DevicesController {
   @UseGuards(RefreshTokenGuard)
   @Get()
   async getAllDevices(@CurrentUserId() currentUserId) {
-    debugger;
-    console.log('currentUserId', currentUserId);
     const allDevices = await this.devicesService.findAllDevicesByUserId(
       currentUserId,
     );

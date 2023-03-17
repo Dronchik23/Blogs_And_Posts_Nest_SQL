@@ -29,7 +29,6 @@ export class DevicesService {
   }
 
   async findAllDevicesByUserId(userId: string): Promise<any> {
-    debugger;
     return await this.devicesRepository.findAllDevicesByUserId(userId);
   }
 

@@ -76,7 +76,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @JwtPayload() jwtPayload,
   ) {
-    debugger;
     const tokens: TokenType | null = await this.authService.refreshToken(
       jwtPayload,
     );

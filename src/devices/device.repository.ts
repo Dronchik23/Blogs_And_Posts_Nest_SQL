@@ -18,25 +18,24 @@ export class DevicesRepository {
   async rewriteIssueAt(deviceId: string, data: string): Promise<any> {
     return this.devicesModel.updateOne(
       {
-        deviceId: deviceId,
+        deviceId: new ObjectId(deviceId),
       },
       { $set: { lastActiveDate: data } },
     );
   }
 
   async findAllDevicesByUserId(userId: string): Promise<any> {
-    debugger;
     return this.devicesModel
       .find(
         {
-          _id: userId,
+          userId: userId,
         },
         { projection: { _id: false, userId: false } },
       )
       .lean();
   }
 
-  async deleteAllDevicesExcludeCurrent(userId: string, deviceId: any) {
+  async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {
     const result = await this.devicesModel.deleteMany({
       userId: userId,
       deviceId: { $ne: deviceId },
