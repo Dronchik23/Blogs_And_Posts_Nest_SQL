@@ -12,8 +12,10 @@ import {
 import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
 import { CurrentUserId, JwtPayload } from '../auth/decorators';
+import { DeviceDBType } from '../types and models/types';
+import { Device } from '../types and models/schemas';
 
-@Controller('devices')
+@Controller('security/devices')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
 
@@ -48,15 +50,15 @@ export class DevicesController {
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
   ) {
-    const device = await this.devicesService.findDeviceByDeviceIdAndDate(
-      currentUserId,
-    );
+    debugger;
+    const device: Device =
+      await this.devicesService.findDeviceByDeviceIdAndDate(deviceId);
     if (!device) {
       throw new NotFoundException();
     }
-    // if (userId !== userId) {
-    //   return res.sendStatus(403);
-    // }
+    if (currentUserId !== device.userId) {
+      throw new ForbiddenException();
+    }
     const isDeleted = await this.devicesService.deleteDeviceByDeviceId(
       deviceId,
     );

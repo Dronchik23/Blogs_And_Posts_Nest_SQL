@@ -145,7 +145,7 @@ export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(QueryParamsMiddleware)
-      .forRoutes('blogs', 'posts', 'comments', 'users');
+      .forRoutes('blogs', 'posts', 'comments', 'users', 'security/devices');
   }
 }
 

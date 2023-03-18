@@ -26,12 +26,10 @@ export class DevicesRepository {
 
   async findAllDevicesByUserId(userId: string): Promise<any> {
     return this.devicesModel
-      .find(
-        {
-          userId: userId,
-        },
-        { projection: { _id: false, userId: false } },
-      )
+      .find({
+        userId: userId,
+      })
+      .select('-_id -userId')
       .lean();
   }
 
@@ -45,7 +43,7 @@ export class DevicesRepository {
 
   async deleteDeviceByDeviceId(deviceId: string) {
     const result = await this.devicesModel.deleteOne({
-      deviceId: new mongoose.Types.ObjectId(deviceId),
+      deviceId: deviceId,
     });
     return result.deletedCount === 1;
   }
@@ -95,6 +93,7 @@ export class DevicesRepository {
   }
 
   async findDeviceByDeviceIdAndDate(deviceId: string) {
+    console.log(deviceId);
     return this.devicesModel.findOne({
       deviceId: deviceId,
     });
