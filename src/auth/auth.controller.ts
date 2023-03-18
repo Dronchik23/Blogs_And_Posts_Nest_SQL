@@ -125,6 +125,7 @@ export class AuthController {
   }
   @SkipThrottle()
   @Post('registration')
+  @HttpCode(204)
   async registration(@Body() createUserDTO: UserInputModel): Promise<any> {
     const user = await this.usersService.findUserByEmail(createUserDTO.email);
     if (user) {
@@ -137,12 +138,11 @@ export class AuthController {
         ],
       });
     }
-    const newUser = await this.usersService.createUser(
+    await this.usersService.createUser(
       createUserDTO.login,
       createUserDTO.email,
       createUserDTO.password,
-    );
-    return HttpStatus.NO_CONTENT;
+    ); // создаем юзера
   }
 
   @Post('registration-email-resending')
@@ -154,7 +154,7 @@ export class AuthController {
     );
     if (!haveAnyEmailLikeThis) {
       throw new BadRequestException({
-        errorsMessages: [
+        message: [
           {
             message: 'E-mail already in use',
             field: 'email',

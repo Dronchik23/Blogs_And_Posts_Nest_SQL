@@ -29,7 +29,7 @@ export class DevicesRepository {
       .find({
         userId: userId,
       })
-      .select('-_id -userId')
+      .select('-_id -userId -__v')
       .lean();
   }
 

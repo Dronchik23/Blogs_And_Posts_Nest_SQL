@@ -6,10 +6,12 @@ import {
 import { useContainer } from 'class-validator';
 import { AppModule } from '../app.module';
 import { HttpExceptionFilter } from '../exeption.filter';
+import cookieParser from 'cookie-parser';
 
 export const createApp = (app: INestApplication) => {
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.enableCors();
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       stopAtFirstError: true,

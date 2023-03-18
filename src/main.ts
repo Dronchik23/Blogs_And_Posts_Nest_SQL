@@ -1,13 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { JWTPayloadType } from './types and models/types';
-import cookieParser from 'cookie-parser';
 import { createApp } from './helpers/createApp';
 
 async function bootstrap() {
   const rawApp = await NestFactory.create(AppModule);
   const app = createApp(rawApp);
-  app.use(cookieParser());
   await app.listen(3000);
 }
 bootstrap();

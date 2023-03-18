@@ -26,7 +26,7 @@ import { LikesService } from './likes/like.service';
 import { LikesRepository } from './likes/like.repository';
 import { TokensRepository } from './tokens/tokens.repository';
 import { JwtService } from './jwt/jwt.service';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import {
   AttemptSchema,
   BlogSchema,
@@ -58,6 +58,7 @@ import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
+import { HttpExceptionFilter } from './exeption.filter';
 
 @Module({
   imports: [
@@ -107,7 +108,6 @@ import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middle
     DevicesController,
   ],
   providers: [
-    //LoggingInterceptor,
     AppService,
     UsersService,
     UsersRepository,
@@ -139,6 +139,10 @@ import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middle
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
   ],
 })
 export class AppModule implements NestModule {

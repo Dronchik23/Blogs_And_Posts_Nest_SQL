@@ -22,9 +22,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       responseBody.message.forEach((m) => errorResponse.errorsMessages.push(m));
 
-      response.status(status).json(errorResponse);
+      return response.status(status).json(errorResponse);
     } else {
-      console.log(exception);
       response.status(status).json({
         statusCode: status,
         timestamp: new Date().toISOString(),

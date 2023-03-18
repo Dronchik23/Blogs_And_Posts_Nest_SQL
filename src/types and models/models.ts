@@ -201,7 +201,7 @@ export class LikeInputModel {
   likeStatus: LikeStatus;
 }
 export class RegistrationEmailResendingModel {
-  @IsEmail()
+  //@IsEmail()
   @IsEmailAlreadyConfirmed()
   email: string;
 }
