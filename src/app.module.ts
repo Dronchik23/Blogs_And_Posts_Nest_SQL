@@ -80,7 +80,7 @@ import { HttpExceptionFilter } from './exeption.filter';
       { name: 'Attempt', schema: AttemptSchema },
     ]),
     MongooseModule.forRoot('mongodb://localhost/nest'),
-    ConfigModule.forRoot({}),
+    ConfigModule.forRoot({ isGlobal: true }),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

@@ -123,7 +123,6 @@ export class AuthController {
       throw new BadRequestException();
     }
   }
-  @SkipThrottle()
   @Post('registration')
   @HttpCode(204)
   async registration(@Body() createUserDTO: UserInputModel): Promise<any> {
@@ -146,6 +145,7 @@ export class AuthController {
   }
 
   @Post('registration-email-resending')
+  @HttpCode(204)
   async registrationEmailResending(
     @Body() registrationEmailResendingDTO: RegistrationEmailResendingModel,
   ) {

@@ -2,19 +2,31 @@ import { Injectable } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 import { settings } from './jwt.settings';
 import { TokensRepository } from '../tokens/tokens.repository';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class JwtService {
-  constructor(private readonly tokensRepository: TokensRepository) {}
+  constructor(
+    private readonly tokensRepository: TokensRepository,
+    private readonly configService: ConfigService,
+  ) {}
+
+  private accessTokenLifeTime = this.configService.get(
+    'ACCESS_TOKEN_LIFE_TIME',
+  );
+
+  private refreshTokenLifeTime = this.configService.get(
+    'REFRESH_TOKEN_LIFE_TIME',
+  );
 
   createJWT(userId: string, deviceId: string) {
     const accessToken = jwt.sign({ userId }, settings.JWT_SECRET, {
-      expiresIn: '10s',
+      expiresIn: this.accessTokenLifeTime,
     });
     const refreshToken = jwt.sign(
       { userId, deviceId },
       settings.JWT_REFRESH_SECRET,
-      { expiresIn: '20s' },
+      { expiresIn: this.refreshTokenLifeTime },
     );
     return { accessToken, refreshToken };
   }
