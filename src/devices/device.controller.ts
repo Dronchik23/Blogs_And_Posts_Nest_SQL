@@ -14,7 +14,9 @@ import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
 import { CurrentUserId, JwtPayload } from '../auth/decorators';
 import { DeviceDBType } from '../types and models/types';
 import { Device } from '../types and models/schemas';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller('security/devices')
 export class DevicesController {
   constructor(private readonly devicesService: DevicesService) {}
@@ -29,7 +31,7 @@ export class DevicesController {
   }
 
   @UseGuards(RefreshTokenGuard)
-  @Delete('exclude-current')
+  @Delete()
   @HttpCode(204)
   async deleteAllDevicesExcludeCurrent(
     @CurrentUserId() currentUserId,
@@ -46,6 +48,7 @@ export class DevicesController {
 
   @UseGuards(RefreshTokenGuard)
   @Delete(':deviceId')
+  @HttpCode(204)
   async deleteDeviceByDeviceId(
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
