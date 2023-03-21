@@ -138,10 +138,10 @@ import { SABlogsController } from './sa/blogs/sa.blogs.controller';
     isCommentExistConstraint,
     BasicAuthStrategy,
     JwtStrategy,
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // },
   ],
 })
 export class AppModule implements NestModule {
