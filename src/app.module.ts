@@ -1,9 +1,9 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { UsersController } from './users/users.controller';
-import { UsersRepository } from './users/users.repository';
-import { UsersService } from './users/users.service';
+import { UsersController } from './sa/users/users.controller';
+import { UsersRepository } from './sa/users/users-repository.service';
+import { UsersService } from './sa/users/users.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EmailController } from './email/email.service';
 import { EmailService } from './email/email.controller';
@@ -26,7 +26,7 @@ import { LikesService } from './likes/like.service';
 import { LikesRepository } from './likes/like.repository';
 import { TokensRepository } from './tokens/tokens.repository';
 import { JwtService } from './jwt/jwt.service';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import {
   AttemptSchema,
   BlogSchema,
@@ -58,7 +58,8 @@ import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
-import { HttpExceptionFilter } from './exeption.filter';
+import { BloggerBlogsController } from './blogger/blogger.controller';
+import { SABlogsController } from './sa/blogs/sa.blogs.controller';
 
 @Module({
   imports: [
@@ -106,6 +107,8 @@ import { HttpExceptionFilter } from './exeption.filter';
     CommentsController,
     AuthController,
     DevicesController,
+    BloggerBlogsController,
+    SABlogsController,
   ],
   providers: [
     AppService,
@@ -139,17 +142,21 @@ import { HttpExceptionFilter } from './exeption.filter';
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: HttpExceptionFilter,
-    // },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(QueryParamsMiddleware)
-      .forRoutes('blogs', 'posts', 'comments', 'users', 'security/devices');
+      .forRoutes(
+        'blogs',
+        'posts',
+        'comments',
+        'sa/users',
+        'security/devices',
+        'blogger/blogs',
+        'sa/blogs',
+      );
   }
 }
 

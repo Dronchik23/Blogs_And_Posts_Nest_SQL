@@ -1,4 +1,4 @@
-import { ExtendedLikesInfoType, LikeStatus } from './types';
+import { BlogOwnerInfoType, ExtendedLikesInfoType, LikeStatus } from './types';
 import {
   IsEmail,
   IsEnum,
@@ -27,7 +27,10 @@ export class BlogViewModel {
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
+
+  blogOwnerInfo?: BlogOwnerInfoType;
 }
+
 export class PaginationInputQueryModel {
   constructor() {
     this.sortBy = 'createdAt';

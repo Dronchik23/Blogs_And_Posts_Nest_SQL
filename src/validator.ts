@@ -5,7 +5,7 @@ import {
   ValidatorConstraintInterface,
   ValidatorConstraint,
 } from 'class-validator';
-import { UsersRepository } from './users/users.repository';
+import { UsersRepository } from './sa/users/users-repository.service';
 import { inject, injectable } from 'inversify';
 import { UserDBType } from './types and models/types';
 import { BlogsRepository } from './blogs/blog.repository';

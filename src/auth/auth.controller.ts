@@ -14,7 +14,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../sa/users/users.service';
 import { TokenType, UserDBType } from '../types and models/types';
 import { AuthService } from './auth.service';
 import { JwtService } from '../jwt/jwt.service';
@@ -55,7 +55,7 @@ export class AuthController {
       ip,
       title,
     );
-    console.log('tokens', tokens);
+
     if (!tokens) {
       throw new UnauthorizedException();
     }

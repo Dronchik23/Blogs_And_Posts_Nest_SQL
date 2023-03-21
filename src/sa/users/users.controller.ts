@@ -16,11 +16,11 @@ import {
   PaginationInputQueryModel,
   UserInputModel,
   UserViewModel,
-} from '../types and models/models';
-import { PaginationType } from '../types and models/types';
-import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
+} from '../../types and models/models';
+import { PaginationType } from '../../types and models/types';
+import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

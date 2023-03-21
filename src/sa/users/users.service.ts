@@ -3,9 +3,9 @@ import { ObjectId } from 'mongodb';
 import { v4 as uuidv4 } from 'uuid';
 import { add } from 'date-fns';
 
-import { UserViewModel } from '../types and models/models';
-import { UsersRepository } from './users.repository';
-import { EmailService } from '../email/email.controller';
+import { UserViewModel } from '../../types and models/models';
+import { UsersRepository } from './users-repository.service';
+import { EmailService } from '../../email/email.controller';
 import * as bcrypt from 'bcrypt';
 import {
   AccountDataType,
@@ -13,7 +13,7 @@ import {
   PaginationType,
   PasswordRecoveryType,
   UserDBType,
-} from '../types and models/types';
+} from '../../types and models/types';
 
 @Injectable()
 export class UsersService {
@@ -78,7 +78,6 @@ export class UsersService {
     }
     return result;
   }
-
   async getUserByUserId(id: string): Promise<UserViewModel | null> {
     const user = await this.usersRepository.findUserByUserId(id);
     if (user) {
@@ -87,33 +86,27 @@ export class UsersService {
       return null;
     }
   }
-
   async _generateHash(password: string, salt: string) {
     return await bcrypt.hash(password, salt);
   }
-
   async deleteUserByUserId(id: string) {
     return await this.usersRepository.deleteUserByUserId(id);
   }
-
   async findUserByEmail(email: string): Promise<UserDBType | null> {
     return await this.usersRepository.findByLoginOrEmail(email);
   }
-
   async findUserByRecoveryCode(recoveryCode: string) {
     return await this.usersRepository.findUserByPasswordRecoveryCode(
       recoveryCode,
     );
   }
-
   async changePassword(password: string, userId: ObjectId) {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await this._generateHash(password, passwordSalt);
     await this.usersRepository.updatePassword(passwordHash, userId);
     return;
   }
-
-  async findUserByLogin(login: string): Promise<UserDBType | null> {
-    return await this.usersRepository.findByLogin(login);
+  async findUserByUserId(userId: string) {
+    return await this.usersRepository.findUserByUserId(userId);
   }
 }

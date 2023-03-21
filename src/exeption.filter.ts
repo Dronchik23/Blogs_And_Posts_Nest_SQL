@@ -20,7 +20,13 @@ export class HttpExceptionFilter implements ExceptionFilter {
       };
       const responseBody: any = exception.getResponse();
 
-      responseBody.message.forEach((m) => errorResponse.errorsMessages.push(m));
+      if (Array.isArray(responseBody.message)) {
+        responseBody.message.forEach((m) =>
+          errorResponse.errorsMessages.push(m),
+        );
+      } else {
+        errorResponse.errorsMessages.push(responseBody.message);
+      }
 
       return response.status(status).json(errorResponse);
     } else {

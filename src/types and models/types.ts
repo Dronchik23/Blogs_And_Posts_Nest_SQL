@@ -55,6 +55,7 @@ export class BlogDBType {
     public websiteUrl: string,
     public createdAt: string,
     public isMembership: boolean,
+    public blogOwnerInfo?: BlogOwnerInfoType,
   ) {}
 }
 export class PostDBType {
@@ -156,4 +157,9 @@ export class BearerJwtPayloadType {
   iat: number;
   exp: number;
   userId: string;
+}
+
+export class BlogOwnerInfoType {
+  userId: string;
+  userLogin: string;
 }

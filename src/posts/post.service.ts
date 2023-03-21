@@ -55,7 +55,7 @@ export class PostsService {
     content: string,
     blogId: string,
   ): Promise<PostViewModel | null> {
-    const blog: BlogViewModel | null = await this.blogsService.findBlogById(
+    const blog: BlogViewModel | null = await this.blogsService.findBlogByBlogId(
       blogId,
     );
 

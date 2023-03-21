@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { injectable } from 'inversify';
-import { UsersRepository } from '../users/users.repository';
+import { UsersRepository } from '../sa/users/users-repository.service';
 import { EmailService } from '../email/email.controller';
 import {
   DeviceDBType,

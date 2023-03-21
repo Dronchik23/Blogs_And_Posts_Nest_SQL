@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { FilterQuery, Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
-import { UserDBType } from '../types and models/types';
-import { UserViewModel } from '../types and models/models';
-import { UserDocument } from '../types and models/schemas';
+import { UserDBType } from '../../types and models/types';
+import { UserViewModel } from '../../types and models/models';
+import { UserDocument } from '../../types and models/schemas';
 
 type searchLoginOrEmailTermType = string | undefined;
 

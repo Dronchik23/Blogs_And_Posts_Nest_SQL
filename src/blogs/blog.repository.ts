@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
 import { BlogDBType } from '../types and models/types';
-import { BlogViewModel } from '../types and models/models';
+import { BlogViewModel, UserViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
 @Injectable()
@@ -117,5 +117,32 @@ export class BlogsRepository {
   async deleteAllBlogs() {
     const result = await this.blogsModel.deleteMany({});
     return result.deletedCount;
+  }
+  async bindBlogToUser(blogId: string, user: UserViewModel): Promise<boolean> {
+    debugger;
+    const isBind: BlogDBType = await this.blogsModel
+      .findOne({
+        _id: new mongoose.Types.ObjectId(blogId),
+        'blogOwnerInfo.userId': user.id,
+      })
+      .lean();
+    if (!isBind) {
+      return;
+    }
+    const result = await this.blogsModel.updateOne(
+      {
+        _id: new mongoose.Types.ObjectId(blogId),
+      },
+      {
+        $set: {
+          blogsOwnerInfo: {
+            userId: user.id,
+            userLogin: user.login,
+          },
+        },
+      },
+    );
+
+    return result.matchedCount === 1;
   }
 }

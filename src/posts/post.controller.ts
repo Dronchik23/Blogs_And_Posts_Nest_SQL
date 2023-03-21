@@ -29,7 +29,7 @@ import { PostsService } from './post.service';
 import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../sa/users/users.service';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
   CurrentUser,

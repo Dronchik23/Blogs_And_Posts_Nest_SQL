@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import { BlogDBType, PaginationType } from '../types and models/types';
 import { BlogsRepository } from './blog.repository';
-import { BlogViewModel } from '../types and models/models';
+import { BlogViewModel, UserViewModel } from '../types and models/models';
 
 @Injectable()
 export class BlogsService {
@@ -30,17 +30,16 @@ export class BlogsService {
 
     const totalCount = await this.blogsRepository.getBlogsCount(searchNameTerm);
 
-    const result = {
+    return {
       pagesCount: Math.ceil(totalCount / +pageSize),
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
       items: allBlogs,
     };
-    return result;
   }
 
-  async findBlogById(id: string): Promise<BlogViewModel | null> {
+  async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
     return this.blogsRepository.findBlogByBlogId(id);
   }
 
@@ -66,5 +65,9 @@ export class BlogsService {
 
   async deleteBlogByBlogId(id: string): Promise<boolean> {
     return await this.blogsRepository.deleteBlogByBlogId(id);
+  }
+
+  async bindBlogToUser(blogId: string, user: UserViewModel): Promise<boolean> {
+    return await this.blogsRepository.bindBlogToUser(blogId, user);
   }
 }
