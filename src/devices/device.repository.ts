@@ -1,9 +1,8 @@
 import { injectable } from 'inversify';
 import { DeviceDBType } from '../types and models/types';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { DeviceDocument } from '../types and models/schemas';
-import { ObjectId } from 'mongodb';
 
 @injectable()
 export class DevicesRepository {
@@ -13,24 +12,6 @@ export class DevicesRepository {
 
   async saveNewDevice(device: DeviceDBType) {
     return this.devicesModel.create(device);
-  }
-
-  async rewriteIssueAt(deviceId: string, data: string): Promise<any> {
-    return this.devicesModel.updateOne(
-      {
-        deviceId: new ObjectId(deviceId),
-      },
-      { $set: { lastActiveDate: data } },
-    );
-  }
-
-  async findAllDevicesByUserId(userId: string): Promise<any> {
-    return this.devicesModel
-      .find({
-        userId: userId,
-      })
-      .select('-_id -userId -__v')
-      .lean();
   }
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {
@@ -46,20 +27,6 @@ export class DevicesRepository {
       deviceId: deviceId,
     });
     return result.deletedCount === 1;
-  }
-
-  async findDeviceByDeviceIdUserIdAndDate(
-    deviceId: string,
-    userId: string,
-    lastActiveDate: string,
-  ) {
-    return await this.devicesModel
-      .findOne({
-        deviceId: deviceId,
-        userId: userId,
-        lastActiveDate: lastActiveDate,
-      })
-      .exec();
   }
 
   async updateLastActiveDateByDevice(
@@ -90,12 +57,5 @@ export class DevicesRepository {
 
   async deleteAllDevices() {
     await this.devicesModel.deleteMany({});
-  }
-
-  async findDeviceByDeviceIdAndDate(deviceId: string) {
-    console.log(deviceId);
-    return this.devicesModel.findOne({
-      deviceId: deviceId,
-    });
   }
 }

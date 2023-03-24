@@ -2,22 +2,27 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { injectable } from 'inversify';
 import { UsersRepository } from '../sa/users/users-repository.service';
-import { EmailService } from '../email/email.controller';
+import { EmailService } from '../email/email.service';
 import {
-  DeviceDBType,
   EmailConfirmationType,
   JWTPayloadType,
 } from '../types and models/types';
 import { JwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
+import { UsersQueryRepository } from '../query-repositorys/users-query.repository';
+import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
 
 @injectable()
 export class AuthService {
   constructor(
-    protected usersRepository: UsersRepository,
-    protected emailService: EmailService,
-    protected jwtService: JwtService,
-    protected devicesService: DevicesService,
+    private readonly usersRepository: UsersRepository,
+    private readonly emailService: EmailService,
+    private readonly jwtService: JwtService,
+    private readonly devicesService: DevicesService,
+
+    private readonly usersQueryRepository: UsersQueryRepository,
+
+    private readonly devicesQueryService: DevicesQueryRepository,
   ) {}
 
   async login(
@@ -49,7 +54,9 @@ export class AuthService {
     loginOrEmail: string,
     password: string,
   ): Promise<any> {
-    const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
+    const user = await this.usersQueryRepository.findUserByLoginOrEmail(
+      loginOrEmail,
+    );
     if (!user) return null;
     if (!user.passwordRecovery.isConfirmed) return null;
     const isHashIsEquals = await this.isPasswordCorrect(
@@ -68,7 +75,9 @@ export class AuthService {
   }
 
   async confirmEmail(code: string): Promise<boolean> {
-    const user = await this.usersRepository.findUserByConfirmationCode(code);
+    const user = await this.usersQueryRepository.findUserByConfirmationCode(
+      code,
+    );
     if (!user) return false;
     if (user.emailConfirmation.confirmationCode !== code) return false;
     if (user.emailConfirmation.expirationDate < new Date()) return false;
@@ -78,8 +87,7 @@ export class AuthService {
   async resendConfirmationCode(
     email: string,
   ): Promise<EmailConfirmationType | boolean> {
-    const user = await this.usersRepository.findByEmail(email);
-    console.log('user service', user);
+    const user = await this.usersQueryRepository.findUserByEmail(email);
     if (!user) return false;
     const newCode = randomUUID();
     await this.usersRepository.updateConfirmationCodeByUserId(
@@ -95,11 +103,12 @@ export class AuthService {
 
   async refreshToken(jwtPayload: JWTPayloadType) {
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
-    const device = await this.devicesService.findDeviceByDeviceIdUserIdAndDate(
-      jwtPayload.deviceId.toString(),
-      jwtPayload.userId.toString(),
-      lastActiveDate.toString(),
-    );
+    const device =
+      await this.devicesQueryService.findDeviceByDeviceIdUserIdAndDate(
+        jwtPayload.deviceId.toString(),
+        jwtPayload.userId.toString(),
+        lastActiveDate.toString(),
+      );
     if (!device) return null;
     const { accessToken, refreshToken } = this.jwtService.createJWT(
       jwtPayload.userId,

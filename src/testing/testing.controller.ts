@@ -4,7 +4,6 @@ import { UsersRepository } from '../sa/users/users-repository.service';
 import { DevicesRepository } from '../devices/device.repository';
 import { CommentsRepository } from '../comments/comment.repository';
 import { LikesRepository } from '../likes/like.repository';
-import { AttemptsRepository } from '../attempts/attempts.repository';
 import { PostsRepository } from '../posts/post.repository';
 
 @Controller('testing')
@@ -16,7 +15,6 @@ export class TestingController {
     private readonly devicesRepository: DevicesRepository,
     private readonly commentsRepository: CommentsRepository,
     private readonly likesRepository: LikesRepository,
-    private readonly attemptsRepository: AttemptsRepository,
   ) {}
 
   @Delete('all-data')
@@ -28,6 +26,5 @@ export class TestingController {
     await this.devicesRepository.deleteAllDevices();
     await this.commentsRepository.deleteAllComments();
     await this.likesRepository.deleteAllLikes();
-    await this.attemptsRepository.deleteAllAttempts();
   }
 }

@@ -2,11 +2,7 @@ import { ObjectId } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import {
-  CommentDBType,
-  LikeDBType,
-  LikeStatus,
-} from '../types and models/types';
+import { CommentDBType } from '../types and models/types';
 import { CommentViewModel, UserViewModel } from '../types and models/models';
 import {
   CommentDocument,
@@ -37,51 +33,12 @@ export class CommentsRepository {
       likesInfo: comment.likesInfo,
     };
   };
-  private fromCommentDBTypeToCommentViewModelWithPagination = (
-    comment: CommentDBType[],
-  ): CommentViewModel[] => {
-    return comment.map((comment) => ({
-      id: comment._id.toString(),
-      content: comment.content,
-      commentatorInfo: {
-        userId: comment.commentatorInfo.userId.toString(),
-        userLogin: comment.commentatorInfo.userLogin,
-      },
-      createdAt: comment.createdAt.toString(),
-      likesInfo: comment.likesInfo,
-    }));
-  };
 
   async createComment(
     commentForSave: CommentDBType,
   ): Promise<CommentViewModel> {
     const newComment = await this.commentsModel.create(commentForSave);
     return this.fromCommentDBTypeToCommentViewModel(newComment);
-  }
-
-  async findCommentsByPostId(
-    postId: string,
-    pageNumber: number,
-    pageSize: number,
-    sortBy: string,
-    sortDirection: string,
-    userId?: string,
-  ): Promise<CommentViewModel[]> {
-    const sortedComments: CommentDBType[] = await this.commentsModel
-      .find({ postId: postId })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
-    const commentsWithLikesInfo = await Promise.all(
-      sortedComments.map(async (comment) => {
-        return this.getLikesInfoForComment(comment, userId);
-      }),
-    );
-
-    return this.fromCommentDBTypeToCommentViewModelWithPagination(
-      commentsWithLikesInfo,
-    );
   }
 
   async updateComment(commentId: string, content: string, user: UserViewModel) {
@@ -99,55 +56,6 @@ export class CommentsRepository {
     return result.modifiedCount === 1;
   }
 
-  async findCommentByCommentId(
-    commentId: string,
-    userId?: string,
-  ): Promise<CommentViewModel | null> {
-    console.log('commentId repo', commentId);
-    console.log('userId repo', userId);
-    const comment = await this.commentsModel
-      .findOne({
-        _id: new mongoose.Types.ObjectId(commentId),
-      })
-      .exec();
-    console.log('comment repo', comment);
-
-    if (!comment) return null;
-
-    const commentWithLikesInfo = await this.getLikesInfoForComment(
-      comment,
-      userId,
-    );
-    return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
-  }
-
-  private async getLikesInfoForComment(comment: any, userId?: string) {
-    comment.likesInfo.likesCount = await this.likesModel.countDocuments({
-      parentId: comment._id,
-      status: LikeStatus.Like,
-    });
-    comment.likesInfo.dislikesCount = await this.likesModel.countDocuments({
-      parentId: comment._id,
-      status: LikeStatus.Dislike,
-    });
-    if (userId) {
-      const status: LikeDBType = await this.likesModel
-        .findOne({
-          parentId: comment._id,
-          userId: new ObjectId(userId),
-        })
-        .lean();
-      if (status) {
-        comment.likesInfo.myStatus = status.status;
-      }
-    }
-    return comment;
-  }
-
-  async getPostsCount(postId: string) {
-    return this.commentsModel.countDocuments({ postId: postId });
-  }
-
   async deleteCommentByCommentId(commentId: string, userId: string) {
     console.log('commentId repo', commentId);
     console.log('user repo', userId);
@@ -157,7 +65,6 @@ export class CommentsRepository {
         'commentatorInfo.userId': new ObjectId(userId),
       });
       return result.deletedCount === 1 ? true : false;
-      console.log('result.deletedCount', result.deletedCount);
     } catch {
       return false;
     }

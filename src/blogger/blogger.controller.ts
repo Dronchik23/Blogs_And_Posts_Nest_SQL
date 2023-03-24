@@ -1,17 +1,17 @@
 import {
+  Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  NotFoundException,
+  Param,
   Post,
   Put,
-  Delete,
-  Param,
-  Body,
   Query,
-  NotFoundException,
-  HttpCode,
+  Scope,
   UseGuards,
 } from '@nestjs/common';
-import { PaginationType } from 'src/types and models/types';
 import {
   BlogInputModel,
   BlogPostInputModel,
@@ -22,43 +22,43 @@ import {
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
-
 import { SkipThrottle } from '@nestjs/throttler';
 import { BlogsService } from '../blogs/blog.service';
+import { CreateBlogCommand } from '../use-cases/create-blog-use-case';
+import { CommandBus } from '@nestjs/cqrs';
+import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 
-@Controller('blogger/blogs')
+@Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
   constructor(
     private readonly blogsService: BlogsService,
     private readonly postsService: PostsService,
+    private readonly commandBus: CommandBus,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
   @SkipThrottle()
   @Get()
   async getAllBlogs(@Query() query: PaginationInputQueryModel) {
-    const { searchNameTerm, pageNumber, pageSize, sortBy, sortDirection } =
-      query;
-
-    const allBlogs = await this.blogsService.findAllBlogs(
-      searchNameTerm,
-      +pageSize,
-      sortBy,
-      sortDirection,
-      +pageNumber,
+    return await this.blogsQueryRepository.findAllBlogs(
+      query.searchNameTerm,
+      +query.pageSize,
+      query.sortBy,
+      query.sortDirection,
+      +query.pageNumber,
     );
-    return allBlogs;
   }
   @UseGuards(BasicAuthGuard)
   @Post()
   async createBlog(
     @Body() createBlogDTO: BlogInputModel,
   ): Promise<BlogViewModel> {
-    debugger;
-    const newBlog = await this.blogsService.createBlog(
-      createBlogDTO.name,
-      createBlogDTO.description,
-      createBlogDTO.websiteUrl,
+    return await this.commandBus.execute(
+      new CreateBlogCommand(
+        createBlogDTO.name,
+        createBlogDTO.description,
+        createBlogDTO.websiteUrl,
+      ),
     );
-    return newBlog;
   }
   @UseGuards(BasicAuthGuard)
   @Post(':blogId/posts')
@@ -66,7 +66,7 @@ export class BloggerBlogsController {
     @Param('blogId') blogId: string,
     @Body() blogPostCreateDTO: BlogPostInputModel,
   ): Promise<PostViewModel> {
-    const blog = await this.blogsService.findBlogByBlogId(blogId);
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
     }

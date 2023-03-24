@@ -1,24 +1,21 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Delete,
-  Param,
   Body,
-  Query,
-  Req,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
   HttpStatus,
   NotFoundException,
-  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+  Scope,
   UseGuards,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
-import { Request, Response } from 'express';
 import { ErrorType } from '../types and models/types';
 import {
   CommentInputModel,
-  CommentViewModel,
   LikeInputModel,
   PaginationInputQueryModel,
   PostInputModel,
@@ -29,21 +26,25 @@ import { PostsService } from './post.service';
 import { CommentsService } from '../comments/comment.service';
 import { LikesService } from '../likes/like.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
-import { UsersService } from '../sa/users/users.service';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
   CurrentUser,
   CurrentUserId,
   CurrentUserIdFromToken,
 } from '../auth/decorators';
+import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
+import { UsersQueryRepository } from '../query-repositorys/users-query.repository';
+import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
 
-@Controller('posts')
+@Controller({ path: 'posts', scope: Scope.REQUEST })
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
     private readonly likesService: LikesService,
-    private readonly usersService: UsersService,
+    private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @Get(':id/comments')
@@ -52,12 +53,12 @@ export class PostsController {
     @Query() paginationInPutQueryDTO: PaginationInputQueryModel,
     @CurrentUserIdFromToken() CurrentUserId,
   ) {
-    const post = await this.postsService.findPostByPostId(id);
+    const post = await this.postsQueryRepository.findPostByPostId(id);
     if (!post) {
       throw new NotFoundException();
     }
 
-    const allComments = await this.commentsService.findCommentsByPostId(
+    return await this.commentsQueryRepository.findCommentsByPostId(
       post.id,
       paginationInPutQueryDTO.pageNumber,
       paginationInPutQueryDTO.pageSize,
@@ -65,7 +66,6 @@ export class PostsController {
       paginationInPutQueryDTO.sortDirection,
       CurrentUserId,
     );
-    return allComments;
   }
 
   @UseGuards(BearerAuthGuard)
@@ -77,7 +77,7 @@ export class PostsController {
   ) {
     const content = commentCreateDTO.content;
 
-    const post = await this.postsService.findPostByPostId(postId);
+    const post = await this.postsQueryRepository.findPostByPostId(postId);
     if (!post) {
       throw new NotFoundException();
     }
@@ -108,17 +108,13 @@ export class PostsController {
     @Query() query: PaginationInputQueryModel,
     @CurrentUserIdFromToken() currentUserId,
   ) {
-    const { pageNumber, pageSize, sortBy, sortDirection } = query;
-
-    const allPosts = await this.postsService.findAllPosts(
-      pageSize,
-      sortBy,
-      sortDirection,
-      pageNumber,
+    return await this.postsQueryRepository.findAllPosts(
+      query.pageSize,
+      query.sortBy,
+      query.sortDirection,
+      query.pageNumber,
       currentUserId,
     );
-
-    return allPosts;
   }
 
   @UseGuards(BasicAuthGuard)
@@ -152,7 +148,10 @@ export class PostsController {
     @Param('id') id: string,
     @CurrentUserIdFromToken() CurrentUserId: string | null,
   ): Promise<PostViewModel> {
-    const post = await this.postsService.findPostByPostId(id, CurrentUserId);
+    const post = await this.postsQueryRepository.findPostByPostId(
+      id,
+      CurrentUserId,
+    );
 
     if (post) {
       return post;
@@ -167,8 +166,8 @@ export class PostsController {
   async updatePostByPostId(
     @Param('id') id: string,
     @Body() postUpdateDTO: PostUpdateModel,
-  ): Promise<any> {
-    const post = await this.postsService.findPostByPostId(id);
+  ): Promise<void> {
+    const post = await this.postsQueryRepository.findPostByPostId(id);
     if (!post) {
       throw new NotFoundException();
     }
@@ -203,12 +202,17 @@ export class PostsController {
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUserId() currentUserId: string | null,
-  ): Promise<any> {
-    const post = await this.postsService.findPostByPostId(id, currentUserId);
+  ): Promise<void> {
+    const post = await this.postsQueryRepository.findPostByPostId(
+      id,
+      currentUserId,
+    );
     if (!post) {
       throw new NotFoundException();
     }
-    const user = await this.usersService.getUserByUserId(currentUserId);
+    const user = await this.usersQueryRepository.findUserByUserId(
+      currentUserId,
+    );
     const parentId = post.id;
     await this.likesService.updateLikeStatus(
       parentId,

@@ -40,6 +40,7 @@ export type AttemptsType = {
   url: string;
   attemptsTime: string;
 };
+export type searchLoginOrEmailTermType = string | undefined;
 
 export enum LikeStatus {
   None = 'None',

@@ -1,21 +1,19 @@
 import {
-  Controller,
-  Post,
-  Body,
-  Req,
-  Res,
-  Get,
-  UseGuards,
-  UnauthorizedException,
-  HttpCode,
-  UseInterceptors,
-  HttpException,
-  HttpStatus,
   BadRequestException,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Res,
+  Scope,
+  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { UsersService } from '../sa/users/users.service';
-import { TokenType, UserDBType } from '../types and models/types';
+import { TokenType } from '../types and models/types';
 import { AuthService } from './auth.service';
 import { JwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
@@ -29,14 +27,16 @@ import { BearerAuthGuard } from './strategys/bearer-strategy';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ClientIp, CurrentUser, JwtPayload, UserAgent } from './decorators';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { UsersQueryRepository } from '../query-repositorys/users-query.repository';
 
-@Controller('auth')
+@Controller({ path: 'auth', scope: Scope.REQUEST })
 export class AuthController {
   constructor(
     private authService: AuthService,
     private usersService: UsersService,
     private jwtService: JwtService,
     private devicesService: DevicesService,
+    private usersQueryRepository: UsersQueryRepository,
   ) {}
 
   @Post('login')
@@ -94,7 +94,7 @@ export class AuthController {
 
   @Post('passwordRecovery')
   async passwordRecovery(@Body('email') email: string) {
-    const user: any = await this.usersService.findUserByEmail(email);
+    const user: any = await this.usersQueryRepository.findUserByEmail(email);
     if (user) {
       await this.authService.sendRecoveryCode(user.accountData.email);
       return HttpStatus.NO_CONTENT;
@@ -107,7 +107,9 @@ export class AuthController {
     @Body() body: { newPassword: string; recoveryCode: string },
   ) {
     const { newPassword, recoveryCode } = body;
-    const user = await this.usersService.findUserByRecoveryCode(recoveryCode);
+    const user = await this.usersQueryRepository.findUserByPasswordRecoveryCode(
+      recoveryCode,
+    );
     if (!user) {
       return HttpStatus.NO_CONTENT;
     }
@@ -126,7 +128,9 @@ export class AuthController {
   @Post('registration')
   @HttpCode(204)
   async registration(@Body() createUserDTO: UserInputModel): Promise<any> {
-    const user = await this.usersService.findUserByEmail(createUserDTO.email);
+    const user = await this.usersQueryRepository.findUserByEmail(
+      createUserDTO.email,
+    );
     if (user) {
       throw new BadRequestException({
         errorsMessages: [

@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { LikeDBType, LikeStatus } from '../types and models/types';
 import { LikesRepository } from './like.repository';
 import mongoose from 'mongoose';
 
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class LikesService {
   constructor(private readonly likesRepository: LikesRepository) {}
 

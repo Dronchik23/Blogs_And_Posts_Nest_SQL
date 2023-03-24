@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 import { settings } from './jwt.settings';
 import { TokensRepository } from '../tokens/tokens.repository';
 import { ConfigService } from '@nestjs/config';
 
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class JwtService {
   constructor(
     private readonly tokensRepository: TokensRepository,

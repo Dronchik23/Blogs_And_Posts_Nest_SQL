@@ -5,19 +5,17 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
-  HttpException,
   HttpStatus,
   NotFoundException,
   Param,
   Put,
+  Scope,
   UseGuards,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 import { CommentsService } from './comment.service';
 import { LikesService } from '../likes/like.service';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
-  CommentParamInPutModel,
   CommentUpdateModel,
   CommentViewModel,
   LikeInputModel,
@@ -28,13 +26,14 @@ import {
   CurrentUserId,
   CurrentUserIdFromToken,
 } from '../auth/decorators';
-import { ErrorType } from '../types and models/types';
+import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
 
-@Controller('comments')
+@Controller({ path: 'comments', scope: Scope.REQUEST })
 export class CommentsController {
   constructor(
     private readonly commentsService: CommentsService,
     private readonly likesService: LikesService,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @UseGuards(BearerAuthGuard)
@@ -45,7 +44,7 @@ export class CommentsController {
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUser() currentUser: UserViewModel,
   ) {
-    const comment = await this.commentsService.findCommentByCommentId(
+    const comment = await this.commentsQueryRepository.findCommentByCommentId(
       id,
       currentUser.id,
     );
@@ -72,7 +71,9 @@ export class CommentsController {
     @Body() commentInputDTO: CommentUpdateModel,
     @CurrentUser() currentUser,
   ) {
-    const comment = await this.commentsService.findCommentByCommentId(id);
+    const comment = await this.commentsQueryRepository.findCommentByCommentId(
+      id,
+    );
     if (!comment) {
       throw new NotFoundException();
     }
@@ -92,7 +93,7 @@ export class CommentsController {
     @Param('id') commentId: string,
     @CurrentUserIdFromToken() currentUserId,
   ): Promise<CommentViewModel | HttpStatus> {
-    const comment = await this.commentsService.findCommentByCommentId(
+    const comment = await this.commentsQueryRepository.findCommentByCommentId(
       commentId,
       currentUserId,
     );
@@ -108,9 +109,9 @@ export class CommentsController {
   async deleteCommentByCommentId(
     @Param('id') commentId: string,
     @CurrentUserId() currentUserId,
-  ): Promise<any> {
+  ): Promise<void> {
     debugger;
-    const comment = await this.commentsService.findCommentByCommentId(
+    const comment = await this.commentsQueryRepository.findCommentByCommentId(
       commentId,
       currentUserId,
     );

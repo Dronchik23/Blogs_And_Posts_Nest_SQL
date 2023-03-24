@@ -2,13 +2,15 @@ import { injectable } from 'inversify';
 import { DeviceDBType } from '../types and models/types';
 import { DevicesRepository } from './device.repository';
 import { JwtService } from '../jwt/jwt.service';
-import mongoose from 'mongoose';
+import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
 
 @injectable()
 export class DevicesService {
   constructor(
     protected devicesRepository: DevicesRepository,
     protected jwtService: JwtService,
+
+    private readonly devicesQueryService: DevicesQueryRepository,
   ) {}
 
   async createDevice(
@@ -28,10 +30,6 @@ export class DevicesService {
     return this.devicesRepository.saveNewDevice(device);
   }
 
-  async findAllDevicesByUserId(userId: string): Promise<any> {
-    return await this.devicesRepository.findAllDevicesByUserId(userId);
-  }
-
   async deleteAllDevicesExcludeCurrent(userId: string, currentDevice: string) {
     return await this.devicesRepository.deleteAllDevicesExcludeCurrent(
       userId,
@@ -49,7 +47,7 @@ export class DevicesService {
     lastActiveDate: string,
   ) {
     const device =
-      await this.devicesRepository.findDeviceByDeviceIdUserIdAndDate(
+      await this.devicesQueryService.findDeviceByDeviceIdUserIdAndDate(
         deviceId,
         userId,
         lastActiveDate,
@@ -63,22 +61,6 @@ export class DevicesService {
         lastActiveDate,
       );
     return foundDevice;
-  }
-
-  async findDeviceByDeviceIdUserIdAndDate(
-    deviceId: string,
-    userId: string,
-    lastActiveDate: string,
-  ) {
-    return this.devicesRepository.findDeviceByDeviceIdUserIdAndDate(
-      deviceId,
-      userId,
-      lastActiveDate,
-    );
-  }
-
-  async findDeviceByDeviceIdAndDate(deviceId: string) {
-    return this.devicesRepository.findDeviceByDeviceIdAndDate(deviceId);
   }
 
   async updateLastActiveDateByDevice(

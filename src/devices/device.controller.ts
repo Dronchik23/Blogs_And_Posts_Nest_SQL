@@ -1,30 +1,33 @@
 import {
   Controller,
-  Get,
   Delete,
-  Param,
-  UseGuards,
-  NotFoundException,
-  HttpCode,
   ForbiddenException,
-  Logger,
+  Get,
+  HttpCode,
+  NotFoundException,
+  Param,
+  Scope,
+  UseGuards,
 } from '@nestjs/common';
 import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
 import { CurrentUserId, JwtPayload } from '../auth/decorators';
-import { DeviceDBType } from '../types and models/types';
 import { Device } from '../types and models/schemas';
 import { SkipThrottle } from '@nestjs/throttler';
+import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
 
 @SkipThrottle()
-@Controller('security/devices')
+@Controller({ path: 'security/devices', scope: Scope.REQUEST })
 export class DevicesController {
-  constructor(private readonly devicesService: DevicesService) {}
+  constructor(
+    private readonly devicesService: DevicesService,
+    private readonly devicesQueryService: DevicesQueryRepository,
+  ) {}
 
   @UseGuards(RefreshTokenGuard)
   @Get()
   async getAllDevices(@CurrentUserId() currentUserId) {
-    const allDevices = await this.devicesService.findAllDevicesByUserId(
+    const allDevices = await this.devicesQueryService.findAllDevicesByUserId(
       currentUserId,
     );
     return allDevices;
@@ -55,7 +58,7 @@ export class DevicesController {
   ) {
     debugger;
     const device: Device =
-      await this.devicesService.findDeviceByDeviceIdAndDate(deviceId);
+      await this.devicesQueryService.findDeviceByDeviceIdAndDate(deviceId);
     if (!device) {
       throw new NotFoundException();
     }

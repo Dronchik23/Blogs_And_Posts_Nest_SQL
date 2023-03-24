@@ -1,53 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import {
   ExtendedLikesInfoType,
   LikeStatus,
-  PaginationType,
   PostDBType,
 } from '../types and models/types';
 import { BlogViewModel, PostViewModel } from '../types and models/models';
 import { PostsRepository } from './post.repository';
-import { BlogsService } from '../blogs/blog.service';
+import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class PostsService {
   constructor(
-    private readonly blogsService: BlogsService,
     private readonly postsRepository: PostsRepository,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
-
-  async findAllPosts(
-    pageSize: number,
-    sortBy: string,
-    sortDirection: string,
-    pageNumber: number,
-    userId?: string,
-  ): Promise<PaginationType> {
-    const allPosts = await this.postsRepository.findAllPosts(
-      pageSize,
-      sortBy,
-      sortDirection,
-      pageNumber,
-      userId,
-    );
-    const totalCount = await this.postsRepository.getAllPostCount();
-
-    return {
-      pagesCount: Math.ceil(totalCount / +pageSize),
-      page: +pageNumber,
-      pageSize: +pageSize,
-      totalCount: totalCount,
-      items: allPosts,
-    };
-  }
-
-  async findPostByPostId(
-    id: string,
-    userId?: string,
-  ): Promise<PostViewModel | null> {
-    return await this.postsRepository.findPostById(id, userId);
-  }
 
   async createPost(
     title: string,
@@ -55,9 +22,8 @@ export class PostsService {
     content: string,
     blogId: string,
   ): Promise<PostViewModel | null> {
-    const blog: BlogViewModel | null = await this.blogsService.findBlogByBlogId(
-      blogId,
-    );
+    const blog: BlogViewModel | null =
+      await this.blogsQueryRepository.findBlogByBlogId(blogId);
 
     if (!blog) {
       return null;
@@ -91,7 +57,7 @@ export class PostsService {
       content,
       blogId,
     );
-    console.log('isUpdated service', isUpdated);
+
     if (isUpdated) {
       return true;
     } else {
@@ -101,33 +67,5 @@ export class PostsService {
 
   async deletePostById(id: string): Promise<boolean> {
     return await this.postsRepository.deletePostById(id);
-  }
-
-  async findPostsByBlogId(
-    blogId: string,
-    pageNumber: number,
-    pageSize: number,
-    sortBy: string,
-    sortDirection: string,
-    userId?: string,
-  ): Promise<PaginationType> {
-    const allPosts = await this.postsRepository.findPostsByBlogId(
-      blogId,
-      pageNumber,
-      pageSize,
-      sortBy,
-      sortDirection,
-      userId,
-    );
-
-    const totalCount = await this.postsRepository.getPostsCount({ blogId });
-
-    return {
-      pagesCount: Math.ceil(totalCount / +pageSize),
-      page: +pageNumber,
-      pageSize: +pageSize,
-      totalCount: totalCount,
-      items: allPosts,
-    };
   }
 }

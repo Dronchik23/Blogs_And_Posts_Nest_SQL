@@ -1,67 +1,70 @@
 import {
   Controller,
   Get,
+  NotFoundException,
   Param,
   Query,
-  NotFoundException,
+  Scope,
 } from '@nestjs/common';
-import { PaginationType } from 'src/types and models/types';
 import { BlogsService } from './blog.service';
 import {
   BlogViewModel,
   PaginationInputQueryModel,
+  PostViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { CurrentUserIdFromToken } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CreateBlogService } from '../use-cases/create-blog-use-case';
+import { CommandBus } from '@nestjs/cqrs';
+import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
+import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
+import { PaginationType } from '../types and models/types';
 
-@Controller('blogs')
+@Controller({ path: 'blogs', scope: Scope.REQUEST })
 export class BlogsController {
   constructor(
     private readonly blogsService: BlogsService,
     private readonly postsService: PostsService,
+    private readonly createBlogsService: CreateBlogService,
+    private readonly commandBus: CommandBus,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
+    private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
   @SkipThrottle()
   @Get()
-  async getAllBlogs(
-    @Query() query: PaginationInputQueryModel,
-  ): Promise<PaginationType> {
-    const { searchNameTerm, pageNumber, pageSize, sortBy, sortDirection } =
-      query;
-
-    const allBlogs = await this.blogsService.findAllBlogs(
-      searchNameTerm,
-      +pageSize,
-      sortBy,
-      sortDirection,
-      +pageNumber,
+  async getAllBlogs(@Query() query: PaginationInputQueryModel) {
+    return await this.blogsQueryRepository.findAllBlogs(
+      query.searchNameTerm,
+      +query.pageSize,
+      query.sortBy,
+      query.sortDirection,
+      +query.pageNumber,
     );
-    return allBlogs;
   }
   @Get(':blogId/posts')
   async getPostByBlogId(
     @Param('blogId') blogId: string,
-    @Query() paginationInPutQueryDTO: PaginationInputQueryModel,
+    @Query() query: PaginationInputQueryModel,
     @CurrentUserIdFromToken() currentUserId: string | null,
   ): Promise<PaginationType> {
-    const blog = await this.blogsService.findBlogByBlogId(blogId);
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
-    const posts = await this.postsService.findPostsByBlogId(
+    return await this.postsQueryRepository.findPostsByBlogId(
       blogId,
-      paginationInPutQueryDTO.pageNumber,
-      paginationInPutQueryDTO.pageSize,
-      paginationInPutQueryDTO.sortBy,
-      paginationInPutQueryDTO.sortDirection,
+      query.pageNumber,
+      query.pageSize,
+      query.sortBy,
+      query.sortDirection,
       currentUserId,
     );
-    return posts;
   }
 
   @Get(':id')
   async getBlogById(@Param('id') id: string): Promise<BlogViewModel> {
-    const blog = await this.blogsService.findBlogByBlogId(id);
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(id);
     if (!blog) {
       throw new NotFoundException();
     }

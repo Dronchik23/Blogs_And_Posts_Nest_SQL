@@ -11,22 +11,6 @@ import {
   PasswordRecoveryType,
 } from './types';
 
-export type AttemptDocument = Attempt & Document;
-
-@Schema()
-export class Attempt {
-  @Prop()
-  ip: string;
-
-  @Prop()
-  url: string;
-
-  @Prop()
-  attemptsTime: string;
-}
-
-export const AttemptSchema = SchemaFactory.createForClass(Attempt);
-
 export type LikeDocument = Like & Document;
 
 @Schema()

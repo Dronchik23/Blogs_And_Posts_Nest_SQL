@@ -7,20 +7,26 @@ import {
   Param,
   Put,
   Query,
+  Scope,
   UseGuards,
 } from '@nestjs/common';
-import { PaginationType } from 'src/types and models/types';
 import { PaginationInputQueryModel } from '../../types and models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BlogsService } from '../../blogs/blog.service';
 import { UsersService } from '../users/users.service';
 import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
+import { CommandBus } from '@nestjs/cqrs';
+import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
+import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 
-@Controller('sa/blogs')
+@Controller({ path: 'sa/blogs', scope: Scope.REQUEST })
 export class SABlogsController {
   constructor(
     private readonly blogsService: BlogsService,
     private readonly usersService: UsersService,
+    private readonly commandBus: CommandBus,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
+    private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 
   @UseGuards(BasicAuthGuard)
@@ -30,11 +36,11 @@ export class SABlogsController {
     @Param('blogId') blogId: string,
     @Param('userId') userId: string,
   ) {
-    const blog = await this.blogsService.findBlogByBlogId(blogId);
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
-    const user = await this.usersService.findUserByUserId(userId);
+    const user = await this.usersQueryRepository.findUserByUserId(userId);
     if (!user) {
       throw new NotFoundException();
     }
@@ -46,19 +52,13 @@ export class SABlogsController {
 
   @SkipThrottle()
   @Get()
-  async getAllBlogs(
-    @Query() query: PaginationInputQueryModel,
-  ): Promise<PaginationType> {
-    const { searchNameTerm, pageNumber, pageSize, sortBy, sortDirection } =
-      query;
-
-    const allBlogs = await this.blogsService.findAllBlogs(
-      searchNameTerm,
-      +pageSize,
-      sortBy,
-      sortDirection,
-      +pageNumber,
+  async getAllBlogs(@Query() query: PaginationInputQueryModel) {
+    return await this.blogsQueryRepository.findAllBlogs(
+      query.searchNameTerm,
+      +query.pageSize,
+      query.sortBy,
+      query.sortDirection,
+      +query.pageNumber,
     );
-    return allBlogs;
   }
 }

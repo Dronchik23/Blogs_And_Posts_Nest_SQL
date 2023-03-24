@@ -5,8 +5,7 @@ import { UsersController } from './sa/users/users.controller';
 import { UsersRepository } from './sa/users/users-repository.service';
 import { UsersService } from './sa/users/users.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { EmailController } from './email/email.service';
-import { EmailService } from './email/email.controller';
+import { EmailService } from './email/email.service';
 import { BlogsController } from './blogs/blog.controller';
 import { BlogsRepository } from './blogs/blog.repository';
 import { BlogsService } from './blogs/blog.service';
@@ -20,15 +19,12 @@ import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { DevicesService } from './devices/device.service';
 import { DevicesRepository } from './devices/device.repository';
-import { AttemptsRepository } from './attempts/attempts.repository';
 import { DevicesController } from './devices/device.controller';
 import { LikesService } from './likes/like.service';
 import { LikesRepository } from './likes/like.repository';
 import { TokensRepository } from './tokens/tokens.repository';
 import { JwtService } from './jwt/jwt.service';
-import { APP_GUARD } from '@nestjs/core';
 import {
-  AttemptSchema,
   BlogSchema,
   CommentSchema,
   DeviceSchema,
@@ -60,6 +56,22 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
 import { BloggerBlogsController } from './blogger/blogger.controller';
 import { SABlogsController } from './sa/blogs/sa.blogs.controller';
+import { CreateBlogService } from './use-cases/create-blog-use-case';
+import { CqrsModule } from '@nestjs/cqrs';
+import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
+import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
+import { UsersQueryRepository } from './query-repositorys/users-query.repository';
+import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';
+import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
+
+export const useCases = [CreateBlogService];
+export const queryRepos = [
+  BlogsQueryRepository,
+  PostsQueryRepository,
+  UsersQueryRepository,
+  CommentsQueryRepository,
+  DevicesQueryRepository,
+];
 
 @Module({
   imports: [
@@ -78,7 +90,6 @@ import { SABlogsController } from './sa/blogs/sa.blogs.controller';
       { name: 'Device', schema: DeviceSchema },
       { name: 'Like', schema: LikeSchema },
       { name: 'TokenBlackList', schema: TokenBlackListSchema },
-      { name: 'Attempt', schema: AttemptSchema },
     ]),
     MongooseModule.forRoot('mongodb://localhost/nest'),
     ConfigModule.forRoot({ isGlobal: true }),
@@ -96,12 +107,12 @@ import { SABlogsController } from './sa/blogs/sa.blogs.controller';
       secret: settings.JWT_SECRET, // секретный ключ для подписи токенов
       signOptions: { expiresIn: '7m' }, // время жизни токенов
     }),
+    CqrsModule,
   ],
   controllers: [
     TestingController,
     AppController,
     UsersController,
-    EmailController,
     BlogsController,
     PostsController,
     CommentsController,
@@ -127,7 +138,6 @@ import { SABlogsController } from './sa/blogs/sa.blogs.controller';
     DevicesRepository,
     LikesService,
     LikesRepository,
-    AttemptsRepository,
     TokensRepository,
     JwtService,
     IsEmailAlreadyExistConstraint,
@@ -138,6 +148,8 @@ import { SABlogsController } from './sa/blogs/sa.blogs.controller';
     isCommentExistConstraint,
     BasicAuthStrategy,
     JwtStrategy,
+    ...useCases,
+    ...queryRepos,
     // {
     //   provide: APP_GUARD,
     //   useClass: ThrottlerGuard,
