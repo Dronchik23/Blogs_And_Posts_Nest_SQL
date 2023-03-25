@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { FilterQuery, Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { PostDBType } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { Post, PostDocument } from '../types and models/schemas';
@@ -34,37 +34,31 @@ export class PostsRepository {
     return this.fromPostDBTypePostViewModel(newPost);
   }
 
-  async updatePostById(
+  async updatePostByPostId(
     id: string,
     title: string,
     shortDescription: string,
     content: string,
     blogId: string,
   ): Promise<boolean> {
-    try {
-      const result = await this.postsModel.updateOne(
-        {
-          _id: new mongoose.Types.ObjectId(id),
+    const result = await this.postsModel.updateOne(
+      {
+        _id: new mongoose.Types.ObjectId(id),
+      },
+      {
+        $set: {
+          title: title,
+          shortDescription: shortDescription,
+          content: content,
+          blogId: blogId,
         },
-        {
-          $set: {
-            title: title,
-            shortDescription: shortDescription,
-            content: content,
-            blogId: blogId,
-          },
-        },
-      );
-      if (result.matchedCount === 1) {
-        return true;
-      }
-      return false;
-    } catch (e) {
-      return false;
-    }
+      },
+    );
+
+    return result.matchedCount === 1;
   }
 
-  async deletePostById(id: string): Promise<boolean> {
+  async deletePostByPostId(id: string): Promise<boolean> {
     try {
       const result = await this.postsModel.deleteOne({
         _id: new mongoose.Types.ObjectId(id),

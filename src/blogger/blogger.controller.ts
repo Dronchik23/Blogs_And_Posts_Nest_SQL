@@ -24,9 +24,12 @@ import { PostsService } from '../posts/post.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BlogsService } from '../blogs/blog.service';
-import { CreateBlogCommand } from '../use-cases/create-blog-use-case';
+import { CreateBlogCommand } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
+import { UpdateBlogCommand } from '../use-cases/blogs/update-blog-by-blogId-use-case';
+import { DeleteBlogCommand } from '../use-cases/blogs/delete-blog-by-blogId-use-case';
+import { CreatePostCommand } from '../use-cases/posts/create-post-use-case';
 
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
@@ -70,11 +73,13 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const newPost = await this.postsService.createPost(
-      blogPostCreateDTO.title,
-      blogPostCreateDTO.shortDescription,
-      blogPostCreateDTO.content,
-      blogId,
+    const newPost = await this.commandBus.execute(
+      new CreatePostCommand(
+        blogPostCreateDTO.title,
+        blogPostCreateDTO.shortDescription,
+        blogPostCreateDTO.content,
+        blogId,
+      ),
     );
     if (newPost) {
       return newPost;
@@ -88,11 +93,13 @@ export class BloggerBlogsController {
   async updateBlogByBlogId(
     @Param('blogId') blogId: string,
     @Body() updateBlogDto: BlogUpdateModel,
-  ): Promise<void> {
-    const isUpdated = await this.blogsService.updateBlogById(
-      blogId,
-      updateBlogDto.name,
-      updateBlogDto.websiteUrl,
+  ): Promise<void | boolean> {
+    const isUpdated = await this.commandBus.execute(
+      new UpdateBlogCommand(
+        blogId,
+        updateBlogDto.name,
+        updateBlogDto.websiteUrl,
+      ),
     );
     if (!isUpdated) {
       throw new NotFoundException();
@@ -102,7 +109,9 @@ export class BloggerBlogsController {
   @Delete(':blogId')
   @HttpCode(204)
   async deleteBlogByBlogId(@Param('blogId') blogId: string): Promise<boolean> {
-    const isDeleted = await this.blogsService.deleteBlogByBlogId(blogId);
+    const isDeleted = await this.commandBus.execute(
+      new DeleteBlogCommand(blogId),
+    );
     if (isDeleted) {
       return true;
     } else {

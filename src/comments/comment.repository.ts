@@ -41,11 +41,11 @@ export class CommentsRepository {
     return this.fromCommentDBTypeToCommentViewModel(newComment);
   }
 
-  async updateComment(commentId: string, content: string, user: UserViewModel) {
+  async updateComment(commentId: string, content: string, userId: string) {
     const result = await this.commentsModel.updateOne(
       {
         _id: new ObjectId(commentId),
-        'commentatorInfo.userId': new ObjectId(user.id),
+        'commentatorInfo.userId': new ObjectId(userId),
       },
       {
         $set: {

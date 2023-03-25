@@ -15,6 +15,9 @@ import { CurrentUserId, JwtPayload } from '../auth/decorators';
 import { Device } from '../types and models/schemas';
 import { SkipThrottle } from '@nestjs/throttler';
 import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { DeleteAllDevicesExcludeCurrentCommand } from '../use-cases/devices/delete -all-devices-exclude-current-use-case';
+import { DeleteDeviceByDeviceIdCommand } from '../use-cases/devices/delete-device-by-deviceId-use-case';
 
 @SkipThrottle()
 @Controller({ path: 'security/devices', scope: Scope.REQUEST })
@@ -22,6 +25,7 @@ export class DevicesController {
   constructor(
     private readonly devicesService: DevicesService,
     private readonly devicesQueryService: DevicesQueryRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @UseGuards(RefreshTokenGuard)
@@ -40,9 +44,11 @@ export class DevicesController {
     @CurrentUserId() currentUserId,
     @JwtPayload() jwtPayload,
   ) {
-    const isDeleted = await this.devicesService.deleteAllDevicesExcludeCurrent(
-      currentUserId,
-      jwtPayload.deviceId,
+    const isDeleted = await this.commandBus.execute(
+      new DeleteAllDevicesExcludeCurrentCommand(
+        currentUserId,
+        jwtPayload.deviceId,
+      ),
     );
     if (!isDeleted) {
       throw new NotFoundException();
@@ -56,7 +62,6 @@ export class DevicesController {
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
   ) {
-    debugger;
     const device: Device =
       await this.devicesQueryService.findDeviceByDeviceIdAndDate(deviceId);
     if (!device) {
@@ -65,8 +70,8 @@ export class DevicesController {
     if (currentUserId !== device.userId) {
       throw new ForbiddenException();
     }
-    const isDeleted = await this.devicesService.deleteDeviceByDeviceId(
-      deviceId,
+    const isDeleted = await this.commandBus.execute(
+      new DeleteDeviceByDeviceIdCommand(deviceId),
     );
     if (!isDeleted) {
       throw new ForbiddenException();

@@ -56,15 +56,53 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
 import { BloggerBlogsController } from './blogger/blogger.controller';
 import { SABlogsController } from './sa/blogs/sa.blogs.controller';
-import { CreateBlogService } from './use-cases/create-blog-use-case';
+import { CreateBlogService } from './use-cases/blogs/create-blog-use-case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
 import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
 import { UsersQueryRepository } from './query-repositorys/users-query.repository';
 import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';
 import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
+import { DeleteBlogService } from './use-cases/blogs/delete-blog-by-blogId-use-case';
+import { UpdateBlogService } from './use-cases/blogs/update-blog-by-blogId-use-case';
+import { CreatePostService } from './use-cases/posts/create-post-use-case';
+import { DeletePostService } from './use-cases/posts/delete-post-by-postId-use-case';
+import { CreateCommentService } from './use-cases/comments/create-comment-use-case';
+import { DeleteCommentService } from './use-cases/comments/delete-comment-by-commentId-use-case';
+import { UpdateCommentService } from './use-cases/comments/update -comment-by-commentId-and-userId-use-case';
+import { CreateUserService } from './use-cases/users/create-user-use-case';
+import { DeleteUserService } from './use-cases/users/delete-user-by-id-use-case';
+import { LoginService } from './use-cases/auth/login-use-case';
+import { RefreshTokenService } from './use-cases/auth/refresh-token-use-case';
+import { PasswordRecoveryService } from './use-cases/auth/password-recovery-use-case';
+import { NewPasswordService } from './use-cases/auth/new-password-use-case';
+import { RegistrationConfirmationService } from './use-cases/auth/registration-confirmation-use-case';
+import { RegistrationEmailResendingService } from './use-cases/auth/registration-email-resending-use-case';
+import { DeleteAllDevicesExcludeCurrentCommand } from './use-cases/devices/delete -all-devices-exclude-current-use-case';
+import { LogoutService } from './use-cases/auth/logout-use-case';
+import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
 
-export const useCases = [CreateBlogService];
+export const useCases = [
+  CreateBlogService,
+  UpdateBlogService,
+  DeleteBlogService,
+  CreatePostService,
+  DeletePostService,
+  CreateCommentService,
+  DeleteCommentService,
+  UpdateCommentService,
+  CreateUserService,
+  DeleteUserService,
+  LoginService,
+  RefreshTokenService,
+  PasswordRecoveryService,
+  NewPasswordService,
+  RegistrationConfirmationService,
+  RegistrationEmailResendingService,
+  LogoutService,
+  DeleteAllDevicesExcludeCurrentCommand,
+  DeleteDeviceByDeviceIdService,
+];
 export const queryRepos = [
   BlogsQueryRepository,
   PostsQueryRepository,

@@ -14,7 +14,6 @@ import {
 import { Response } from 'express';
 import { UsersService } from '../sa/users/users.service';
 import { TokenType } from '../types and models/types';
-import { AuthService } from './auth.service';
 import { JwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
 import {
@@ -28,15 +27,23 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { ClientIp, CurrentUser, JwtPayload, UserAgent } from './decorators';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { UsersQueryRepository } from '../query-repositorys/users-query.repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreateUserCommand } from '../use-cases/users/create-user-use-case';
+import { LoginCommand } from '../use-cases/auth/login-use-case';
+import { RefreshTokenCommand } from '../use-cases/auth/refresh-token-use-case';
+import { PasswordRecoveryCommand } from '../use-cases/auth/password-recovery-use-case';
+import { NewPasswordCommand } from '../use-cases/auth/new-password-use-case';
+import { RegistrationConfirmationCommand } from '../use-cases/auth/registration-confirmation-use-case';
+import { LogoutCommand } from '../use-cases/auth/logout-use-case';
 
 @Controller({ path: 'auth', scope: Scope.REQUEST })
 export class AuthController {
   constructor(
-    private authService: AuthService,
     private usersService: UsersService,
     private jwtService: JwtService,
     private devicesService: DevicesService,
     private usersQueryRepository: UsersQueryRepository,
+    private commandBus: CommandBus,
   ) {}
 
   @Post('login')
@@ -47,15 +54,14 @@ export class AuthController {
     @ClientIp() ip,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const loginOrEmail = loginInputModelDto.loginOrEmail;
-    const password = loginInputModelDto.password;
-    const tokens = await this.authService.login(
-      loginOrEmail,
-      password,
-      ip,
-      title,
+    const tokens = await this.commandBus.execute(
+      new LoginCommand(
+        loginInputModelDto.loginOrEmail,
+        loginInputModelDto.password,
+        ip,
+        title,
+      ),
     );
-
     if (!tokens) {
       throw new UnauthorizedException();
     }
@@ -76,8 +82,8 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @JwtPayload() jwtPayload,
   ) {
-    const tokens: TokenType | null = await this.authService.refreshToken(
-      jwtPayload,
+    const tokens: TokenType | null = await this.commandBus.execute(
+      new RefreshTokenCommand(jwtPayload),
     );
     if (!tokens) {
       throw new UnauthorizedException();
@@ -96,7 +102,9 @@ export class AuthController {
   async passwordRecovery(@Body('email') email: string) {
     const user: any = await this.usersQueryRepository.findUserByEmail(email);
     if (user) {
-      await this.authService.sendRecoveryCode(user.accountData.email);
+      await this.commandBus.execute(
+        new PasswordRecoveryCommand(user.accountData.email),
+      );
       return HttpStatus.NO_CONTENT;
     }
     return HttpStatus.NO_CONTENT;
@@ -113,14 +121,18 @@ export class AuthController {
     if (!user) {
       return HttpStatus.NO_CONTENT;
     }
-    await this.usersService.changePassword(newPassword, user!._id);
+    await this.commandBus.execute(
+      new NewPasswordCommand(newPassword, user!._id),
+    );
     return HttpStatus.NO_CONTENT;
   }
 
   @Post('registration-confirmation')
   @HttpCode(204)
   async registrationConfirmation(@Body() codeInputModelDTO: CodeInputModel) {
-    const result = await this.authService.confirmEmail(codeInputModelDTO.code);
+    const result = await this.commandBus.execute(
+      new RegistrationConfirmationCommand(codeInputModelDTO.code),
+    );
     if (!result) {
       throw new BadRequestException();
     }
@@ -141,11 +153,13 @@ export class AuthController {
         ],
       });
     }
-    await this.usersService.createUser(
-      createUserDTO.login,
-      createUserDTO.email,
-      createUserDTO.password,
-    ); // создаем юзера
+    await this.commandBus.execute(
+      new CreateUserCommand(
+        createUserDTO.login,
+        createUserDTO.email,
+        createUserDTO.password,
+      ),
+    );
   }
 
   @Post('registration-email-resending')
@@ -153,10 +167,10 @@ export class AuthController {
   async registrationEmailResending(
     @Body() registrationEmailResendingDTO: RegistrationEmailResendingModel,
   ) {
-    const haveAnyEmailLikeThis = await this.authService.resendConfirmationCode(
-      registrationEmailResendingDTO.email,
-    );
-    if (!haveAnyEmailLikeThis) {
+    const email = await this.commandBus.execute(
+      new RegistrationConfirmationCommand(registrationEmailResendingDTO.email),
+    ); // check email for existent
+    if (!email) {
       throw new BadRequestException({
         message: [
           {
@@ -184,12 +198,9 @@ export class AuthController {
   @HttpCode(204)
   async logout(@JwtPayload() jwtPayload) {
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
-    const device =
-      await this.devicesService.findAndDeleteDeviceByDeviceIdUserIdAndDate(
-        jwtPayload.deviceId,
-        jwtPayload.userId,
-        lastActiveDate,
-      );
+    const device = await this.commandBus.execute(
+      new LogoutCommand(jwtPayload.deviceId, jwtPayload.userId, lastActiveDate),
+    );
     if (!device) {
       throw new UnauthorizedException();
     }

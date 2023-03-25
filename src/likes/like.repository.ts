@@ -12,7 +12,10 @@ export class LikesRepository {
   ) {}
 
   async updateLikeStatus(newLike: any): Promise<LikeDBType> {
-    const filter = { userId: newLike.userId, parentId: newLike.parentId };
+    const filter = {
+      userId: newLike.userId,
+      parentId: newLike.parentId,
+    };
     const options = { upsert: true, new: true, setDefaultsOnInsert: true };
     await this.likeModel
       .findOneAndUpdate(filter, { ...newLike }, options)

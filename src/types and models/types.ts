@@ -129,8 +129,8 @@ export class ExtendedLikesInfoType {
 }
 export class LikeDBType {
   constructor(
-    public parentId: mongoose.Types.ObjectId,
-    public userId: mongoose.Types.ObjectId,
+    public parentId: ObjectId,
+    public userId: ObjectId,
     public userLogin: string,
     public status: LikeStatus,
     public addedAt: string,

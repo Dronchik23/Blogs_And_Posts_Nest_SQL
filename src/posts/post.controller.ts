@@ -35,6 +35,12 @@ import {
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { UsersQueryRepository } from '../query-repositorys/users-query.repository';
 import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { CreatePostCommand } from '../use-cases/posts/create-post-use-case';
+import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-use-case';
+import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-case';
+import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
+import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
 
 @Controller({ path: 'posts', scope: Scope.REQUEST })
 export class PostsController {
@@ -45,6 +51,7 @@ export class PostsController {
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @Get(':id/comments')
@@ -75,16 +82,12 @@ export class PostsController {
     @Body() commentCreateDTO: CommentInputModel,
     @CurrentUser() currentUser,
   ) {
-    const content = commentCreateDTO.content;
-
     const post = await this.postsQueryRepository.findPostByPostId(postId);
     if (!post) {
       throw new NotFoundException();
     }
-    const newComment = await this.commentsService.createComment(
-      postId,
-      content,
-      currentUser,
+    const newComment = await this.commandBus.execute(
+      new CreateCommentCommand(postId, commentCreateDTO.content, currentUser),
     );
     if (newComment) {
       return HttpStatus.CREATED, newComment;
@@ -122,11 +125,13 @@ export class PostsController {
   async createPost(
     @Body() postCreateDTO: PostInputModel,
   ): Promise<PostViewModel | ErrorType> {
-    const newPost = await this.postsService.createPost(
-      postCreateDTO.title,
-      postCreateDTO.shortDescription,
-      postCreateDTO.content,
-      postCreateDTO.blogId,
+    const newPost = await this.commandBus.execute(
+      new CreatePostCommand(
+        postCreateDTO.title,
+        postCreateDTO.shortDescription,
+        postCreateDTO.content,
+        postCreateDTO.blogId,
+      ),
     );
 
     if (newPost) {
@@ -171,12 +176,14 @@ export class PostsController {
     if (!post) {
       throw new NotFoundException();
     }
-    const isUpdated = await this.postsService.updatePostById(
-      id,
-      postUpdateDTO.title,
-      postUpdateDTO.shortDescription,
-      postUpdateDTO.content,
-      postUpdateDTO.blogId,
+    const isUpdated = await this.commandBus.execute(
+      new UpdatePostCommand(
+        post.id,
+        postUpdateDTO.title,
+        postUpdateDTO.shortDescription,
+        postUpdateDTO.content,
+        postUpdateDTO.blogId,
+      ),
     );
     if (!isUpdated) {
       throw new NotFoundException();
@@ -187,7 +194,7 @@ export class PostsController {
   @Delete(':id')
   @HttpCode(204)
   async deletePostByPostId(@Param('id') id: string): Promise<boolean> {
-    const isDeleted = await this.postsService.deletePostById(id);
+    const isDeleted = await this.commandBus.execute(new DeletePostCommand(id));
     if (isDeleted) {
       return true;
     } else {
@@ -214,11 +221,13 @@ export class PostsController {
       currentUserId,
     );
     const parentId = post.id;
-    await this.likesService.updateLikeStatus(
-      parentId,
-      currentUserId,
-      user.login,
-      likeStatusDTO.likeStatus,
+    await this.commandBus.execute(
+      new UpdateLikeStatusCommand(
+        parentId,
+        currentUserId,
+        user.login,
+        likeStatusDTO.likeStatus,
+      ),
     );
   }
 }

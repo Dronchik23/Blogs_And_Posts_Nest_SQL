@@ -27,6 +27,10 @@ import {
   CurrentUserIdFromToken,
 } from '../auth/decorators';
 import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
+import { CommandBus } from '@nestjs/cqrs';
+import { DeleteCommentCommand } from '../use-cases/comments/delete-comment-by-commentId-use-case';
+import { UpdateCommentCommand } from '../use-cases/comments/update -comment-by-commentId-and-userId-use-case';
+import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
 
 @Controller({ path: 'comments', scope: Scope.REQUEST })
 export class CommentsController {
@@ -34,6 +38,7 @@ export class CommentsController {
     private readonly commentsService: CommentsService,
     private readonly likesService: LikesService,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   @UseGuards(BearerAuthGuard)
@@ -53,11 +58,13 @@ export class CommentsController {
     }
 
     const parentId = comment.id;
-    await this.likesService.updateLikeStatus(
-      parentId,
-      currentUser.id,
-      currentUser.login,
-      likeStatusDTO.likeStatus,
+    await this.commandBus.execute(
+      new UpdateLikeStatusCommand(
+        parentId,
+        currentUser.id,
+        currentUser.login,
+        likeStatusDTO.likeStatus,
+      ),
     );
 
     return HttpStatus.NO_CONTENT;
@@ -67,21 +74,23 @@ export class CommentsController {
   @Put(':id')
   @HttpCode(204)
   async updateCommentByCommentId(
-    @Param('id') id: string,
+    @Param('commentId') commentId: string,
     @Body() commentInputDTO: CommentUpdateModel,
-    @CurrentUser() currentUser,
+    @CurrentUserId() currentUserId,
   ) {
     const comment = await this.commentsQueryRepository.findCommentByCommentId(
-      id,
+      commentId,
     );
     if (!comment) {
       throw new NotFoundException();
     }
 
-    const isUpdated = await this.commentsService.updateCommentByUserId(
-      id,
-      commentInputDTO.content,
-      currentUser,
+    const isUpdated = await this.commandBus.execute(
+      new UpdateCommentCommand(
+        commentId,
+        commentInputDTO.content,
+        currentUserId,
+      ),
     );
     if (!isUpdated) {
       throw new ForbiddenException();
@@ -119,9 +128,8 @@ export class CommentsController {
       throw new NotFoundException();
     }
 
-    const isDeleted = await this.commentsService.deleteCommentByCommentId(
-      commentId,
-      currentUserId,
+    const isDeleted = await this.commandBus.execute(
+      new DeleteCommentCommand(commentId, currentUserId),
     );
     if (!isDeleted) {
       throw new ForbiddenException();

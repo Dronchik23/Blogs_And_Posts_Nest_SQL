@@ -27,11 +27,11 @@ export class BlogsRepository {
     return this.fromBlogDBTypeBlogViewModel(newBlog);
   }
 
-  async updateBlogById(
+  async updateBlogByBlogId(
     id: string,
     name: string,
     websiteUrl: string,
-  ): Promise<BlogViewModel | boolean> {
+  ): Promise<boolean> {
     const result = await this.blogsModel.updateOne(
       {
         _id: new mongoose.Types.ObjectId(id),

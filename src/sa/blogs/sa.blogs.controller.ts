@@ -18,6 +18,10 @@ import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
+import {
+  BindBlogToUserCommand,
+  BindBlogToUserService,
+} from '../../use-cases/blogs/bind-blog-to-user-use-case';
 
 @Controller({ path: 'sa/blogs', scope: Scope.REQUEST })
 export class SABlogsController {
@@ -44,7 +48,9 @@ export class SABlogsController {
     if (!user) {
       throw new NotFoundException();
     }
-    const isBind = await this.blogsService.bindBlogToUser(blogId, user);
+    const isBind = await this.commandBus.execute(
+      new BindBlogToUserCommand(blogId, user),
+    );
     if (!isBind) {
       throw new BadRequestException();
     }

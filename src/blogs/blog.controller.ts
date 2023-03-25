@@ -10,12 +10,11 @@ import { BlogsService } from './blog.service';
 import {
   BlogViewModel,
   PaginationInputQueryModel,
-  PostViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { CurrentUserIdFromToken } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';
-import { CreateBlogService } from '../use-cases/create-blog-use-case';
+import { CreateBlogService } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';

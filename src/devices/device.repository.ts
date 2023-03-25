@@ -10,7 +10,7 @@ export class DevicesRepository {
     @InjectModel('Device') private readonly devicesModel: Model<DeviceDocument>,
   ) {}
 
-  async saveNewDevice(device: DeviceDBType) {
+  async createDevice(device: DeviceDBType) {
     return this.devicesModel.create(device);
   }
 
