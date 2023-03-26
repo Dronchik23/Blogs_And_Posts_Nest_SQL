@@ -77,6 +77,7 @@ export class UserDBType {
     public accountData: AccountDataType,
     public emailConfirmation: EmailConfirmationType,
     public passwordRecovery: PasswordRecoveryType,
+    public banInfo: BanInfoType,
     public passwordSalt?: string,
   ) {}
 }
@@ -159,8 +160,18 @@ export class BearerJwtPayloadType {
   exp: number;
   userId: string;
 }
-
 export class BlogOwnerInfoType {
   userId: string;
   userLogin: string;
+}
+export class BanInfoType {
+  isBanned: boolean;
+  banDate: string;
+  banReason: string;
+
+  constructor(isBanned = false, banDate = '', banReason = '') {
+    this.isBanned = isBanned;
+    this.banDate = banDate;
+    this.banReason = banReason;
+  }
 }

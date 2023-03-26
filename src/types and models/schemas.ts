@@ -3,6 +3,7 @@ import { Document, Types } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import {
   AccountDataType,
+  BanInfoType,
   CommentatorInfoType,
   EmailConfirmationType,
   ExtendedLikesInfoType,
@@ -165,6 +166,8 @@ export class User {
 
   @Prop()
   passwordRecovery: PasswordRecoveryType;
+  @Prop()
+  banInfo: BanInfoType;
 
   @Prop()
   passwordSalt?: string;

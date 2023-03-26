@@ -19,6 +19,7 @@ export class UsersQueryRepository {
       login: user.accountData.login,
       email: user.accountData.email,
       createdAt: user.accountData.createdAt,
+      banInfo: user.banInfo,
     };
   }
 
@@ -28,6 +29,7 @@ export class UsersQueryRepository {
       login: user.accountData.login,
       email: user.accountData.email,
       createdAt: user.accountData.createdAt,
+      banInfo: user.banInfo,
     }));
   }
 

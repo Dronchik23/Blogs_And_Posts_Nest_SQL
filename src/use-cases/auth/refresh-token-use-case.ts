@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../sa/users/users-repository.service';
-import { DevicesService } from '../../devices/device.service';
 import { JwtService } from '../../jwt/jwt.service';
 import { JWTPayloadType, TokenType } from '../../types and models/types';
 import { DevicesQueryRepository } from '../../query-repositorys/devices-query.repository';

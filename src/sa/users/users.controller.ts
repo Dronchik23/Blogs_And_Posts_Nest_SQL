@@ -7,12 +7,14 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Scope,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
+  BunUserInputModel,
   PaginationInputQueryModel,
   UserInputModel,
   UserViewModel,
@@ -23,6 +25,7 @@ import { UsersQueryRepository } from '../../query-repositorys/users-query.reposi
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../../use-cases/users/create-user-use-case';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
+import { BunUserByUserIdCommand } from '../../use-cases/users/bun-user-by-userId-use-case';
 
 @Controller({ path: 'sa/users', scope: Scope.REQUEST })
 export class UsersController {
@@ -79,5 +82,21 @@ export class UsersController {
     } else {
       throw new NotFoundException();
     }
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put(':userId')
+  @HttpCode(204)
+  async bunUserByUserId(
+    @Param('userId') userId: string,
+    @Body() bunUserDTO: BunUserInputModel,
+  ): Promise<boolean> {
+    return await this.commandBus.execute(
+      new BunUserByUserIdCommand(
+        userId,
+        bunUserDTO.isBanned,
+        bunUserDTO.banReason,
+      ),
+    );
   }
 }

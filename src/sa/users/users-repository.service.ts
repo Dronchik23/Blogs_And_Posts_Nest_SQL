@@ -16,6 +16,7 @@ export class UsersRepository {
       login: user.accountData.login,
       email: user.accountData.email,
       createdAt: user.accountData.createdAt,
+      banInfo: user.banInfo,
     };
   }
 
@@ -82,6 +83,25 @@ export class UsersRepository {
           'accountData.passwordHash': passwordHash,
           'passwordRecovery.recoveryCode': null,
           'passwordRecovery.isConfirmed': true,
+        },
+      },
+    );
+    return result.matchedCount === 1;
+  }
+
+  async changeBunStatusForUser(
+    userId: string,
+    isBanned: boolean,
+    banReason: string,
+    banDate: string,
+  ) {
+    const result = await this.usersModel.updateOne(
+      { _id: userId },
+      {
+        $set: {
+          'BanInfoType.isBanned': isBanned,
+          'BanInfoType.banDate': banDate,
+          'passwordRecovery.banReason': banReason,
         },
       },
     );

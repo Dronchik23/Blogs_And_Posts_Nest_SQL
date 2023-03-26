@@ -81,6 +81,7 @@ import { RegistrationEmailResendingService } from './use-cases/auth/registration
 import { DeleteAllDevicesExcludeCurrentCommand } from './use-cases/devices/delete -all-devices-exclude-current-use-case';
 import { LogoutService } from './use-cases/auth/logout-use-case';
 import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
+import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -102,6 +103,7 @@ export const useCases = [
   LogoutService,
   DeleteAllDevicesExcludeCurrentCommand,
   DeleteDeviceByDeviceIdService,
+  BunUserByUserIService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,

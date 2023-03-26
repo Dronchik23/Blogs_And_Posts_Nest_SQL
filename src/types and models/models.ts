@@ -1,5 +1,11 @@
-import { BlogOwnerInfoType, ExtendedLikesInfoType, LikeStatus } from './types';
 import {
+  BanInfoType,
+  BlogOwnerInfoType,
+  ExtendedLikesInfoType,
+  LikeStatus,
+} from './types';
+import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsIn,
@@ -80,6 +86,7 @@ export class UserViewModel {
   login: string;
   email: string;
   createdAt: string;
+  banInfo: BanInfoType;
 }
 export class CommentInputModel {
   @IsString()
@@ -214,9 +221,6 @@ export class CodeInputModel {
   @IsCodeAlreadyConfirmed()
   code: string;
 }
-export class CommentParamInPutModel {
-  commentId: string;
-}
 export class CommentUpdateModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)
@@ -224,10 +228,11 @@ export class CommentUpdateModel {
   @IsNotEmpty()
   content: string;
 }
-export class DeviceViewModel {
-  ip: string;
-  title: string;
-  LastActiveDate: string;
-
-  deviceId: string;
+export class BunUserInputModel {
+  @IsBoolean()
+  isBanned: boolean;
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(20)
+  banReason: string;
 }
