@@ -47,6 +47,7 @@ export class UsersController {
       query.sortBy,
       query.sortDirection,
       +query.pageNumber,
+      query.banStatus,
     );
   }
   @UseGuards(BasicAuthGuard)

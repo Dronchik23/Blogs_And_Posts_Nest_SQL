@@ -42,10 +42,16 @@ export type AttemptsType = {
 };
 export type searchLoginOrEmailTermType = string | undefined;
 
+//enums
 export enum LikeStatus {
   None = 'None',
   Like = 'Like',
   Dislike = 'Dislike',
+}
+export enum BanStatus {
+  banned = 'banned',
+  notBanned = 'notBanned',
+  all = 'all',
 }
 // classes
 export class BlogDBType {

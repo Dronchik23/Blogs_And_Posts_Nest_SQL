@@ -1,5 +1,6 @@
 import {
   BanInfoType,
+  BanStatus,
   BlogOwnerInfoType,
   ExtendedLikesInfoType,
   LikeStatus,
@@ -49,6 +50,7 @@ export class PaginationInputQueryModel {
   pageNumber: number;
   searchLoginTerm?: string;
   searchEmailTerm?: string;
+  banStatus: BanStatus;
 }
 export class PostUpdateModel {
   @IsString()

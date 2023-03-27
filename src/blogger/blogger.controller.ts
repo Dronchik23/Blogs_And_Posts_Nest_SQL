@@ -30,6 +30,7 @@ import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repositor
 import { UpdateBlogCommand } from '../use-cases/blogs/update-blog-by-blogId-use-case';
 import { DeleteBlogCommand } from '../use-cases/blogs/delete-blog-by-blogId-use-case';
 import { CreatePostCommand } from '../use-cases/posts/create-post-use-case';
+import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
@@ -50,7 +51,7 @@ export class BloggerBlogsController {
       +query.pageNumber,
     );
   }
-  @UseGuards(BasicAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Post()
   async createBlog(
     @Body() createBlogDTO: BlogInputModel,
@@ -63,7 +64,7 @@ export class BloggerBlogsController {
       ),
     );
   }
-  @UseGuards(BasicAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Post(':blogId/posts')
   async createPostByBlogId(
     @Param('blogId') blogId: string,
@@ -87,7 +88,7 @@ export class BloggerBlogsController {
       throw new NotFoundException();
     }
   }
-  @UseGuards(BasicAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Put(':blogId')
   @HttpCode(204)
   async updateBlogByBlogId(

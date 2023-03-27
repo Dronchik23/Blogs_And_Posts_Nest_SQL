@@ -2,6 +2,7 @@ import { Injectable, Scope } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
+  BanStatus,
   PaginationType,
   searchLoginOrEmailTermType,
   UserDBType,
@@ -36,23 +37,36 @@ export class UsersQueryRepository {
   private searchLoginAndEmailTermFilter(
     searchLoginTerm: string,
     searchEmailTerm: string,
+    banStatus: BanStatus,
   ): FilterQuery<UserDBType> {
-    return {
+    const filter: FilterQuery<UserDBType> = {
       $or: [
         {
           'accountData.email': {
-            $regex: searchEmailTerm ?? '',
+            $regex: searchEmailTerm || '',
             $options: 'i',
           },
         },
         {
           'accountData.login': {
-            $regex: searchLoginTerm ?? '',
+            $regex: searchLoginTerm || '',
             $options: 'i',
           },
         },
       ],
     };
+
+    if (banStatus === BanStatus.banned) {
+      filter.$or.push({
+        'banInfo.isBanned': true,
+      });
+    } else if (banStatus === BanStatus.notBanned) {
+      filter.$or.push({
+        'banInfo.isBanned': false,
+      });
+    }
+
+    return filter;
   }
 
   async getAllUsers(
@@ -62,10 +76,12 @@ export class UsersQueryRepository {
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
+    banStatus: BanStatus,
   ): Promise<PaginationType> {
     const filter = this.searchLoginAndEmailTermFilter(
       searchLoginTerm,
       searchEmailTerm,
+      banStatus,
     );
 
     const users = await this.usersModel
@@ -80,6 +96,7 @@ export class UsersQueryRepository {
     const totalCount = await this.getUsersCount(
       searchLoginTerm,
       searchEmailTerm,
+      banStatus,
     );
 
     return {
@@ -138,10 +155,12 @@ export class UsersQueryRepository {
   async getUsersCount(
     searchLoginTerm: searchLoginOrEmailTermType,
     searchEmailTerm: searchLoginOrEmailTermType,
+    banStatus: BanStatus,
   ) {
     const filter = this.searchLoginAndEmailTermFilter(
       searchLoginTerm,
       searchEmailTerm,
+      banStatus,
     );
     return this.usersModel.countDocuments(filter);
   }

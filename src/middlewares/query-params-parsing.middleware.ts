@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import { BanStatus } from '../types and models/types';
 
 @Injectable()
 export class QueryParamsMiddleware {
@@ -23,6 +24,11 @@ export class QueryParamsMiddleware {
     req.query.sortDirection = req.query.sortDirection
       ? req.query.sortDirection.toString()
       : defaultSortDirection;
+
+    const banStatus = BanStatus.all;
+    req.query.banStatus = req.query.banStatus
+      ? req.query.banStatus.toString()
+      : banStatus;
 
     next();
   }
