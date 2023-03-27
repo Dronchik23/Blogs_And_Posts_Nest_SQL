@@ -85,7 +85,7 @@ export class UsersController {
   }
 
   @UseGuards(BasicAuthGuard)
-  @Put(':userId')
+  @Put(':userId/ban')
   @HttpCode(204)
   async bunUserByUserId(
     @Param('userId') userId: string,

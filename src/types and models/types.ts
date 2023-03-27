@@ -86,7 +86,7 @@ export class BanInfoType {
   banDate: string;
   banReason: string;
 
-  constructor(isBanned = false, banDate = '', banReason = '') {
+  constructor(isBanned = false, banDate = null, banReason = null) {
     this.isBanned = isBanned;
     this.banDate = banDate;
     this.banReason = banReason;
