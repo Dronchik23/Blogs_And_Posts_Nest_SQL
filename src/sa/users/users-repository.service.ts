@@ -96,12 +96,12 @@ export class UsersRepository {
     banDate: string,
   ) {
     const result = await this.usersModel.updateOne(
-      { _id: userId },
+      { _id: new mongoose.Types.ObjectId(userId) },
       {
         $set: {
-          'BanInfoType.isBanned': isBanned,
-          'BanInfoType.banDate': banDate,
-          'passwordRecovery.banReason': banReason,
+          'banInfo.isBanned': isBanned,
+          'banInfo.banDate': banDate,
+          'banInfo.banReason': banReason,
         },
       },
     );

@@ -7,6 +7,7 @@ import {
   LikeDBType,
   LikeStatus,
   PaginationType,
+  UserDBType,
 } from '../types and models/types';
 import { CommentViewModel, UserViewModel } from '../types and models/models';
 import {
@@ -15,6 +16,7 @@ import {
   LikeDocument,
 } from '../types and models/schemas';
 import { Comment } from '../types and models/schemas';
+import { UsersQueryRepository } from './users-query.repository';
 
 @injectable()
 export class CommentsQueryRepository {
@@ -22,6 +24,8 @@ export class CommentsQueryRepository {
     @InjectModel('Comment')
     private readonly commentsModel: Model<CommentDocument>,
     @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
+
+    private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
 
   private fromCommentDBTypeToCommentViewModel = (
@@ -95,33 +99,41 @@ export class CommentsQueryRepository {
     commentId: string,
     userId?: string,
   ): Promise<CommentViewModel | null> {
-    console.log('commentId repo', commentId);
-    console.log('userId repo', userId);
-    const comment = await this.commentsModel
+    const comment: CommentDBType = await this.commentsModel
       .findOne({
         _id: new mongoose.Types.ObjectId(commentId),
       })
-      .exec();
-
+      .lean();
     if (!comment) return null;
+    const user: UserViewModel = await this.usersQueryRepo.findUserByUserId(
+      comment.commentatorInfo.userId.toString(),
+    );
+    if (user.banInfo.isBanned === true) return null;
 
     const commentWithLikesInfo = await this.getLikesInfoForComment(
       comment,
       userId,
     );
+
     return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
   }
-
+  //TODO: remove any
   private async getLikesInfoForComment(comment: any, userId?: string) {
+    const bannedUsers: UserDBType[] =
+      await this.usersQueryRepo.findBannedUsers();
     comment.likesInfo.likesCount = await this.likesModel.countDocuments({
       parentId: comment._id,
       status: LikeStatus.Like,
+      userId: { $nin: bannedUsers }, // exclude banned users
     });
     comment.likesInfo.dislikesCount = await this.likesModel.countDocuments({
       parentId: comment._id,
       status: LikeStatus.Dislike,
+      userId: { $nin: bannedUsers }, // exclude banned users
     });
     if (userId) {
+      const user = await this.usersQueryRepo.findUserByUserId(userId);
+      if (user.banInfo.isBanned === true) return null;
       const status: LikeDBType = await this.likesModel
         .findOne({
           parentId: comment._id,

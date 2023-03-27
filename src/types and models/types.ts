@@ -81,6 +81,17 @@ export class UserDBType {
     public passwordSalt?: string,
   ) {}
 }
+export class BanInfoType {
+  isBanned: boolean;
+  banDate: string;
+  banReason: string;
+
+  constructor(isBanned = false, banDate = '', banReason = '') {
+    this.isBanned = isBanned;
+    this.banDate = banDate;
+    this.banReason = banReason;
+  }
+}
 export class CommentDBType {
   constructor(
     public _id: ObjectId,
@@ -89,6 +100,15 @@ export class CommentDBType {
     public createdAt: string,
     public postId: string,
     public likesInfo: LikesInfoType,
+  ) {}
+}
+export class LikeDBType {
+  constructor(
+    public parentId: ObjectId,
+    public userId: ObjectId,
+    public userLogin: string,
+    public status: LikeStatus,
+    public addedAt: string,
   ) {}
 }
 export class AccountDataType {
@@ -128,15 +148,6 @@ export class ExtendedLikesInfoType {
     public newestLikes: NewestLikesType[],
   ) {}
 }
-export class LikeDBType {
-  constructor(
-    public parentId: ObjectId,
-    public userId: ObjectId,
-    public userLogin: string,
-    public status: LikeStatus,
-    public addedAt: string,
-  ) {}
-}
 export class PasswordRecoveryType {
   constructor(
     public recoveryCode: string | null,
@@ -163,15 +174,4 @@ export class BearerJwtPayloadType {
 export class BlogOwnerInfoType {
   userId: string;
   userLogin: string;
-}
-export class BanInfoType {
-  isBanned: boolean;
-  banDate: string;
-  banReason: string;
-
-  constructor(isBanned = false, banDate = '', banReason = '') {
-    this.isBanned = isBanned;
-    this.banDate = banDate;
-    this.banReason = banReason;
-  }
 }

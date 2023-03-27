@@ -46,7 +46,7 @@ export class CreateCommentService
         command.user.login,
       ),
       new Date().toISOString(),
-      command.postId.toString(),
+      command.postId,
       new LikesInfoType(),
     );
     return await this.commentsRepository.createComment(newComment);

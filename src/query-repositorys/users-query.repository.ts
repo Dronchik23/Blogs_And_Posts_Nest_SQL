@@ -145,4 +145,8 @@ export class UsersQueryRepository {
     );
     return this.usersModel.countDocuments(filter);
   }
+
+  async findBannedUsers(): Promise<UserDBType[]> {
+    return await this.usersModel.find({ 'banInfo.isBanned': true }).exec();
+  }
 }
