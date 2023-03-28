@@ -2,7 +2,7 @@ import { BlogsRepository } from '../../blogs/blog.repository';
 import { BlogViewModel } from '../../types and models/models';
 import { ObjectId } from 'mongodb';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogDBType } from '../../types and models/types';
+import { BlogDBType, BlogOwnerInfoType } from '../../types and models/types';
 
 export class CreateBlogCommand {
   constructor(
@@ -24,6 +24,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
       command.websiteUrl,
       new Date().toISOString(),
       false,
+      new BlogOwnerInfoType(),
     );
 
     return await this.blogsRepository.createBlog(newBlog);

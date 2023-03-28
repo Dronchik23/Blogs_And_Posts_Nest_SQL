@@ -57,13 +57,9 @@ export class UsersQueryRepository {
     };
 
     if (banStatus === BanStatus.banned) {
-      filter.$or.push({
-        'banInfo.isBanned': true,
-      });
+      filter['banInfo.isBanned'] = true;
     } else if (banStatus === BanStatus.notBanned) {
-      filter.$or.push({
-        'banInfo.isBanned': false,
-      });
+      filter['banInfo.isBanned'] = false;
     }
 
     return filter;
@@ -78,6 +74,7 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: BanStatus,
   ): Promise<PaginationType> {
+    debugger;
     const filter = this.searchLoginAndEmailTermFilter(
       searchLoginTerm,
       searchEmailTerm,

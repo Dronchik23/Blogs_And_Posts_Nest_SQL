@@ -21,6 +21,7 @@ import {
   PostInputModel,
   PostUpdateModel,
   PostViewModel,
+  UserViewModel,
 } from '../types and models/models';
 import { PostsService } from './post.service';
 import { CommentsService } from '../comments/comment.service';
@@ -208,24 +209,21 @@ export class PostsController {
   async updateLikeStatus(
     @Param('id') id: string,
     @Body() likeStatusDTO: LikeInputModel,
-    @CurrentUserId() currentUserId: string | null,
-  ): Promise<void> {
+    @CurrentUser() currentUser: UserViewModel,
+  ): Promise<any> {
     const post = await this.postsQueryRepository.findPostByPostId(
       id,
-      currentUserId,
+      currentUser.id,
     );
     if (!post) {
       throw new NotFoundException();
     }
-    const user = await this.usersQueryRepository.findUserByUserId(
-      currentUserId,
-    );
     const parentId = post.id;
     await this.commandBus.execute(
       new UpdateLikeStatusCommand(
         parentId,
-        currentUserId,
-        user.login,
+        currentUser.id,
+        currentUser.login,
         likeStatusDTO.likeStatus,
       ),
     );
