@@ -25,31 +25,60 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  describe.skip('create user', () => {
+  // desc SA/users
+  // =>  desc GET
+  // =>  desc POST
+  // => => => it wipe all data
+  // => => => it 401 (without auth | bad auth)
+  // => => => it 400 invalid input data
+  // => => => it 201 create user  ===========================>>>>>>>> to func
+  // => => => it 200 get user === user from 201
+  // => => => it 400 try create user with login or email already in db
+  // =>  desc PUT
+  // => => => it wipe all data
+  // => => => it prepare data(user from func)
+  // => => => it 401 (without auth | bad auth)
+  // => => => it 400 invalid input data
+  // it 404
+  // put
+  // => => => it 200 get user !== user from 201
+  // =>  desc DELETE
+  describe('create user', () => {
+    const wipeAllDataUrl = '/testing/all-data';
+    const usersUrl = '/sa/users';
+    const loginUrl = '/auth/login';
+    const countOfUsers = 10;
     it('should wipe all data before tests', async () => {
-      await request(server).delete('/testing/all-data');
+      await request(server).delete(wipeAllDataUrl);
     });
-    /*  it('should create new user', async () => {
-      const userData: UserInputModel = {
-        login: 'John',
-        password: '123456',
-        email: 'johndoe@example.com',
+    it('prepare data for test (users, blog, post)', async () => {
+      //const users = [];
+      // for (let i = 0; i < countOfUsers; i++)
+      const createUserDto: UserInputModel = {
+        login: `user`,
+        password: 'password',
+        email: `user@gmail.com`,
       };
+      const createUserResponse = await request(server)
+        .post(usersUrl)
+        .auth('admin', 'qwerty')
+        .send(createUserDto);
 
-      const response = await request(server)
-        .post('sa/users')
-        .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
-        .send(userData)
-        .expect(201);
+      /*     const loginUser = await request(server).post(loginUrl).send({
+        loginOrEmail: createUserDto.login,
+        password: createUserDto.password,
+      });
 
-      const user: UserViewModel = response.body;
-      expect(user).toBeDefined();
-      expect(user.id).toBeDefined();
-      expect(user.login).toEqual(userData.login);
-      expect(user.email).toEqual(userData.email);
-    });*/
+      const accessToken = loginUser.body.accessToken;
+      const user = {
+        ...createUserDto,
+        ...createUserResponse.body,
+        accessToken,
+      };*/
+      console.log(createUserResponse.body);
+      expect(createUserResponse.body).toBeDefined();
+    });
   });
-
   describe('like posts logic', () => {
     const wipeAllDataUrl = '/testing/all-data';
     const usersUrl = '/users';
@@ -88,3 +117,26 @@ describe('AppController (e2e)', () => {
     });
   });
 });
+
+/* describe('create user', () => {
+  it('should wipe all data before tests', async () => {
+    await request(server).delete('/testing/all-data');
+  });
+  it('should create new user', async () => {
+    const userData: UserInputModel = {
+      login: 'John',
+      password: '123456',
+      email: 'johndoe@example.com',
+    };
+
+    const response = await request(server)
+      .post('sa/users')
+      .auth('admin', 'qwerty')
+      .send(userData);
+
+    const user: UserViewModel = response.body;
+    console.log(user);
+    expect(user.login).toEqual(userData.login);
+    expect(user.email).toEqual(userData.email);
+  });
+});*/

@@ -59,6 +59,7 @@ export class UsersController {
     }
     return user;
   }
+  @UseGuards(BasicAuthGuard)
   @Post()
   async createUser(
     @Body() createUserDTO: UserInputModel,
