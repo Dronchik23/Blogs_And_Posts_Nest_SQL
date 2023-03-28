@@ -30,12 +30,12 @@ export class LoginService implements ICommandHandler<LoginCommand> {
   ) {}
 
   async execute(command: LoginCommand): Promise<TokenType> {
+    debugger;
     const user = await this.checkCredentials(
       command.loginEmail,
       command.password,
     );
     if (!user) return null;
-    if (user.banInfo.isBanned === true) return null;
     const userId = user._id.toString();
     const deviceId = randomUUID().toString();
     const { accessToken, refreshToken } = this.jwtService.createJWT(

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel } from '../src/types and models/models';
+import { UserInputModel, UserViewModel } from '../src/types and models/models';
 
 describe('AppController (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
@@ -23,6 +23,31 @@ describe('AppController (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  describe.skip('create user', () => {
+    it('should wipe all data before tests', async () => {
+      await request(server).delete('/testing/all-data');
+    });
+    /*  it('should create new user', async () => {
+      const userData: UserInputModel = {
+        login: 'John',
+        password: '123456',
+        email: 'johndoe@example.com',
+      };
+
+      const response = await request(server)
+        .post('sa/users')
+        .set('Authorization', `Basic YWRtaW46cXdlcnR5`)
+        .send(userData)
+        .expect(201);
+
+      const user: UserViewModel = response.body;
+      expect(user).toBeDefined();
+      expect(user.id).toBeDefined();
+      expect(user.login).toEqual(userData.login);
+      expect(user.email).toEqual(userData.email);
+    });*/
   });
 
   describe('like posts logic', () => {
