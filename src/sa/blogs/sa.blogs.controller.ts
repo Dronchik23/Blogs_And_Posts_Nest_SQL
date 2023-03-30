@@ -18,10 +18,7 @@ import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
-import {
-  BindBlogToUserCommand,
-  BindBlogToUserService,
-} from '../../use-cases/blogs/bind-blog-to-user-use-case';
+import { BindBlogToUserCommand } from '../../use-cases/blogs/bind-blog-to-user-use-case';
 
 @Controller({ path: 'sa/blogs', scope: Scope.REQUEST })
 export class SABlogsController {

@@ -174,6 +174,11 @@ export class BlogUpdateModel {
   @IsNotEmpty()
   name: string;
   @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(1, 500)
+  @IsNotEmpty()
+  description: string;
+  @IsString()
   @IsUrl()
   @Length(1, 1000)
   @IsNotEmpty()

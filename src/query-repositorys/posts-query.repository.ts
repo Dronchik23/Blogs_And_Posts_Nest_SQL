@@ -77,8 +77,11 @@ export class PostsQueryRepository {
 
     const totalCount = await this.getAllPostCount();
 
+    const pagesCount = Math.ceil(totalCount / +pageSize);
+    // exclude 0
+
     return {
-      pagesCount: Math.ceil(totalCount / +pageSize),
+      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,

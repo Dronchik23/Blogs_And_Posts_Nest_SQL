@@ -60,8 +60,10 @@ export class BlogsQueryRepository {
 
     const totalCount = await this.getBlogsCount(searchNameTerm);
 
+    const pagesCount = Math.ceil(totalCount / +pageSize);
+
     return {
-      pagesCount: Math.ceil(totalCount / +pageSize),
+      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,

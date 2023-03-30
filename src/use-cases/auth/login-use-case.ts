@@ -30,7 +30,6 @@ export class LoginService implements ICommandHandler<LoginCommand> {
   ) {}
 
   async execute(command: LoginCommand): Promise<TokenType> {
-    debugger;
     const user = await this.checkCredentials(
       command.loginEmail,
       command.password,

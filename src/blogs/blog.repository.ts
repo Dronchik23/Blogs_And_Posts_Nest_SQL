@@ -48,6 +48,7 @@ export class BlogsRepository {
   }
 
   async deleteBlogByBlogId(id: string): Promise<boolean> {
+    debugger;
     try {
       const result = await this.blogsModel.deleteOne({
         _id: new mongoose.Types.ObjectId(id),

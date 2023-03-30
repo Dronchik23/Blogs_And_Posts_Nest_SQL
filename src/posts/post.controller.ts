@@ -77,9 +77,9 @@ export class PostsController {
   }
 
   @UseGuards(BearerAuthGuard)
-  @Post(':id/comments')
+  @Post(':postId/comments')
   async createCommentByPostId(
-    @Param('id') postId: string,
+    @Param('postId') postId: string,
     @Body() commentCreateDTO: CommentInputModel,
     @CurrentUser() currentUser,
   ) {
@@ -121,34 +121,6 @@ export class PostsController {
     );
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  async createPost(
-    @Body() postCreateDTO: PostInputModel,
-  ): Promise<PostViewModel | ErrorType> {
-    const newPost = await this.commandBus.execute(
-      new CreatePostCommand(
-        postCreateDTO.title,
-        postCreateDTO.shortDescription,
-        postCreateDTO.content,
-        postCreateDTO.blogId,
-      ),
-    );
-
-    if (newPost) {
-      return newPost;
-    } else {
-      return {
-        errorsMessages: [
-          {
-            message: 'string',
-            field: 'blogId',
-          },
-        ],
-      };
-    }
-  }
-
   @Get(':id')
   async getPostByPostId(
     @Param('id') id: string,
@@ -161,43 +133,6 @@ export class PostsController {
 
     if (post) {
       return post;
-    } else {
-      throw new NotFoundException();
-    }
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Put(':id')
-  @HttpCode(204)
-  async updatePostByPostId(
-    @Param('id') id: string,
-    @Body() postUpdateDTO: PostUpdateModel,
-  ): Promise<void> {
-    const post = await this.postsQueryRepository.findPostByPostId(id);
-    if (!post) {
-      throw new NotFoundException();
-    }
-    const isUpdated = await this.commandBus.execute(
-      new UpdatePostCommand(
-        post.id,
-        postUpdateDTO.title,
-        postUpdateDTO.shortDescription,
-        postUpdateDTO.content,
-        postUpdateDTO.blogId,
-      ),
-    );
-    if (!isUpdated) {
-      throw new NotFoundException();
-    }
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Delete(':id')
-  @HttpCode(204)
-  async deletePostByPostId(@Param('id') id: string): Promise<boolean> {
-    const isDeleted = await this.commandBus.execute(new DeletePostCommand(id));
-    if (isDeleted) {
-      return true;
     } else {
       throw new NotFoundException();
     }

@@ -85,9 +85,11 @@ export class CommentsQueryRepository {
     const totalCount = await this.commentsModel.countDocuments({
       postId: postId,
     });
+
     const pagesCount = Math.ceil(totalCount / +pageSize);
+
     return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount,
+      pagesCount: pagesCount === 0 ? 1 : pagesCount, //
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,

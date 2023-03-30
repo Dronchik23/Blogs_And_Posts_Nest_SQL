@@ -97,9 +97,9 @@ export class CommentsController {
     }
   }
 
-  @Get(':id')
+  @Get(':commentId')
   async getCommentByCommentId(
-    @Param('id') commentId: string,
+    @Param('commentId') commentId: string,
     @CurrentUserIdFromToken() currentUserId,
   ): Promise<CommentViewModel | HttpStatus> {
     const comment = await this.commentsQueryRepository.findCommentByCommentId(
