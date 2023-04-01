@@ -83,6 +83,7 @@ import { LogoutService } from './use-cases/auth/logout-use-case';
 import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
 import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
+import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -106,6 +107,7 @@ export const useCases = [
   DeleteDeviceByDeviceIdService,
   BunUserByUserIService,
   UpdateLikeStatusService,
+  UpdatePostService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,

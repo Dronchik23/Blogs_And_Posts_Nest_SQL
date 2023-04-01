@@ -6,7 +6,7 @@ import { PostsRepository } from '../../posts/post.repository';
 
 export class UpdatePostCommand {
   constructor(
-    public id: string,
+    public postId: string,
     public title: string,
     public shortDescription: string,
     public content: string,
@@ -22,8 +22,8 @@ export class UpdatePostService implements ICommandHandler<UpdatePostCommand> {
   ) {}
 
   async execute(command: UpdatePostCommand): Promise<boolean> {
-    return this.postsRepository.updatePostByPostId(
-      command.id,
+    return this.postsRepository.updatePostByPostIdAndBlogId(
+      command.postId,
       command.title,
       command.shortDescription,
       command.content,

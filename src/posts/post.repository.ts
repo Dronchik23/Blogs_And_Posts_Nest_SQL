@@ -34,8 +34,8 @@ export class PostsRepository {
     return this.fromPostDBTypePostViewModel(newPost);
   }
 
-  async updatePostByPostId(
-    id: string,
+  async updatePostByPostIdAndBlogId(
+    postId: string,
     title: string,
     shortDescription: string,
     content: string,
@@ -43,14 +43,14 @@ export class PostsRepository {
   ): Promise<boolean> {
     const result = await this.postsModel.updateOne(
       {
-        _id: new mongoose.Types.ObjectId(id),
+        _id: new mongoose.Types.ObjectId(postId),
+        blogId: blogId,
       },
       {
         $set: {
-          title: title,
-          shortDescription: shortDescription,
-          content: content,
-          blogId: blogId,
+          title,
+          shortDescription,
+          content,
         },
       },
     );
@@ -58,10 +58,14 @@ export class PostsRepository {
     return result.matchedCount === 1;
   }
 
-  async deletePostByPostId(id: string): Promise<boolean> {
+  async deletePostByPostIdAndBlogId(
+    blogId: string,
+    postId: string,
+  ): Promise<boolean> {
     try {
       const result = await this.postsModel.deleteOne({
-        _id: new mongoose.Types.ObjectId(id),
+        _id: new mongoose.Types.ObjectId(postId),
+        blogId: blogId,
       });
       if (result.deletedCount === 1) {
         return true;

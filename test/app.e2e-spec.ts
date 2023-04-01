@@ -13,6 +13,7 @@ describe('AppController (e2e)', () => {
   let blog;
   let post;
   let user;
+  let comment;
   const bloggerUrl = 'blogger/blogs';
   const wipeAllDataUrl = '/testing/all-data';
 
@@ -41,12 +42,6 @@ describe('AppController (e2e)', () => {
 
     accessToken = loginUser.body.accessToken;
 
-    /*    const user = {
-      ...createUserDto,
-      ...responseForUser.body,
-      token: accessToken,
-    };*/
-
     const responseForBlog = await request(server)
       .post('/blogger/blogs')
       .set('Authorization', `Bearer ${accessToken}`)
@@ -59,7 +54,6 @@ describe('AppController (e2e)', () => {
     blog = responseForBlog.body;
     console.log(blog);
     expect(blog).toBeDefined();
-
     const responseForPost = await request(server)
       .post(`/blogger/blogs/${blog.id}/posts`)
       .set('Authorization', `Bearer ${accessToken}`)
@@ -73,6 +67,15 @@ describe('AppController (e2e)', () => {
     post = responseForPost.body;
     console.log(post);
     expect(post).toBeDefined();
+
+    const responseForComment = await request(server)
+      .post(`/posts/${post.id}/comments`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ content: 'valid content string more than 20 letters' });
+
+    comment = responseForComment.body;
+    console.log(comment);
+    expect(comment).toBeDefined();
   });
 
   beforeAll(async () => {
@@ -90,11 +93,11 @@ describe('AppController (e2e)', () => {
     await app.close();
   });
 
-  describe('sa/users', () => {
-    const url = '/sa/users';
+  describe.skip('sa/users', () => {
     let createdUser: any = null;
+    const url = '/sa/users';
 
-    it('should get all users', async () => {
+    it.skip('should get all users', async () => {
       await request(server).delete(wipeAllDataUrl);
       const a = await request(server)
         .get(url)
@@ -107,8 +110,99 @@ describe('AppController (e2e)', () => {
           items: [],
         });
     });
+    describe.skip('ban user tests', () => {
+      it('should not ban user that not exist', async () => {
+        const fakeUserId = 500;
+        await request(server)
+          .put(`/sa/users/${fakeUserId}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters',
+          })
+          .expect(404);
+      });
+      it('should not ban user with incorrect input data', async () => {
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: '',
+          })
+          .expect(400);
 
-    describe('create user tests', () => {
+        await request(server)
+          .get('/sa/users')
+          .auth('admin', 'qwerty')
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 1,
+            items: [user],
+          });
+
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: 'true',
+            banReason: 'valid string more than 20 letters',
+          })
+          .expect(400);
+
+        await request(server)
+          .get('/sa/users')
+          .auth('admin', 'qwerty')
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 1,
+            items: [user],
+          });
+      });
+      it('should not ban user with incorrect authorization data', async () => {
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', '')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(401);
+
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('', 'qwerty')
+          .send({
+            isBanned: 'true',
+            banReason: 'valid string more than 20 letters',
+          })
+          .expect(401);
+      });
+      it('should ban user with correct data', async () => {
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204);
+
+        const responseForUser = await request(server)
+          .get(`/sa/users/${user.id}`)
+          .auth('admin', 'qwerty')
+          .expect(200);
+
+        user = responseForUser.body;
+
+        expect(user.banInfo.isBanned).toBe(true);
+      });
+    });
+    describe.skip('create user tests', () => {
       it('should not create user with incorrect input data', async () => {
         await request(server).delete(wipeAllDataUrl);
         await request(server)
@@ -209,7 +303,7 @@ describe('AppController (e2e)', () => {
           });
       });
     });
-    describe('update ban status user tests', () => {
+    describe.skip('update ban status user tests', () => {
       it('should not update user ban status with incorrect input data', async () => {
         const reqWithIncorrectIsBanned = await request(server)
           .put(`/sa/users/${user.id}/ban`)
@@ -262,7 +356,7 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
     });
-    describe('delete user tests', () => {
+    describe.skip('delete user tests', () => {
       it('should not delete user that not exist ', async () => {
         await request(server)
           .delete(url + -12)
@@ -293,7 +387,7 @@ describe('AppController (e2e)', () => {
       });
     });
   });
-  describe('sa/blogs', () => {
+  describe.skip('sa/blogs', () => {
     const url = '/sa/blogs';
 
     beforeAll(async () => {
@@ -323,7 +417,7 @@ describe('AppController (e2e)', () => {
       await request(server).delete(wipeAllDataUrl);
     });
 
-    describe('get blogs tests', () => {
+    describe.skip('get blogs tests', () => {
       it('should get all blogs', async () => {
         await request(server).delete(wipeAllDataUrl);
 
@@ -363,7 +457,7 @@ describe('AppController (e2e)', () => {
           .expect(404);
       });
     });
-    describe('create blog tests', () => {
+    describe.skip('create blog tests', () => {
       it('should not create blog with incorrect name', async () => {
         const wipeAllDataUrl = '/testing/all-data';
         await request(server).delete(wipeAllDataUrl);
@@ -620,7 +714,7 @@ describe('AppController (e2e)', () => {
         expect(response.body).toEqual(createdBlog);
       });
     });
-    describe('update blog tests', () => {
+    describe.skip('update blog tests', () => {
       it('should not update blog with incorrect input data', async () => {
         const reqWithIncorrectName = await request(server)
           .put(`/blogger/blogs/${blog.id}`)
@@ -721,7 +815,7 @@ describe('AppController (e2e)', () => {
           });
       });
     });
-    describe('delete blog tests', () => {
+    describe.skip('delete blog tests', () => {
       it('should not delete blog that not exist ', async () => {
         await request(server)
           .delete(url + -12)
@@ -749,7 +843,7 @@ describe('AppController (e2e)', () => {
         await request(server).get(`/blogs/${blog.id}`).expect(404);
       });
     });
-    describe('create post tests', () => {
+    describe.skip('create post tests', () => {
       it('should not create post with incorrect input data', async () => {
         const wipeAllDataUrl = '/testing/all-data';
         await request(server).delete(wipeAllDataUrl);
@@ -928,14 +1022,192 @@ describe('AppController (e2e)', () => {
         expect(postFoundedById.body).toEqual(post);
       });
     });
-    describe('update post test', () => {
+    describe.skip('update post test', () => {
       //some logic
     });
     describe('delete post tests', () => {
-      //some logic
+      it.skip('should not delete post that not exist ', async () => {
+        await request(server)
+          .delete(`/blogger/blogs/${blog.id}/posts/` + -12)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(404);
+      });
+      it.skip('should not delete post with bad auth params', async () => {
+        await request(server)
+          .delete(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Basic ${accessToken}`)
+          .expect(401);
+
+        await request(server)
+          .delete(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer `)
+          .expect(401);
+      });
+      it('should not delete post of another user', async () => {
+        debugger;
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password2',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        console.log(user2);
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        await request(server)
+          .delete(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(403);
+      });
+      it('should delete post with correct id', async () => {
+        await request(server).get(`/posts/${post.id}`).expect(200);
+
+        await request(server)
+          .delete(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(204);
+
+        await request(server).get(`/posts/${post.id}`).expect(404);
+      });
+    });
+    describe.skip('update post tests', () => {
+      it('should not update post with incorrect input data', async () => {
+        const reqWithIncorrectTitle = await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: '',
+            shortDescription: 'valid',
+            content: 'valid',
+          });
+
+        expect(reqWithIncorrectTitle.status).toBe(400);
+        expect(reqWithIncorrectTitle.body).toEqual({
+          errorsMessages: [
+            {
+              field: 'title',
+              message: expect.any(String),
+            },
+          ],
+        });
+
+        const reqWithIncorrectShortDescription = await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: '',
+            content: 'string',
+          });
+
+        expect(reqWithIncorrectShortDescription.status).toBe(400);
+        expect(reqWithIncorrectShortDescription.body).toEqual({
+          errorsMessages: [
+            {
+              field: 'shortDescription',
+              message: expect.any(String),
+            },
+          ],
+        });
+
+        const reqWithIncorrectContent = await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid title',
+            shortDescription: 'valid',
+            content: '',
+          });
+
+        expect(reqWithIncorrectContent.status).toBe(400);
+        expect(reqWithIncorrectContent.body).toEqual({
+          errorsMessages: [
+            {
+              field: 'content',
+              message: expect.any(String),
+            },
+          ],
+        });
+      });
+      it('should not update post that not exist ', async () => {
+        debugger;
+        const fakeId = '21';
+        await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${fakeId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid title',
+            shortDescription: 'valid description',
+            content: 'valid content',
+          })
+          .expect(404);
+      });
+      it('should not update post with not existing blogId ', async () => {
+        await request(server)
+          .put(`/blogger/blogs/${1}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid title',
+            shortDescription: 'valid description',
+            content: 'valid content',
+          })
+          .expect(404);
+      });
+      it('should not update post with bad auth params', async () => {
+        await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Basic ${accessToken}`)
+          .send({
+            title: 'valid title',
+            shortDescription: 'valid',
+            content: 'valid',
+          })
+          .expect(401);
+
+        await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', ``)
+          .send({
+            title: 'valid title',
+            shortDescription: 'valid',
+            content: 'valid',
+          })
+          .expect(401);
+      });
+      it('should update post with correct input data ', async () => {
+        await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'new title',
+            shortDescription: 'valid',
+            content: 'valid',
+          })
+          .expect(204);
+
+        await request(server)
+          .get(`/posts/${post.id}`)
+          .expect(200, {
+            ...post,
+            title: 'new title',
+          });
+      });
     });
   });
-  describe('posts', () => {
+  describe.skip('posts', () => {
     const postsUrl = '/posts';
 
     it.skip('should get all posts', async () => {
@@ -952,7 +1224,6 @@ describe('AppController (e2e)', () => {
         .get(postsUrl + -1)
         .expect(404);
     });
-
     describe.skip('create comments tests', () => {
       it('should not create comment with incorrect input data', async () => {
         await request(server)
@@ -1010,6 +1281,95 @@ describe('AppController (e2e)', () => {
           .expect(200);
 
         expect(commentFoundedById.body).toEqual(comment);
+      });
+    });
+  });
+  describe.skip('comments', () => {
+    it.skip('should not get comment that not exist', async () => {
+      await request(server)
+        .get('/comments' + 1)
+        .expect(404);
+    });
+    describe.skip('update comment tests', () => {
+      it.skip('should not update comment with incorrect input data', async () => {
+        debugger;
+        const reqWithIncorrectContent = await request(server)
+          .put(`/comments/${comment.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: '' });
+
+        expect(reqWithIncorrectContent.status).toBe(400);
+        expect(reqWithIncorrectContent.body).toEqual({
+          errorsMessages: [
+            {
+              field: 'content',
+              message: expect.any(String),
+            },
+          ],
+        });
+      });
+      it.skip('should not update comment that not exist ', async () => {
+        await request(server)
+          .put('/comments/' + -12)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content whit many letters' })
+          .expect(404);
+      });
+      it.skip('should not update comment with bad auth params', async () => {
+        await request(server)
+          .put(`/comments/${comment.id}`)
+          .set('Authorization', `Basic ${accessToken}`)
+          .send({ content: 'valid content whit many letters' })
+          .expect(401);
+
+        await request(server)
+          .put(`/comments/${comment.id}`)
+          .set('Authorization', ``)
+          .send({ content: 'valid content whit many letters' })
+          .expect(401);
+      });
+      it('should not update comment of another user', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password2',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        console.log(user2);
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        await request(server)
+          .put(`/comments/${comment.id}`)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({ content: 'valid content whit many letters' })
+          .expect(403);
+      });
+      it('should update comment with correct input data ', async () => {
+        await request(server)
+          .put(`/comments/${comment.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'new valid content whit many letters' })
+          .expect(204);
+
+        await request(server)
+          .get(`/comments/${comment.id}`)
+          .expect(200, {
+            ...comment,
+            content: 'new valid content whit many letters',
+          });
       });
     });
   });

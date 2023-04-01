@@ -1,8 +1,17 @@
 import { Model } from 'mongoose';
-import { Injectable, Scope } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  Scope,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { BlogDBType, PaginationType } from '../types and models/types';
+import {
+  BlogDBType,
+  BlogOwnerInfoType,
+  PaginationType,
+} from '../types and models/types';
 import { BlogViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
@@ -72,17 +81,34 @@ export class BlogsQueryRepository {
   }
 
   async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
-    const blog = await this.blogsModel
-      .findOne({
-        _id: new ObjectId(id),
-      })
-      .exec();
+    try {
+      const blog = await this.blogsModel
+        .findOne({
+          _id: new ObjectId(id),
+        })
+        .exec();
 
-    return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
+      return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 
   async getBlogsCount(searchNameTerm?: string | null | undefined) {
     const filter = this.searchNameTermFilter(searchNameTerm);
     return this.blogsModel.countDocuments(filter);
+  }
+
+  async findBlogByBlogIdAndUserId(blogId: string, userId: string) {
+    try {
+      return await this.blogsModel
+        .findOne({
+          _id: new ObjectId(blogId),
+          'blogOwnerInfo.userId': userId,
+        })
+        .exec();
+    } catch (error) {
+      throw new ForbiddenException();
+    }
   }
 }

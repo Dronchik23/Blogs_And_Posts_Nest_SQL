@@ -10,6 +10,8 @@ import {
 } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { LikeDocument, Post, PostDocument } from '../types and models/schemas';
+import { ObjectId } from 'mongodb';
+import { NotFoundException } from '@nestjs/common';
 
 @injectable()
 export class PostsQueryRepository {
@@ -92,16 +94,19 @@ export class PostsQueryRepository {
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
-    const post = await this.postsModel
-      .findOne({
-        _id: new mongoose.Types.ObjectId(postId),
-      })
-      .exec();
-    if (!post) return null;
+    try {
+      const post = await this.postsModel
+        .findOne({
+          _id: new ObjectId(postId),
+        })
+        .exec();
 
-    const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
+      const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
 
-    return this.fromPostDBTypePostViewModel(postWithLikesInfo);
+      return this.fromPostDBTypePostViewModel(postWithLikesInfo);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 
   async findPostsByBlogId(

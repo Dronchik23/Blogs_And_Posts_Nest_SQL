@@ -2,8 +2,11 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
+  HttpException,
+  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -33,8 +36,9 @@ import { DeleteBlogCommand } from '../use-cases/blogs/delete-blog-by-blogId-use-
 import { CreatePostCommand } from '../use-cases/posts/create-post-use-case';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-case';
-import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-use-case';
+import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
+import { CurrentUserId } from '../auth/decorators';
 
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
@@ -78,7 +82,6 @@ export class BloggerBlogsController {
     @Param('blogId') blogId: string,
     @Body() blogPostCreateDTO: BlogPostInputModel,
   ): Promise<PostViewModel> {
-    console.log('CALLED');
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
@@ -131,37 +134,68 @@ export class BloggerBlogsController {
       throw new NotFoundException();
     }
   }
-  //:TODO finish this endpoint
+
   @UseGuards(BearerAuthGuard)
-  @Delete(':postId')
+  @Delete(':blogId/posts/:postId')
   @HttpCode(204)
-  async deletePostByPostId(@Param('postId') id: string): Promise<boolean> {
-    const isDeleted = await this.commandBus.execute(new DeletePostCommand(id));
+  async deletePostByBlogIdAndPostId(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
+    @CurrentUserId() currentUserId: string,
+  ): Promise<boolean> {
+    const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+      blogId,
+      currentUserId,
+    ); // find owner of the blog
+    if (!owner) {
+      throw new ForbiddenException();
+    }
+    console.log('owner', owner);
+
+    const post = await this.postsQueryRepository.findPostByPostId(postId);
+
+    if (!post) {
+      throw new NotFoundException();
+    }
+
+    if (post.blogId !== blogId) {
+      throw new ForbiddenException();
+    }
+
+    const isDeleted = await this.commandBus.execute(
+      new DeletePostCommand(blogId, postId),
+    );
+
     if (isDeleted) {
       return true;
     } else {
       throw new NotFoundException();
     }
   }
-  //:TODO finish this endpoint
+
   @UseGuards(BearerAuthGuard)
-  @Put(':id')
+  @Put(':blogId/posts/:postId')
   @HttpCode(204)
-  async updatePostByPostId(
-    @Param('id') id: string,
+  async updatePostByPostIdAndBlogId(
+    @Param('blogId') blogId: string,
+    @Param('postId') postId: string,
     @Body() postUpdateDTO: PostUpdateModel,
   ): Promise<void> {
-    const post = await this.postsQueryRepository.findPostByPostId(id);
+    const post = await this.postsQueryRepository.findPostByPostId(postId);
     if (!post) {
+      throw new NotFoundException();
+    }
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+    if (!blog) {
       throw new NotFoundException();
     }
     const isUpdated = await this.commandBus.execute(
       new UpdatePostCommand(
-        post.id,
+        postId,
         postUpdateDTO.title,
         postUpdateDTO.shortDescription,
         postUpdateDTO.content,
-        postUpdateDTO.blogId,
+        blogId,
       ),
     );
     if (!isUpdated) {

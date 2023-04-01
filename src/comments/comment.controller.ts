@@ -42,10 +42,10 @@ export class CommentsController {
   ) {}
 
   @UseGuards(BearerAuthGuard)
-  @Put(':id/like-status')
+  @Put(':commentId/like-status')
   @HttpCode(204)
   async updateLikeStatus(
-    @Param('id') id: string,
+    @Param('commentId') id: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUser() currentUser: UserViewModel,
   ) {
@@ -71,7 +71,7 @@ export class CommentsController {
   }
 
   @UseGuards(BearerAuthGuard)
-  @Put(':id')
+  @Put(':commentId')
   @HttpCode(204)
   async updateCommentByCommentId(
     @Param('commentId') commentId: string,

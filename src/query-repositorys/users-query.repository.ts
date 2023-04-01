@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
@@ -108,13 +108,13 @@ export class UsersQueryRepository {
   }
 
   async findUserByUserId(id: string): Promise<UserViewModel | null> {
-    const user = await this.usersModel.findOne({
-      _id: new mongoose.Types.ObjectId(id),
-    });
-    if (user) {
+    try {
+      const user = await this.usersModel.findOne({
+        _id: new mongoose.Types.ObjectId(id),
+      });
       return this.fromUserDBTypeToUserViewModel(user);
-    } else {
-      return null;
+    } catch (e) {
+      throw new NotFoundException();
     }
   }
 

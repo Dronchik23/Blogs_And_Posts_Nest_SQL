@@ -21,7 +21,6 @@ export class BunUserByUserIService
 
   async execute(command: BunUserByUserIdCommand): Promise<boolean> {
     const user = await this.userQueryRepo.findUserByUserId(command.userId);
-    if (!user) return null;
     if (user.banInfo.isBanned === command.isBanned) return null;
     const banDate = new Date().toISOString();
     return await this.userRepo.changeBunStatusForUser(

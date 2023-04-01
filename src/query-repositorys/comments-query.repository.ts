@@ -17,6 +17,7 @@ import {
 } from '../types and models/schemas';
 import { Comment } from '../types and models/schemas';
 import { UsersQueryRepository } from './users-query.repository';
+import { NotFoundException } from '@nestjs/common';
 
 @injectable()
 export class CommentsQueryRepository {
@@ -101,23 +102,26 @@ export class CommentsQueryRepository {
     commentId: string,
     userId?: string,
   ): Promise<CommentViewModel | null> {
-    const comment: CommentDBType = await this.commentsModel
-      .findOne({
-        _id: new mongoose.Types.ObjectId(commentId),
-      })
-      .lean();
-    if (!comment) return null;
-    const user: UserViewModel = await this.usersQueryRepo.findUserByUserId(
-      comment.commentatorInfo.userId.toString(),
-    );
-    if (user.banInfo.isBanned === true) return null;
+    try {
+      const comment: CommentDBType = await this.commentsModel
+        .findOne({
+          _id: new mongoose.Types.ObjectId(commentId),
+        })
+        .lean();
+      if (!comment) return null;
+      const user: UserViewModel = await this.usersQueryRepo.findUserByUserId(
+        comment.commentatorInfo.userId.toString(),
+      );
+      if (user.banInfo.isBanned === true) return null;
 
-    const commentWithLikesInfo = await this.getLikesInfoForComment(
-      comment,
-      userId,
-    );
-
-    return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
+      const commentWithLikesInfo = await this.getLikesInfoForComment(
+        comment,
+        userId,
+      );
+      return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
   //TODO: remove any
   private async getLikesInfoForComment(comment: any, userId?: string) {

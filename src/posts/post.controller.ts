@@ -38,7 +38,7 @@ import { UsersQueryRepository } from '../query-repositorys/users-query.repositor
 import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreatePostCommand } from '../use-cases/posts/create-post-use-case';
-import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-use-case';
+import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-case';
 import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
 import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';

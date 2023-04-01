@@ -68,10 +68,6 @@ export class PostUpdateModel {
   @Length(1, 1000)
   @IsNotEmpty()
   content: string;
-  @IsString()
-  @IsNotEmpty()
-  @IsBlogExist()
-  blogId: string;
 }
 export class PostViewModel {
   id: string;
