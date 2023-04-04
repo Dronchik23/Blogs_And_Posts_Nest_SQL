@@ -121,12 +121,14 @@ export class UsersQueryRepository {
   async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<UserDBType | null> {
-    return this.usersModel.findOne({
-      $or: [
-        { 'accountData.email': loginOrEmail },
-        { 'accountData.login': loginOrEmail },
-      ],
-    });
+    return this.usersModel
+      .findOne({
+        $or: [
+          { 'accountData.email': loginOrEmail },
+          { 'accountData.login': loginOrEmail },
+        ],
+      })
+      .exec();
   }
 
   async findUserByEmail(email: string): Promise<any> {
@@ -165,6 +167,6 @@ export class UsersQueryRepository {
   }
 
   async findBannedUsers(): Promise<UserDBType[]> {
-    return await this.usersModel.find({ 'banInfo.isBanned': true }).exec();
+    return this.usersModel.find({ 'banInfo.isBanned': true }).lean();
   }
 }

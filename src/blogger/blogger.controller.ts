@@ -23,6 +23,7 @@ import {
   PaginationInputQueryModel,
   PostUpdateModel,
   PostViewModel,
+  UserViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
@@ -38,7 +39,7 @@ import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-case';
 import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
-import { CurrentUserId } from '../auth/decorators';
+import { CurrentUser, CurrentUserId } from '../auth/decorators';
 
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
@@ -66,12 +67,15 @@ export class BloggerBlogsController {
   @Post()
   async createBlog(
     @Body() createBlogDTO: BlogInputModel,
+    @CurrentUser() currentUser: UserViewModel,
   ): Promise<BlogViewModel> {
     return await this.commandBus.execute(
       new CreateBlogCommand(
         createBlogDTO.name,
         createBlogDTO.description,
         createBlogDTO.websiteUrl,
+        currentUser.id,
+        currentUser.login,
       ),
     );
   }
@@ -150,16 +154,11 @@ export class BloggerBlogsController {
     if (!owner) {
       throw new ForbiddenException();
     }
-    console.log('owner', owner);
 
     const post = await this.postsQueryRepository.findPostByPostId(postId);
 
     if (!post) {
       throw new NotFoundException();
-    }
-
-    if (post.blogId !== blogId) {
-      throw new ForbiddenException();
     }
 
     const isDeleted = await this.commandBus.execute(
@@ -180,15 +179,26 @@ export class BloggerBlogsController {
     @Param('blogId') blogId: string,
     @Param('postId') postId: string,
     @Body() postUpdateDTO: PostUpdateModel,
+    @CurrentUserId() currentUserId: string,
   ): Promise<void> {
+    const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+      blogId,
+      currentUserId,
+    ); // find owner of the blog
+    if (!owner) {
+      throw new ForbiddenException();
+    }
+
     const post = await this.postsQueryRepository.findPostByPostId(postId);
     if (!post) {
       throw new NotFoundException();
     }
+
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
+
     const isUpdated = await this.commandBus.execute(
       new UpdatePostCommand(
         postId,

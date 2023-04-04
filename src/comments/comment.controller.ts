@@ -45,12 +45,12 @@ export class CommentsController {
   @Put(':commentId/like-status')
   @HttpCode(204)
   async updateLikeStatus(
-    @Param('commentId') id: string,
+    @Param('commentId') commentId: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUser() currentUser: UserViewModel,
   ) {
     const comment = await this.commentsQueryRepository.findCommentByCommentId(
-      id,
+      commentId,
       currentUser.id,
     );
     if (!comment) {
@@ -119,7 +119,6 @@ export class CommentsController {
     @Param('id') commentId: string,
     @CurrentUserId() currentUserId,
   ): Promise<void> {
-    debugger;
     const comment = await this.commentsQueryRepository.findCommentByCommentId(
       commentId,
       currentUserId,

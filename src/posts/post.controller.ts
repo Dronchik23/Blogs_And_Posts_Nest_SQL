@@ -139,10 +139,10 @@ export class PostsController {
   }
 
   @UseGuards(BearerAuthGuard)
-  @Put(':id/like-status')
+  @Put(':postId/like-status')
   @HttpCode(204)
   async updateLikeStatus(
-    @Param('id') id: string,
+    @Param('postId') id: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<any> {

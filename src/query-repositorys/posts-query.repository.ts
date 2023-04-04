@@ -7,17 +7,20 @@ import {
   NewestLikesType,
   PaginationType,
   PostDBType,
+  UserDBType,
 } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { LikeDocument, Post, PostDocument } from '../types and models/schemas';
 import { ObjectId } from 'mongodb';
 import { NotFoundException } from '@nestjs/common';
+import { UsersQueryRepository } from './users-query.repository';
 
 @injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectModel('Post') private readonly postsModel: Model<PostDocument>,
     @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
+    private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
 
   private fromPostDBTypePostViewModel = (post: Post): PostViewModel => {
@@ -153,18 +156,27 @@ export class PostsQueryRepository {
     }));
   }
   private async getLikesInfoForPost(post: any, userId?: string) {
+    const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
+      (u) => u._id,
+    );
     post.extendedLikesInfo.likesCount = await this.likesModel.countDocuments({
-      parentId: post._id,
+      parentId: new ObjectId(post._id),
       status: LikeStatus.Like,
+      userId: { $nin: bannedUserIds }, // exclude banned users
     });
     post.extendedLikesInfo.dislikesCount = await this.likesModel.countDocuments(
       {
-        parentId: post._id,
+        parentId: new ObjectId(post._id),
         status: LikeStatus.Dislike,
+        userId: { $nin: bannedUserIds }, // exclude banned users
       },
     );
     const newestLikes: any = await this.likesModel
-      .find({ parentId: post._id, status: LikeStatus.Like })
+      .find({
+        parentId: new ObjectId(post._id),
+        status: LikeStatus.Like,
+        userId: { $nin: bannedUserIds },
+      })
       .sort({ addedAt: -1 })
       .limit(3)
       .exec();
@@ -172,14 +184,19 @@ export class PostsQueryRepository {
     post.extendedLikesInfo.newestLikes = this.mapNewestLikes(newestLikes);
 
     if (userId) {
-      const status: LikeDBType = await this.likesModel
-        .findOne({
-          parentId: post._id,
-          userId: new mongoose.Types.ObjectId(userId),
-        })
-        .lean();
-      if (status) {
-        post.extendedLikesInfo.myStatus = status.status;
+      const user = await this.usersQueryRepo.findUserByUserId(userId);
+      if (user.banInfo.isBanned === true) {
+        post.extendedLikesInfo.myStatus = 'None';
+      } else {
+        const status: LikeDBType = await this.likesModel
+          .findOne({
+            parentId: new ObjectId(post._id),
+            userId: new ObjectId(userId),
+          })
+          .lean();
+        if (status) {
+          post.likesInfo.myStatus = status.status;
+        }
       }
     }
     return post;

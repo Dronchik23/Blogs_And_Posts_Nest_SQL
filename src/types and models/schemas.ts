@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import {
   AccountDataType,
   BanInfoType,
+  BlogOwnerInfoType,
   CommentatorInfoType,
   EmailConfirmationType,
   ExtendedLikesInfoType,
@@ -117,6 +118,9 @@ export class Blog {
 
   @Prop()
   isMembership: boolean;
+
+  @Prop()
+  blogOwnerInfo: BlogOwnerInfoType;
 }
 export const BlogSchema = SchemaFactory.createForClass(Blog);
 

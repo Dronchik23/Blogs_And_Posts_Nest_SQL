@@ -239,3 +239,12 @@ export class BunUserInputModel {
   @Length(20)
   banReason: string;
 }
+export class NewPasswordInputModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(6, 20)
+  newPassword: string;
+  @IsString()
+  @IsNotEmpty()
+  recoveryCode: string;
+}

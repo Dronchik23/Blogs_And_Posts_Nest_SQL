@@ -6,11 +6,7 @@ import { Injectable, Scope } from '@nestjs/common';
 export class EmailService {
   constructor(private readonly emailAdapter: EmailAdapter) {}
 
-  async sendEmail(email: any, subject: string, message: string) {
-    await this.emailAdapter.sendEmail(email, subject, message);
-  }
   async sendEmailRegistrationMessage(user: UserDBType) {
-    console.log('user', user);
     const code = user.emailConfirmation.confirmationCode;
     await this.emailAdapter.sendEmail(
       user.accountData.email,

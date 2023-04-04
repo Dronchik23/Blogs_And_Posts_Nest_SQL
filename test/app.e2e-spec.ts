@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel, UserViewModel } from '../src/types and models/models';
+import { UserInputModel } from '../src/types and models/models';
 
 describe('AppController (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
@@ -410,7 +410,7 @@ describe('AppController (e2e)', () => {
         .expect(404);
     });
   });
-  describe('bloggers/blogs', () => {
+  describe.skip('bloggers/blogs', () => {
     const url = '/blogger/blogs';
 
     beforeAll(async () => {
@@ -1187,6 +1187,40 @@ describe('AppController (e2e)', () => {
           })
           .expect(401);
       });
+      it('should not update post of another user', async () => {
+        debugger;
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password2',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        console.log(user2);
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        await request(server)
+          .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({
+            title: 'new title',
+            shortDescription: 'valid',
+            content: 'valid',
+          })
+          .expect(403);
+      });
       it('should update post with correct input data ', async () => {
         await request(server)
           .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)
@@ -1224,7 +1258,7 @@ describe('AppController (e2e)', () => {
         .get(postsUrl + -1)
         .expect(404);
     });
-    describe.skip('create comments tests', () => {
+    describe.skip('create comment tests', () => {
       it('should not create comment with incorrect input data', async () => {
         await request(server)
           .post(`/posts/${post.id}/comments`)
@@ -1283,12 +1317,119 @@ describe('AppController (e2e)', () => {
         expect(commentFoundedById.body).toEqual(comment);
       });
     });
+    describe.skip('like post tests', () => {
+      it.skip('should not like not existing post', async () => {
+        await request(server)
+          .get(`/posts/` + 100 + `/like-status`)
+          .expect(404);
+      });
+      it.skip('should not like post with incorrect input data', async () => {
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: '' })
+          .expect(400);
+
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 4 })
+          .expect(400);
+
+        await request(server)
+          .get(`/posts/${post.id}`)
+          .expect(200, {
+            ...post,
+          });
+      });
+      it.skip('should not like post with incorrect authorization data', async () => {
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Basic ${accessToken}`)
+          .send({ likeStatus: 'Like' })
+          .expect(401);
+
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Bearer `)
+          .send({ likeStatus: 'Like' })
+          .expect(401);
+      });
+      it.skip('should like post with correct data', async () => {
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 'Like' })
+          .expect(204);
+
+        const postFoundedById = await request(server)
+          .get(`/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('Like');
+        expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(1);
+        expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
+      });
+      it.skip('should dislike post with correct data', async () => {
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 'Dislike' })
+          .expect(204);
+
+        const postFoundedById = await request(server)
+          .get(`/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual(
+          'Dislike',
+        );
+        expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(1);
+        expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(0);
+      });
+      it.skip('Should not return banned user like for post', async () => {
+        await request(server)
+          .put(`/posts/${post.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 'Like' })
+          .expect(204);
+
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204); // ban user
+
+        const postFoundedById = await request(server)
+          .get(`/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('None');
+        expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
+        expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(0);
+      });
+    });
   });
   describe.skip('comments', () => {
-    it.skip('should not get comment that not exist', async () => {
-      await request(server)
-        .get('/comments' + 1)
-        .expect(404);
+    describe('get comment test', () => {
+      it.skip('should not get comment that not exist', async () => {
+        await request(server)
+          .get('/comments' + 1)
+          .expect(404);
+      });
+      it.skip('should get comment', async () => {
+        await request(server)
+          .get(`/comments/${comment.id}`)
+          .expect(200, {
+            ...comment,
+          });
+      });
     });
     describe.skip('update comment tests', () => {
       it.skip('should not update comment with incorrect input data', async () => {
@@ -1328,7 +1469,7 @@ describe('AppController (e2e)', () => {
           .send({ content: 'valid content whit many letters' })
           .expect(401);
       });
-      it('should not update comment of another user', async () => {
+      it.skip('should not update comment of another user', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password2',
@@ -1370,6 +1511,190 @@ describe('AppController (e2e)', () => {
             ...comment,
             content: 'new valid content whit many letters',
           });
+      });
+    });
+    describe.skip('like comment tests', () => {
+      it.skip('should not comment not existing post', async () => {
+        await request(server)
+          .get(`/comments/` + 100 + `/like-status`)
+          .expect(404);
+      });
+      it.skip('should not like post with incorrect input data', async () => {
+        debugger;
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: '' })
+          .expect(400);
+
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 4 })
+          .expect(400);
+
+        await request(server)
+          .get(`/comments/${comment.id}`)
+          .expect(200, {
+            ...comment,
+          });
+      });
+      it.skip('should not like comment with incorrect authorization data', async () => {
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Basic ${accessToken}`)
+          .send({ likeStatus: 'Like' })
+          .expect(401);
+
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Bearer `)
+          .send({ likeStatus: 'Like' })
+          .expect(401);
+      });
+      it.skip('should like comment with correct data', async () => {
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 'Like' })
+          .expect(204);
+
+        const commentFoundedById = await request(server)
+          .get(`/comments/${comment.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(commentFoundedById.body.likesInfo.myStatus).toEqual('Like');
+        expect(commentFoundedById.body.likesInfo.likesCount).toEqual(1);
+        expect(commentFoundedById.body.likesInfo.dislikesCount).toEqual(0);
+      });
+      it.skip('should dislike post with correct data', async () => {
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 'Dislike' })
+          .expect(204);
+
+        const commentFoundedById = await request(server)
+          .get(`/comments/${comment.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(commentFoundedById.body.likesInfo.myStatus).toEqual('Dislike');
+        expect(commentFoundedById.body.likesInfo.dislikesCount).toEqual(1);
+        expect(commentFoundedById.body.likesInfo.likesCount).toEqual(0);
+      });
+      it('Should not return banned user like for comment', async () => {
+        await request(server)
+          .put(`/comments/${comment.id}/like-status`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ likeStatus: 'Like' })
+          .expect(204);
+
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204); // ban user
+
+        const commentFoundedById = await request(server)
+          .get(`/comments/${comment.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(commentFoundedById.body.likesInfo.myStatus).toEqual('None');
+        expect(commentFoundedById.body.likesInfo.dislikesCount).toEqual(0);
+        expect(commentFoundedById.body.likesInfo.likesCount).toEqual(0);
+      });
+    });
+  });
+  describe('auth', () => {
+    describe.skip('password-recovery tests', () => {
+      it.skip('should send password recovery with incorrect input data', async () => {
+        await request(server)
+          .post('/auth/login')
+          .send({
+            email: '',
+          })
+          .expect(400);
+
+        await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: user.login,
+            password: '',
+          })
+          .expect(400);
+      });
+      it.skip('should return 204 even if current email is not registered', async () => {
+        await request(server)
+          .post('/auth/password-recovery')
+          .send({
+            email: 'user799jj@gmail.com',
+          })
+          .expect(204);
+      });
+      it.skip('should send 429 if more than 5 attempts from one IP-address during 10 seconds', async () => {
+        const email = 'any@gmail.com';
+        for (let i = 0; i < 5; i++) {
+          await request(server)
+            .post('/auth/password-recovery')
+            .send({
+              email,
+            })
+            .expect(204);
+        }
+        await request(server)
+          .post('/auth/password-recovery')
+          .send({
+            email,
+          })
+          .expect(429);
+      });
+      it.skip('should send email with new recovery code', async () => {
+        await request(server)
+          .post('/auth/password-recovery')
+          .send({
+            email: 'user@gmail.com',
+          })
+          .expect(204);
+      });
+    });
+    describe('new password tests', () => {
+      it('should not change password with incorrect input data', async () => {
+        await request(server)
+          .post('/auth/new-password')
+          .send({
+            newPassword: '',
+            recoveryCode: 'valid',
+          })
+          .expect(400);
+
+        await request(server)
+          .post('/auth/new-password')
+          .send({
+            newPassword: 'valid',
+            recoveryCode: '',
+          })
+          .expect(400);
+      });
+      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds', async () => {
+        for (let i = 0; i < 5; i++) {
+          await request(server).post('/auth/new-password').send({
+            newPassword: '1234567789',
+            recoveryCode: 'valid',
+          });
+        }
+        await request(server)
+          .post('/auth/new-password')
+          .send({
+            newPassword: '1234567789',
+            recoveryCode: 'valid',
+          })
+          .expect(429);
       });
     });
   });

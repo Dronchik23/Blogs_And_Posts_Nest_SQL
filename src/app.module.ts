@@ -84,6 +84,7 @@ import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device
 import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
+import { APP_GUARD } from '@nestjs/core';
 
 export const useCases = [
   CreateBlogService,
@@ -194,10 +195,10 @@ export const queryRepos = [
     JwtStrategy,
     ...useCases,
     ...queryRepos,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule implements NestModule {

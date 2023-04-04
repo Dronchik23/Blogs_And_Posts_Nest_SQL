@@ -62,7 +62,7 @@ export class BlogDBType {
     public websiteUrl: string,
     public createdAt: string,
     public isMembership: boolean,
-    public blogOwnerInfo?: BlogOwnerInfoType,
+    public blogOwnerInfo: BlogOwnerInfoType,
   ) {}
 }
 export class PostDBType {

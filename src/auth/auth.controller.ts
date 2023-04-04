@@ -13,14 +13,16 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { UsersService } from '../sa/users/users.service';
-import { TokenType } from '../types and models/types';
+import { TokenType, UserDBType } from '../types and models/types';
 import { JwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
 import {
   CodeInputModel,
   LoginInputModel,
+  NewPasswordInputModel,
   RegistrationEmailResendingModel,
   UserInputModel,
+  UserViewModel,
 } from '../types and models/models';
 import { BearerAuthGuard } from './strategys/bearer-strategy';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -98,9 +100,12 @@ export class AuthController {
       });
   }
 
-  @Post('passwordRecovery')
+  @Post('password-recovery')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body('email') email: string) {
-    const user: any = await this.usersQueryRepository.findUserByEmail(email);
+    debugger;
+    const user: UserDBType =
+      await this.usersQueryRepository.findUserByLoginOrEmail(email);
     if (user) {
       await this.commandBus.execute(
         new PasswordRecoveryCommand(user.accountData.email),
@@ -110,19 +115,16 @@ export class AuthController {
     return HttpStatus.NO_CONTENT;
   }
 
-  @Post('newPassword')
-  async newPassword(
-    @Body() body: { newPassword: string; recoveryCode: string },
-  ) {
-    const { newPassword, recoveryCode } = body;
+  @Post('new-password')
+  async newPassword(@Body() newPasswordInputModelDto: NewPasswordInputModel) {
     const user = await this.usersQueryRepository.findUserByPasswordRecoveryCode(
-      recoveryCode,
+      newPasswordInputModelDto.recoveryCode,
     );
     if (!user) {
       return HttpStatus.NO_CONTENT;
     }
     await this.commandBus.execute(
-      new NewPasswordCommand(newPassword, user!._id),
+      new NewPasswordCommand(newPasswordInputModelDto.newPassword, user!._id),
     );
     return HttpStatus.NO_CONTENT;
   }

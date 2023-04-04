@@ -11,7 +11,7 @@ export class LikesRepository {
     @InjectModel('Like') private readonly likeModel: Model<LikeDocument>,
   ) {}
 
-  async updateLikeStatus(newLike: any): Promise<LikeDBType> {
+  async updateLikeStatus(newLike: LikeDBType): Promise<LikeDBType> {
     const filter = {
       userId: newLike.userId,
       parentId: newLike.parentId,

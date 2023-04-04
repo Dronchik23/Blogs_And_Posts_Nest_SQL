@@ -57,8 +57,6 @@ export class CommentsRepository {
   }
 
   async deleteCommentByCommentId(commentId: string, userId: string) {
-    console.log('commentId repo', commentId);
-    console.log('user repo', userId);
     try {
       const result = await this.commentsModel.deleteOne({
         _id: new mongoose.Types.ObjectId(commentId),
