@@ -115,9 +115,7 @@ export class IsLoginAlreadyExistConstraint
   constructor(private readonly usersQueryRepository: UsersQueryRepository) {}
 
   async validate(login: string) {
-    console.log('login valid', login);
     const user = await this.usersQueryRepository.findUserByLogin(login);
-    console.log('user valid', user);
     return !user;
   }
 

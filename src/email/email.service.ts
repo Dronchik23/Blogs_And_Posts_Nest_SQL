@@ -11,7 +11,11 @@ export class EmailService {
     await this.emailAdapter.sendEmail(
       user.accountData.email,
       'Confirm your email',
-      `<a href='https://blogs-and-posts-ver2-dgfu.vercel.app/auth/registration-confirmation?code=${code}'>complete registration</a>`,
+      `<h1>Registration</h1>
+                      <p>To finish registratiom please follow the link below:
+                      <a href='https://blogs-and-posts-ver2-dgfu.vercel.app/auth/registration-confirmation?code=${code}'>complete registration</a>
+                      </p>
+`,
     );
   }
   async resendingEmailMessage(email: string, code: string) {

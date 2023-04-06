@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DevicesRepository } from '../../devices/device.repository';
 
 export class DeleteAllDevicesExcludeCurrentCommand {
-  constructor(public userId: string, public currentDevice: string) {}
+  constructor(public userId: string, public deviceId: string) {}
 }
 
 @CommandHandler(DeleteAllDevicesExcludeCurrentCommand)
@@ -14,7 +14,7 @@ export class DeleteAllDevicesExcludeCurrentService
   async execute(command: DeleteAllDevicesExcludeCurrentCommand): Promise<any> {
     return await this.devicesRepository.deleteAllDevicesExcludeCurrent(
       command.userId,
-      command.currentDevice,
+      command.deviceId,
     );
   }
 }

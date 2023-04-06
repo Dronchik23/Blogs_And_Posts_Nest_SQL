@@ -42,6 +42,7 @@ import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-
 import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-case';
 import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
 import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller({ path: 'posts', scope: Scope.REQUEST })
 export class PostsController {
@@ -75,7 +76,7 @@ export class PostsController {
       CurrentUserId,
     );
   }
-
+  @SkipThrottle()
   @UseGuards(BearerAuthGuard)
   @Post(':postId/comments')
   async createCommentByPostId(

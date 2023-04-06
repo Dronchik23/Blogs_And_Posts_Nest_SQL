@@ -78,7 +78,10 @@ import { PasswordRecoveryService } from './use-cases/auth/password-recovery-use-
 import { NewPasswordService } from './use-cases/auth/new-password-use-case';
 import { RegistrationConfirmationService } from './use-cases/auth/registration-confirmation-use-case';
 import { RegistrationEmailResendingService } from './use-cases/auth/registration-email-resending-use-case';
-import { DeleteAllDevicesExcludeCurrentCommand } from './use-cases/devices/delete -all-devices-exclude-current-use-case';
+import {
+  DeleteAllDevicesExcludeCurrentCommand,
+  DeleteAllDevicesExcludeCurrentService,
+} from './use-cases/devices/delete -all-devices-exclude-current-use-case';
 import { LogoutService } from './use-cases/auth/logout-use-case';
 import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
 import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
@@ -104,7 +107,7 @@ export const useCases = [
   RegistrationConfirmationService,
   RegistrationEmailResendingService,
   LogoutService,
-  DeleteAllDevicesExcludeCurrentCommand,
+  DeleteAllDevicesExcludeCurrentService,
   DeleteDeviceByDeviceIdService,
   BunUserByUserIService,
   UpdateLikeStatusService,

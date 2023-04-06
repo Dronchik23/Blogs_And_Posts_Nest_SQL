@@ -9,6 +9,7 @@ export type BearerJwtPayloadType = {
   exp: number;
   userId: string;
 };
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly usersQueryRepository: UsersQueryRepository) {

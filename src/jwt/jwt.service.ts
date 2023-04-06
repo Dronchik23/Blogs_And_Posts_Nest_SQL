@@ -31,17 +31,6 @@ export class JwtService {
     return { accessToken, refreshToken };
   }
 
-  async getUserIdByToken(token: string) {
-    try {
-      const result = jwt.verify(token, settings.JWT_SECRET) as {
-        userId: string;
-      };
-      return result.userId;
-    } catch (error) {
-      return null;
-    }
-  }
-
   async getPayloadByRefreshToken(refreshToken: string) {
     try {
       return jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET);

@@ -16,6 +16,7 @@ export class RegistrationConfirmationService
   ) {}
 
   async execute(command: RegistrationConfirmationCommand) {
+    debugger;
     const user = await this.usersQueryRepository.findUserByConfirmationCode(
       command.code,
     );

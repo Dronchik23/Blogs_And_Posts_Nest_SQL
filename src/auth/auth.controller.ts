@@ -37,6 +37,7 @@ import { PasswordRecoveryCommand } from '../use-cases/auth/password-recovery-use
 import { NewPasswordCommand } from '../use-cases/auth/new-password-use-case';
 import { RegistrationConfirmationCommand } from '../use-cases/auth/registration-confirmation-use-case';
 import { LogoutCommand } from '../use-cases/auth/logout-use-case';
+import { RegistrationEmailResendingCommand } from '../use-cases/auth/registration-email-resending-use-case';
 
 @Controller({ path: 'auth', scope: Scope.REQUEST })
 export class AuthController {
@@ -103,7 +104,6 @@ export class AuthController {
   @Post('password-recovery')
   @HttpCode(HttpStatus.NO_CONTENT)
   async passwordRecovery(@Body('email') email: string) {
-    debugger;
     const user: UserDBType =
       await this.usersQueryRepository.findUserByLoginOrEmail(email);
     if (user) {
@@ -169,8 +169,11 @@ export class AuthController {
   async registrationEmailResending(
     @Body() registrationEmailResendingDTO: RegistrationEmailResendingModel,
   ) {
+    debugger;
     const email = await this.commandBus.execute(
-      new RegistrationConfirmationCommand(registrationEmailResendingDTO.email),
+      new RegistrationEmailResendingCommand(
+        registrationEmailResendingDTO.email,
+      ),
     ); // check email for existent
     if (!email) {
       throw new BadRequestException({

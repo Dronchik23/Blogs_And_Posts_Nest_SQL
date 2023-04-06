@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
-import { CurrentUserId, JwtPayload } from '../auth/decorators';
+import {
+  CurrentUserId,
+  CurrentUserIdFromToken,
+  JwtPayload,
+} from '../auth/decorators';
 import { Device } from '../types and models/schemas';
 import { SkipThrottle } from '@nestjs/throttler';
 import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
@@ -40,13 +44,10 @@ export class DevicesController {
   @UseGuards(RefreshTokenGuard)
   @Delete()
   @HttpCode(204)
-  async deleteAllDevicesExcludeCurrent(
-    @CurrentUserId() currentUserId,
-    @JwtPayload() jwtPayload,
-  ) {
+  async deleteAllDevicesExcludeCurrent(@JwtPayload() jwtPayload) {
     const isDeleted = await this.commandBus.execute(
       new DeleteAllDevicesExcludeCurrentCommand(
-        currentUserId,
+        jwtPayload.userId,
         jwtPayload.deviceId,
       ),
     );
