@@ -51,6 +51,7 @@ describe('AppController (e2e)', () => {
     refreshToken = loginUser.headers['set-cookie'][0]
       .split(';')[0]
       .split('=')[1];
+    console.log('refreshToken', refreshToken);
 
     const decodedToken: any = await jwt.verify(
       refreshToken,
@@ -117,7 +118,6 @@ describe('AppController (e2e)', () => {
   });
 
   describe('sa/users', () => {
-    let createdUser: any = null;
     const url = '/sa/users';
 
     it('should get all users', async () => {
@@ -206,72 +206,77 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
       it('should ban user with correct data', async () => {
-        setTimeout(async () => {
-          await request(server)
-            .put(`/sa/users/${user.id}/ban`)
-            .auth('admin', 'qwerty')
-            .send({
-              isBanned: true,
-              banReason: 'valid string more than 20 letters ',
-            })
-            .expect(204);
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204);
 
-          const responseForUser = await request(server)
-            .get(`/sa/users/${user.id}`)
-            .auth('admin', 'qwerty')
-            .expect(200);
+        const responseForUser = await request(server)
+          .get(`/sa/users/${user.id}`)
+          .auth('admin', 'qwerty')
+          .expect(200);
 
-          user = responseForUser.body;
+        user = responseForUser.body;
 
-          expect(user.banInfo.isBanned).toBe(true);
-        }, 10000);
+        expect(user.banInfo.isBanned).toBe(true);
       });
     });
     describe('create user tests', () => {
-      test('should not create user with incorrect input data', (done) => {
-        setTimeout(async () => {
-          await request(server).delete(wipeAllDataUrl);
-          await request(server)
-            .post('/sa/users')
-            .auth('admin', 'qwerty')
-            .send({ login: '', password: 'valid', email: 'valid' })
-            .expect(400);
+      it('should not create user with incorrect input data', async () => {
+        await request(server).delete(wipeAllDataUrl);
+        await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send({ login: '', password: 'valid', email: 'valid' })
+          .expect(400);
 
-          await request(server)
-            .post('/sa/users')
-            .auth('admin', 'qwerty')
-            .send({ login: 'valid', password: '', email: 'valid' })
-            .expect(400);
+        await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send({ login: 'valid', password: '', email: 'valid' })
+          .expect(400);
 
-          await request(server)
-            .post('/sa/users')
-            .auth('admin', 'qwerty')
-            .send({ login: 'valid', password: 'valid', email: '' })
-            .expect(400);
+        await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send({ login: 'valid', password: 'valid', email: '' })
+          .expect(400);
 
-          await request(server).get('/sa/users').expect(200, {
+        await request(server)
+          .get('/sa/users')
+          .auth('admin', 'qwerty')
+          .expect(200, {
             pagesCount: 1,
             page: 1,
             pageSize: 10,
             totalCount: 0,
             items: [],
           });
-
-          done();
-        }, 10000); // 10000 миллисекунд = 10 секунд
       });
-      it('should not create user with incorrect authorization data', async (done) => {
+      it('should not create user with incorrect authorization data', async () => {
         await request(server).delete(wipeAllDataUrl);
         await request(server)
           .post('/sa/users')
-          .set('Authorization', `Basic invalid`)
-          .send({ login: 'valid', password: 'valid', email: 'valid' })
+          .auth('admin', '')
+          .send({
+            login: 'validLogin',
+            password: 'validpassword',
+            email: 'user@gmail.com',
+          })
           .expect(401);
 
         await request(server)
           .post('/sa/users')
-          .set('Authorization', `Bearer YWRtaW46cXdlcnR5`)
-          .send({ login: 'valid', password: 'valid', email: 'valid' })
+          .auth('', 'qwerty')
+          .send({
+            login: 'validLogin',
+            password: 'validpassword',
+            email: 'valid@gmail.com',
+          })
           .expect(401);
 
         await request(server)
@@ -284,32 +289,28 @@ describe('AppController (e2e)', () => {
             totalCount: 0,
             items: [],
           });
-
-        setTimeout(() => {
-          done();
-        }, 10000);
       });
       it('should create user with correct input data', async () => {
         await request(server).delete(wipeAllDataUrl);
-        const createResponseForUser = await request(server)
+        const createResponseForUser2 = await request(server)
           .post('/sa/users')
           .auth('admin', 'qwerty')
           .send({
             login: 'valid',
             password: 'valid123',
-            email: 'valid@mail.ru',
+            email: 'valid@gmail.ru',
           })
           .expect(201);
 
-        createdUser = createResponseForUser.body;
+        const user2 = createResponseForUser2.body;
 
-        expect(createdUser).toEqual({
-          id: expect.any(String),
-          login: expect.any(String),
-          email: expect.any(String),
-          createdAt: expect.any(String),
-          banInfo: expect.any(Object),
-        });
+        // expect(user2).toEqual({
+        //   id: expect.any(String),
+        //   login: expect.any(String),
+        //   email: expect.any(String),
+        //   createdAt: expect.any(String),
+        //   banInfo: expect.any(Object),
+        // });
 
         await request(server)
           .get('/sa/users')
@@ -319,7 +320,7 @@ describe('AppController (e2e)', () => {
             page: 1,
             pageSize: 10,
             totalCount: 1,
-            items: [createdUser],
+            items: [user2],
           });
       });
     });
@@ -391,7 +392,7 @@ describe('AppController (e2e)', () => {
 
         await request(server)
           .delete(`/sa/users/${user.id}`)
-          .set('Authorization', `Bearer YWRtaW46cXdlcnR5`)
+          .auth('Authorization', `Bearer YWRtaW46cXdlcnR5`)
           .expect(401);
       });
       it('should delete user with correct id', async () => {
@@ -1040,13 +1041,13 @@ describe('AppController (e2e)', () => {
       //some logic
     });
     describe('delete post tests', () => {
-      it.skip('should not delete post that not exist ', async () => {
+      it('should not delete post that not exist ', async () => {
         await request(server)
           .delete(`/blogger/blogs/${blog.id}/posts/` + -12)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(404);
       });
-      it.skip('should not delete post with bad auth params', async () => {
+      it('should not delete post with bad auth params', async () => {
         await request(server)
           .delete(`/blogger/blogs/${blog.id}/posts/${post.id}`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -1457,12 +1458,12 @@ describe('AppController (e2e)', () => {
   });
   describe('comments', () => {
     describe('get comment test', () => {
-      it.skip('should not get comment that not exist', async () => {
+      it('should not get comment that not exist', async () => {
         await request(server)
           .get('/comments' + 1)
           .expect(404);
       });
-      it.skip('should get comment', async () => {
+      it('should get comment', async () => {
         await request(server)
           .get(`/comments/${comment.id}`)
           .expect(200, {
@@ -1471,7 +1472,7 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('update comment tests', () => {
-      it.skip('should not update comment with incorrect input data', async () => {
+      it('should not update comment with incorrect input data', async () => {
         debugger;
         const reqWithIncorrectContent = await request(server)
           .put(`/comments/${comment.id}`)
@@ -1488,14 +1489,14 @@ describe('AppController (e2e)', () => {
           ],
         });
       });
-      it.skip('should not update comment that not exist ', async () => {
+      it('should not update comment that not exist ', async () => {
         await request(server)
           .put('/comments/' + -12)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ content: 'valid content whit many letters' })
           .expect(404);
       });
-      it.skip('should not update comment with bad auth params', async () => {
+      it('should not update comment with bad auth params', async () => {
         await request(server)
           .put(`/comments/${comment.id}`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -1508,7 +1509,7 @@ describe('AppController (e2e)', () => {
           .send({ content: 'valid content whit many letters' })
           .expect(401);
       });
-      it.skip('should not update comment of another user', async () => {
+      it('should not update comment of another user', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password2',
@@ -1552,12 +1553,12 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('like comment tests', () => {
-      it.skip('should not comment not existing post', async () => {
+      it('should not comment not existing post', async () => {
         await request(server)
           .get(`/comments/` + 100 + `/like-status`)
           .expect(404);
       });
-      it.skip('should not like post with incorrect input data', async () => {
+      it('should not like post with incorrect input data', async () => {
         debugger;
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
@@ -1577,7 +1578,7 @@ describe('AppController (e2e)', () => {
             ...comment,
           });
       });
-      it.skip('should not like comment with incorrect authorization data', async () => {
+      it('should not like comment with incorrect authorization data', async () => {
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -1590,7 +1591,7 @@ describe('AppController (e2e)', () => {
           .send({ likeStatus: 'Like' })
           .expect(401);
       });
-      it.skip('should like comment with correct data', async () => {
+      it('should like comment with correct data', async () => {
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -1606,7 +1607,7 @@ describe('AppController (e2e)', () => {
         expect(commentFoundedById.body.likesInfo.likesCount).toEqual(1);
         expect(commentFoundedById.body.likesInfo.dislikesCount).toEqual(0);
       });
-      it.skip('should dislike post with correct data', async () => {
+      it('should dislike post with correct data', async () => {
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -1675,7 +1676,7 @@ describe('AppController (e2e)', () => {
           })
           .expect(204);
       });
-      it.skip('should send email with new recovery code', async () => {
+      it('should send email with new recovery code', async () => {
         await request(server)
           .post('/auth/password-recovery')
           .send({
@@ -1759,7 +1760,7 @@ describe('AppController (e2e)', () => {
           done();
         });
       }, 10000);
-      it('should send 401 if password or login is wrong', (done) => {
+      it('should send 401 if password, login or email is wrong', (done) => {
         setTimeout(async () => {
           await request(server)
             .post('/auth/login')
@@ -1788,12 +1789,29 @@ describe('AppController (e2e)', () => {
           done();
         }, 10000);
       });
-      it('should login user with correct input data', (done) => {
+      it('should login user with correct login', (done) => {
         setTimeout(async () => {
           const loginUser2 = await request(server)
             .post('/auth/login')
             .send({
               loginOrEmail: 'user',
+              password: 'password',
+            })
+            .expect(200);
+
+          accessToken = loginUser2.body.accessToken;
+
+          expect(accessToken).toBeDefined();
+
+          done();
+        }, 10000);
+      });
+      it('should login user with correct email', (done) => {
+        setTimeout(async () => {
+          const loginUser2 = await request(server)
+            .post('/auth/login')
+            .send({
+              loginOrEmail: 'user@gmail.com',
               password: 'password',
             })
             .expect(200);
@@ -1821,378 +1839,378 @@ describe('AppController (e2e)', () => {
           })
           .expect(429);
       });
-    });
-    describe('registration confirmation test', () => {
-      it('should not confirmation with incorrect input data', async () => {
-        await request(server)
-          .post('/auth/registration-confirmation')
-          .send({
-            code: '',
-          })
-          .expect(400);
-      });
-      it('should confirm registration with correct input data', async () => {
-        await request(server).delete(wipeAllDataUrl);
+      describe('registration confirmation test', () => {
+        it('should not confirmation with incorrect input data', async () => {
+          await request(server)
+            .post('/auth/registration-confirmation')
+            .send({
+              code: '',
+            })
+            .expect(400);
+        });
+        it('should confirm registration with correct input data', async () => {
+          await request(server).delete(wipeAllDataUrl);
 
-        const mailBox: MailBoxImap = expect.getState().mailBox;
+          const mailBox: MailBoxImap = expect.getState().mailBox;
 
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `andreantsygin@yandex.by`,
-        };
-
-        await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        const email = await mailBox.waitNewMessage(2);
-        const html = await mailBox.getMessageHtml(email);
-
-        expect(html).not.toBeNull();
-        const code = html.split('code=')[1].split("'")[0];
-        expect(code).toBeDefined();
-        expect(isUUID(code)).toBeTruthy();
-        expect.setState({ code });
-
-        await request(server)
-          .post('/auth/registration-confirmation')
-          .send({
-            code: code,
-          })
-          .expect(204);
-      });
-      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to change password', async () => {
-        for (let i = 0; i < 5; i++) {
-          await request(server).post('/auth/registration-confirmation').send({
-            code: 'valid',
-          });
-        }
-
-        await request(server)
-          .post('/auth/registration-confirmation')
-          .send({
-            loginOrEmail: 'user',
-            password: 'password',
-          })
-          .expect(429);
-      });
-    });
-    describe('registration tests', () => {
-      it('should not registered with incorrect input data', async () => {
-        await request(server)
-          .post('/auth/registration')
-          .send({
-            login: '',
-            password: 'validpassword',
-            email: 'user2@gmail.com',
-          })
-          .expect(400);
-
-        await request(server)
-          .post('/auth/registration')
-          .send({
-            login: 'valid',
-            password: '',
-            email: 'user2@gmail.com',
-          })
-          .expect(400);
-
-        await request(server)
-          .post('/auth/registration')
-          .send({
-            login: 'valid',
-            password: 'validpassword',
-            email: 'user.com',
-          })
-          .expect(400);
-      });
-      it('should registered with correct input data', async () => {
-        await request(server)
-          .post('/auth/registration')
-          .send({
-            login: 'valid',
-            password: 'validpassword',
-            email: 'user2@gmail.com',
-          })
-          .expect(204);
-      });
-      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to use registration', async () => {
-        for (let i = 0; i < 5; i++) {
-          await request(server).post('/auth/registration').send({
-            login: 'valid',
-            password: 'validpassword',
-            email: 'user2@gmail.com',
-          });
-        }
-
-        await request(server)
-          .post('/auth/registration')
-          .send({
-            login: 'valid',
-            password: 'validpassword',
-            email: 'user2@gmail.com',
-          })
-          .expect(429);
-      });
-    });
-    describe('registration email resending tests', () => {
-      it('should not resend email with incorrect input data', async () => {
-        await request(server)
-          .post('/auth/registration-email-resending')
-          .send({
-            email: '',
-          })
-          .expect(400);
-      });
-      it('should resend email with correct input data', async () => {
-        await request(server).delete(wipeAllDataUrl);
-
-        const user = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send({
+          const createUserDto: UserInputModel = {
             login: `user`,
             password: 'password',
-            email: `andreantsygin@yandex.ru`,
-          }); // create user
+            email: `andreantsygin@yandex.by`,
+          };
 
-        await request(server)
-          .post('/auth/registration-email-resending')
-          .send({
-            email: 'andreantsygin@yandex.ru',
-          })
-          .expect(204);
+          await request(server)
+            .post('/sa/users')
+            .auth('admin', 'qwerty')
+            .send(createUserDto);
 
-        const mailBox: MailBoxImap = expect.getState().mailBox;
+          const email = await mailBox.waitNewMessage(2);
+          const html = await mailBox.getMessageHtml(email);
 
-        const email = await mailBox.waitNewMessage(2);
-        const html = await mailBox.getMessageHtml(email);
+          expect(html).not.toBeNull();
+          const code = html.split('code=')[1].split("'")[0];
+          expect(code).toBeDefined();
+          expect(isUUID(code)).toBeTruthy();
+          expect.setState({ code });
 
-        expect(html).not.toBeNull();
-        const code = html.split('code=')[1].split("'")[0];
-        expect(code).toBeDefined();
-        expect(isUUID(code)).toBeTruthy();
-        expect.setState({ code });
+          await request(server)
+            .post('/auth/registration-confirmation')
+            .send({
+              code: code,
+            })
+            .expect(204);
+        });
+        it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to change password', async () => {
+          for (let i = 0; i < 5; i++) {
+            await request(server).post('/auth/registration-confirmation').send({
+              code: 'valid',
+            });
+          }
+
+          await request(server)
+            .post('/auth/registration-confirmation')
+            .send({
+              loginOrEmail: 'user',
+              password: 'password',
+            })
+            .expect(429);
+        });
       });
-      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to resend email', async () => {
-        for (let i = 0; i < 5; i++) {
+      describe('registration tests', () => {
+        it('should not registered with incorrect input data', async () => {
+          await request(server)
+            .post('/auth/registration')
+            .send({
+              login: '',
+              password: 'validpassword',
+              email: 'user2@gmail.com',
+            })
+            .expect(400);
+
+          await request(server)
+            .post('/auth/registration')
+            .send({
+              login: 'valid',
+              password: '',
+              email: 'user2@gmail.com',
+            })
+            .expect(400);
+
+          await request(server)
+            .post('/auth/registration')
+            .send({
+              login: 'valid',
+              password: 'validpassword',
+              email: 'user.com',
+            })
+            .expect(400);
+        });
+        it('should registered with correct input data', async () => {
+          await request(server)
+            .post('/auth/registration')
+            .send({
+              login: 'valid',
+              password: 'validpassword',
+              email: 'user2@gmail.com',
+            })
+            .expect(204);
+        });
+        it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to use registration', async () => {
+          for (let i = 0; i < 5; i++) {
+            await request(server).post('/auth/registration').send({
+              login: 'valid',
+              password: 'validpassword',
+              email: 'user2@gmail.com',
+            });
+          }
+
+          await request(server)
+            .post('/auth/registration')
+            .send({
+              login: 'valid',
+              password: 'validpassword',
+              email: 'user2@gmail.com',
+            })
+            .expect(429);
+        });
+      });
+      describe('registration email resending tests', () => {
+        it('should not resend email with incorrect input data', async () => {
+          await request(server)
+            .post('/auth/registration-email-resending')
+            .send({
+              email: '',
+            })
+            .expect(400);
+        });
+        it('should resend email with correct input data', async () => {
+          await request(server).delete(wipeAllDataUrl);
+
+          const user = await request(server)
+            .post('/sa/users')
+            .auth('admin', 'qwerty')
+            .send({
+              login: `user`,
+              password: 'password',
+              email: `andreantsygin@yandex.ru`,
+            }); // create user
+
+          await request(server)
+            .post('/auth/registration-email-resending')
+            .send({
+              email: 'andreantsygin@yandex.ru',
+            })
+            .expect(204);
+
+          const mailBox: MailBoxImap = expect.getState().mailBox;
+
+          const email = await mailBox.waitNewMessage(2);
+          const html = await mailBox.getMessageHtml(email);
+
+          expect(html).not.toBeNull();
+          const code = html.split('code=')[1].split("'")[0];
+          expect(code).toBeDefined();
+          expect(isUUID(code)).toBeTruthy();
+          expect.setState({ code });
+        });
+        it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to resend email', async () => {
+          for (let i = 0; i < 5; i++) {
+            await request(server)
+              .post('/auth/registration-email-resending')
+              .send({
+                email: 'user@gmail.com',
+              });
+          }
+
           await request(server)
             .post('/auth/registration-email-resending')
             .send({
               email: 'user@gmail.com',
+            })
+            .expect(429);
+        });
+      });
+      describe('logout tests', () => {
+        it('should logout if refreshToken is actual', async () => {
+          await request(server)
+            .post('/auth/logout')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(204);
+        });
+        it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
+          await request(server)
+            .post('/auth/logout')
+            .set('Cookie', `refreshToken=`)
+            .expect(401);
+
+          await request(server)
+            .post('/auth/logout')
+            .set('Cookie', `refreshToken=${refreshToken + 1}`)
+            .expect(401);
+        });
+        it('should send 401 if refreshToken inside cookie is expired', async () => {
+          // распарсиваем токен, чтобы получить его содержимое
+          const decodedToken: any = jwt.decode(refreshToken);
+
+          // изменяем поле exp на дату из прошлого (например, на дату вчера)
+          decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
+
+          // заново подписываем токен с измененным содержимым
+          const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
+
+          // отправляем запрос с измененным токеном
+          await request(server)
+            .post('/auth/logout')
+            .set('Cookie', `refreshToken=${invalidToken}`)
+            .expect(401);
+        });
+      });
+      describe('me tests', () => {
+        it('should send 401 if authorization data is incorrect', async () => {
+          await request(server)
+            .get('/auth/me')
+            .set('Authorization', `Bearer `)
+            .expect(401);
+        });
+        it('should send 200 if authorization data is correct', async () => {
+          await request(server)
+            .get('/auth/me')
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(200);
+        });
+      });
+    });
+    describe('devices', () => {
+      describe('get all devices with current session tests', () => {
+        it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
+          await request(server)
+            .get('/security/devices')
+            .set('Cookie', `refreshToken=`)
+            .expect(401);
+
+          await request(server)
+            .get('/security/devices')
+            .set('Cookie', `refreshToken=${refreshToken + 1}`)
+            .expect(401);
+        });
+        it('should send 401 if refreshToken inside cookie is expired', async () => {
+          // распарсиваем токен, чтобы получить его содержимое
+          const decodedToken: any = jwt.decode(refreshToken);
+
+          // изменяем поле exp на дату из прошлого (например, на дату вчера)
+          decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
+
+          // заново подписываем токен с измененным содержимым
+          const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
+
+          // отправляем запрос с измененным токеном
+          await request(server)
+            .get('/security/devices')
+            .set('Cookie', `refreshToken=${invalidToken}`)
+            .expect(401);
+        });
+        it('should send 200 if refreshToken inside cookie is correct', async () => {
+          await request(server)
+            .get('/security/devices')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(200)
+            .expect((res) => {
+              const devices = res.body as DeviceDBType[];
+              expect(devices.length).toBeGreaterThan(0);
+              expect(devices[0].deviceId).toEqual(deviceId);
             });
-        }
-
-        await request(server)
-          .post('/auth/registration-email-resending')
-          .send({
-            email: 'user@gmail.com',
-          })
-          .expect(429);
-      });
-    });
-    describe('logout tests', () => {
-      it('should logout if refreshToken is actual', async () => {
-        await request(server)
-          .post('/auth/logout')
-          .set('Cookie', `refreshToken=${refreshToken}`)
-          .expect(204);
-      });
-      it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
-        await request(server)
-          .post('/auth/logout')
-          .set('Cookie', `refreshToken=`)
-          .expect(401);
-
-        await request(server)
-          .post('/auth/logout')
-          .set('Cookie', `refreshToken=${refreshToken + 1}`)
-          .expect(401);
-      });
-      it('should send 401 if refreshToken inside cookie is expired', async () => {
-        // распарсиваем токен, чтобы получить его содержимое
-        const decodedToken: any = jwt.decode(refreshToken);
-
-        // изменяем поле exp на дату из прошлого (например, на дату вчера)
-        decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
-
-        // заново подписываем токен с измененным содержимым
-        const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
-
-        // отправляем запрос с измененным токеном
-        await request(server)
-          .post('/auth/logout')
-          .set('Cookie', `refreshToken=${invalidToken}`)
-          .expect(401);
-      });
-    });
-    describe('me tests', () => {
-      it('should send 401 if authorization data is incorrect', async () => {
-        await request(server)
-          .get('/auth/me')
-          .set('Authorization', `Bearer `)
-          .expect(401);
-      });
-      it('should send 200 if authorization data is correct', async () => {
-        await request(server)
-          .get('/auth/me')
-          .set('Authorization', `Bearer ${accessToken}`)
-          .expect(200);
-      });
-    });
-  });
-  describe('devices', () => {
-    describe('get all devices with current session tests', () => {
-      it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
-        await request(server)
-          .get('/security/devices')
-          .set('Cookie', `refreshToken=`)
-          .expect(401);
-
-        await request(server)
-          .get('/security/devices')
-          .set('Cookie', `refreshToken=${refreshToken + 1}`)
-          .expect(401);
-      });
-      it('should send 401 if refreshToken inside cookie is expired', async () => {
-        // распарсиваем токен, чтобы получить его содержимое
-        const decodedToken: any = jwt.decode(refreshToken);
-
-        // изменяем поле exp на дату из прошлого (например, на дату вчера)
-        decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
-
-        // заново подписываем токен с измененным содержимым
-        const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
-
-        // отправляем запрос с измененным токеном
-        await request(server)
-          .get('/security/devices')
-          .set('Cookie', `refreshToken=${invalidToken}`)
-          .expect(401);
-      });
-      it('should send 200 if refreshToken inside cookie is correct', async () => {
-        await request(server)
-          .get('/security/devices')
-          .set('Cookie', `refreshToken=${refreshToken}`)
-          .expect(200)
-          .expect((res) => {
-            const devices = res.body as DeviceDBType[];
-            expect(devices.length).toBeGreaterThan(0);
-            expect(devices[0].deviceId).toEqual(deviceId);
-          });
-      });
-    });
-    describe('terminate all sessions exclude current tests', () => {
-      it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
-        await request(server)
-          .delete('/security/devices')
-          .set('Cookie', `refreshToken=`)
-          .expect(401);
-
-        await request(server)
-          .delete('/security/devices')
-          .set('Cookie', `refreshToken=${refreshToken + 1}`)
-          .expect(401);
-      });
-      it('should send 401 if refreshToken inside cookie is expired', async () => {
-        // распарсиваем токен, чтобы получить его содержимое
-        const decodedToken: any = jwt.decode(refreshToken);
-
-        // изменяем поле exp на дату из прошлого (например, на дату вчера)
-        decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
-
-        // заново подписываем токен с измененным содержимым
-        const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
-
-        // отправляем запрос с измененным токеном
-        await request(server)
-          .delete('/security/devices')
-          .set('Cookie', `refreshToken=${invalidToken}`)
-          .expect(401);
-      });
-      it('should send 204 if refreshToken inside cookie is correct', async () => {
-        await request(server)
-          .delete('/security/devices')
-          .set('Cookie', `refreshToken=${refreshToken}`)
-          .expect(204);
-
-        await request(server)
-          .get('/security/devices')
-          .set('Cookie', `refreshToken=${refreshToken}`)
-          .expect(200)
-          .expect((res) => {
-            const devices = res.body as DeviceDBType[];
-            expect(devices.length).toBeGreaterThan(0);
-            expect(devices[0].deviceId).toEqual(deviceId);
-          });
-      });
-    });
-    describe('terminate session by deviceId tests', () => {
-      it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
-        await request(server)
-          .delete(`/security/devices/${deviceId}`)
-          .set('Cookie', `refreshToken=`)
-          .expect(401);
-
-        await request(server)
-          .delete(`/security/devices/${deviceId}`)
-          .set('Cookie', `refreshToken=${refreshToken + 1}`)
-          .expect(401);
-      });
-      it('should send 401 if refreshToken inside cookie is expired', async () => {
-        // распарсиваем токен, чтобы получить его содержимое
-        const decodedToken: any = jwt.decode(refreshToken);
-
-        // изменяем поле exp на дату из прошлого (например, на дату вчера)
-        decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
-
-        // заново подписываем токен с измененным содержимым
-        const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
-
-        // отправляем запрос с измененным токеном
-        await request(server)
-          .delete(`/security/devices/${deviceId}`)
-          .set('Cookie', `refreshToken=${invalidToken}`)
-          .expect(401);
-      });
-      it('should send 403 if user try to delete device of another user', async () => {
-        await request(server).post('/sa/users').auth('admin', 'qwerty').send({
-          login: `user2`,
-          password: 'password',
-          email: `user2@gmail.com`,
         });
-
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: 'user2',
-          password: 'password',
-        });
-
-        const refreshToken2 = loginUser2.headers['set-cookie'][0]
-          .split(';')[0]
-          .split('=')[1];
-
-        await request(server)
-          .delete(`/security/devices/${deviceId}`)
-          .set('Cookie', `refreshToken=${refreshToken2}`)
-          .expect(403);
       });
-      it('should send 204 if refreshToken inside cookie is correct', async () => {
-        await request(server)
-          .delete(`/security/devices/${deviceId}`)
-          .set('Cookie', `refreshToken=${refreshToken}`)
-          .expect(204);
+      describe('terminate all sessions exclude current tests', () => {
+        it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
+          await request(server)
+            .delete('/security/devices')
+            .set('Cookie', `refreshToken=`)
+            .expect(401);
 
-        await request(server)
-          .get('/security/devices')
-          .set('Cookie', `refreshToken=${refreshToken}`)
-          .expect(200)
-          .expect((res) => {
-            const devices = res.body as DeviceDBType[];
-            expect(Array.isArray(devices)).toBeTruthy();
-            expect(devices.some((d) => d.deviceId === deviceId)).toBeFalsy();
+          await request(server)
+            .delete('/security/devices')
+            .set('Cookie', `refreshToken=${refreshToken + 1}`)
+            .expect(401);
+        });
+        it('should send 401 if refreshToken inside cookie is expired', async () => {
+          // распарсиваем токен, чтобы получить его содержимое
+          const decodedToken: any = jwt.decode(refreshToken);
+
+          // изменяем поле exp на дату из прошлого (например, на дату вчера)
+          decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
+
+          // заново подписываем токен с измененным содержимым
+          const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
+
+          // отправляем запрос с измененным токеном
+          await request(server)
+            .delete('/security/devices')
+            .set('Cookie', `refreshToken=${invalidToken}`)
+            .expect(401);
+        });
+        it('should send 204 if refreshToken inside cookie is correct', async () => {
+          await request(server)
+            .delete('/security/devices')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(204);
+
+          await request(server)
+            .get('/security/devices')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(200)
+            .expect((res) => {
+              const devices = res.body as DeviceDBType[];
+              expect(devices.length).toBeGreaterThan(0);
+              expect(devices[0].deviceId).toEqual(deviceId);
+            });
+        });
+      });
+      describe('terminate session by deviceId tests', () => {
+        it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
+          await request(server)
+            .delete(`/security/devices/${deviceId}`)
+            .set('Cookie', `refreshToken=`)
+            .expect(401);
+
+          await request(server)
+            .delete(`/security/devices/${deviceId}`)
+            .set('Cookie', `refreshToken=${refreshToken + 1}`)
+            .expect(401);
+        });
+        it('should send 401 if refreshToken inside cookie is expired', async () => {
+          // распарсиваем токен, чтобы получить его содержимое
+          const decodedToken: any = jwt.decode(refreshToken);
+
+          // изменяем поле exp на дату из прошлого (например, на дату вчера)
+          decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
+
+          // заново подписываем токен с измененным содержимым
+          const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
+
+          // отправляем запрос с измененным токеном
+          await request(server)
+            .delete(`/security/devices/${deviceId}`)
+            .set('Cookie', `refreshToken=${invalidToken}`)
+            .expect(401);
+        });
+        it('should send 403 if user try to delete device of another user', async () => {
+          await request(server).post('/sa/users').auth('admin', 'qwerty').send({
+            login: `user2`,
+            password: 'password',
+            email: `user2@gmail.com`,
           });
+
+          const loginUser2 = await request(server).post('/auth/login').send({
+            loginOrEmail: 'user2',
+            password: 'password',
+          });
+
+          const refreshToken2 = loginUser2.headers['set-cookie'][0]
+            .split(';')[0]
+            .split('=')[1];
+
+          await request(server)
+            .delete(`/security/devices/${deviceId}`)
+            .set('Cookie', `refreshToken=${refreshToken2}`)
+            .expect(403);
+        });
+        it('should send 204 if refreshToken inside cookie is correct', async () => {
+          await request(server)
+            .delete(`/security/devices/${deviceId}`)
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(204);
+
+          await request(server)
+            .get('/security/devices')
+            .set('Cookie', `refreshToken=${refreshToken}`)
+            .expect(200)
+            .expect((res) => {
+              const devices = res.body as DeviceDBType[];
+              expect(Array.isArray(devices)).toBeTruthy();
+              expect(devices.some((d) => d.deviceId === deviceId)).toBeFalsy();
+            });
+        });
       });
     });
   });

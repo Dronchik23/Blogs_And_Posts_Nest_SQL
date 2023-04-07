@@ -20,6 +20,7 @@ import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.reposi
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { BindBlogToUserCommand } from '../../use-cases/blogs/bind-blog-to-user-use-case';
 
+@SkipThrottle()
 @Controller({ path: 'sa/blogs', scope: Scope.REQUEST })
 export class SABlogsController {
   constructor(

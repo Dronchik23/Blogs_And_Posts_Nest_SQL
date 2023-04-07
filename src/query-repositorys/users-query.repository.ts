@@ -74,7 +74,6 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: BanStatus,
   ): Promise<PaginationType> {
-    debugger;
     const filter = this.searchLoginAndEmailTermFilter(
       searchLoginTerm,
       searchEmailTerm,

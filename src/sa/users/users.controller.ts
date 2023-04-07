@@ -26,7 +26,8 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../../use-cases/users/create-user-use-case';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
 import { BunUserByUserIdCommand } from '../../use-cases/users/bun-user-by-userId-use-case';
-
+import { SkipThrottle } from '@nestjs/throttler';
+@SkipThrottle()
 @Controller({ path: 'sa/users', scope: Scope.REQUEST })
 export class UsersController {
   constructor(
@@ -50,6 +51,7 @@ export class UsersController {
       query.banStatus,
     );
   }
+
   @UseGuards(BasicAuthGuard)
   @Get(':userId')
   async getUserByUserId(@Param('userId') id: string): Promise<UserViewModel> {
@@ -59,11 +61,13 @@ export class UsersController {
     }
     return user;
   }
+
   @UseGuards(BasicAuthGuard)
   @Post()
   async createUser(
     @Body() createUserDTO: UserInputModel,
   ): Promise<UserViewModel> {
+    debugger;
     return await this.commandBus.execute(
       new CreateUserCommand(
         createUserDTO.login,
@@ -76,6 +80,7 @@ export class UsersController {
   @Delete(':userId')
   @HttpCode(204)
   async deleteUserByUserId(@Param('userId') userId: string): Promise<boolean> {
+    debugger;
     const isDeleted = await this.commandBus.execute(
       new DeleteUserCommand(userId),
     );
