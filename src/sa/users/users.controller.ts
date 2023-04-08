@@ -67,7 +67,6 @@ export class UsersController {
   async createUser(
     @Body() createUserDTO: UserInputModel,
   ): Promise<UserViewModel> {
-    debugger;
     return await this.commandBus.execute(
       new CreateUserCommand(
         createUserDTO.login,

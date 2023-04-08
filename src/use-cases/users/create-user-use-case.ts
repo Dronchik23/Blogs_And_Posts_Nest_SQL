@@ -30,7 +30,6 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
   ) {}
 
   async execute(command: CreateUserCommand): Promise<UserViewModel> {
-    debugger;
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(command.password, passwordSalt);
     const code = uuidv4();

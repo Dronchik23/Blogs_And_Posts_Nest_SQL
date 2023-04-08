@@ -43,7 +43,9 @@ import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-
 import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
 import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
+import { logging } from 'googleapis/build/src/apis/logging';
 
+@SkipThrottle()
 @Controller({ path: 'posts', scope: Scope.REQUEST })
 export class PostsController {
   constructor(
@@ -143,14 +145,17 @@ export class PostsController {
   @Put(':postId/like-status')
   @HttpCode(204)
   async updateLikeStatus(
-    @Param('postId') id: string,
+    @Param('postId') postId: string,
     @Body() likeStatusDTO: LikeInputModel,
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<any> {
+    console.log('currentUser', currentUser);
+    debugger;
     const post = await this.postsQueryRepository.findPostByPostId(
-      id,
+      postId,
       currentUser.id,
     );
+    console.log('currentUser.id', currentUser.id);
     if (!post) {
       throw new NotFoundException();
     }

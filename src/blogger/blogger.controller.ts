@@ -41,6 +41,7 @@ import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { CurrentUser, CurrentUserId } from '../auth/decorators';
 
+@SkipThrottle()
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
   constructor(
@@ -51,7 +52,6 @@ export class BloggerBlogsController {
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
 
-  @SkipThrottle()
   @Get()
   async getAllBlogs(@Query() query: PaginationInputQueryModel) {
     return await this.blogsQueryRepository.findAllBlogs(

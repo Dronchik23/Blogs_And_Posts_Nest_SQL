@@ -5,7 +5,6 @@ import {
   CommentatorInfoType,
   CommentDBType,
   LikesInfoType,
-  PostDBType,
 } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
 import { CommentViewModel, PostViewModel } from '../../types and models/models';

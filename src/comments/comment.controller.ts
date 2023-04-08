@@ -31,7 +31,9 @@ import { CommandBus } from '@nestjs/cqrs';
 import { DeleteCommentCommand } from '../use-cases/comments/delete-comment-by-commentId-use-case';
 import { UpdateCommentCommand } from '../use-cases/comments/update -comment-by-commentId-and-userId-use-case';
 import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle()
 @Controller({ path: 'comments', scope: Scope.REQUEST })
 export class CommentsController {
   constructor(

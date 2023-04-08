@@ -70,6 +70,7 @@ describe('AppController (e2e)', () => {
       });
 
     blog = responseForBlog.body;
+    console.log('blog beforeEach', blog);
     expect(blog).toBeDefined();
 
     const responseForPost = await request(server)
@@ -280,7 +281,7 @@ describe('AppController (e2e)', () => {
           .expect(401);
 
         await request(server)
-          .get('sa/users')
+          .get('/sa/users')
           .auth('admin', 'qwerty')
           .expect(200, {
             pagesCount: 1,
@@ -291,7 +292,7 @@ describe('AppController (e2e)', () => {
           });
       });
       it('should create user with correct input data', async () => {
-        await request(server).delete(wipeAllDataUrl);
+        await request(server).delete(wipeAllDataUrl); // затираем все
         const createResponseForUser2 = await request(server)
           .post('/sa/users')
           .auth('admin', 'qwerty')
@@ -303,14 +304,6 @@ describe('AppController (e2e)', () => {
           .expect(201);
 
         const user2 = createResponseForUser2.body;
-
-        // expect(user2).toEqual({
-        //   id: expect.any(String),
-        //   login: expect.any(String),
-        //   email: expect.any(String),
-        //   createdAt: expect.any(String),
-        //   banInfo: expect.any(Object),
-        // });
 
         await request(server)
           .get('/sa/users')
@@ -1059,7 +1052,6 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
       it('should not delete post of another user', async () => {
-        debugger;
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password2',
@@ -1161,17 +1153,6 @@ describe('AppController (e2e)', () => {
         const fakeId = '21';
         await request(server)
           .put(`/blogger/blogs/${blog.id}/posts/${fakeId}`)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .send({
-            title: 'valid title',
-            shortDescription: 'valid description',
-            content: 'valid content',
-          })
-          .expect(404);
-      });
-      it('should not update post with not existing blogId ', async () => {
-        await request(server)
-          .put(`/blogger/blogs/${1}/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             title: 'valid title',

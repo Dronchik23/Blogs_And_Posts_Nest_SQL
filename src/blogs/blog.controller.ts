@@ -20,6 +20,7 @@ import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repositor
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { PaginationType } from '../types and models/types';
 
+@SkipThrottle()
 @Controller({ path: 'blogs', scope: Scope.REQUEST })
 export class BlogsController {
   constructor(

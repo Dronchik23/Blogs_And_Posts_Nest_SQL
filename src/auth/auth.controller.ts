@@ -48,7 +48,7 @@ export class AuthController {
     private usersQueryRepository: UsersQueryRepository,
     private commandBus: CommandBus,
   ) {}
-  @SkipThrottle()
+
   @Post('login')
   @HttpCode(200)
   async login(

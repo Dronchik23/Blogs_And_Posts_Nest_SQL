@@ -32,7 +32,6 @@ export class CommentsQueryRepository {
   private fromCommentDBTypeToCommentViewModel = (
     comment: CommentDBType,
   ): CommentViewModel => {
-    console.log('comment repo', comment);
     return {
       id: comment._id.toString(),
       content: comment.content,
@@ -120,29 +119,32 @@ export class CommentsQueryRepository {
       throw new NotFoundException();
     }
   }
-  //TODO: remove any
-  private async getLikesInfoForComment(comment: any, userId?: string) {
+
+  private async getLikesInfoForComment(
+    comment: CommentDBType,
+    userId?: string,
+  ) {
     const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
       (user: UserDBType) => user._id,
     ); // take userIds of banned Users
     comment.likesInfo.likesCount = await this.likesModel.countDocuments({
-      parentId: new ObjectId(comment._id),
+      parentId: comment._id,
       status: LikeStatus.Like,
       userId: { $nin: bannedUserIds }, // exclude banned users
     });
     comment.likesInfo.dislikesCount = await this.likesModel.countDocuments({
-      parentId: new ObjectId(comment._id),
+      parentId: comment._id,
       status: LikeStatus.Dislike,
       userId: { $nin: bannedUserIds }, // exclude banned users
     });
     if (userId) {
       const user = await this.usersQueryRepo.findUserByUserId(userId);
       if (user.banInfo.isBanned === true) {
-        comment.likesInfo.myStatus = 'None';
+        comment.likesInfo.myStatus = LikeStatus.None;
       } else {
         const status: LikeDBType = await this.likesModel
           .findOne({
-            parentId: new ObjectId(comment._id),
+            parentId: comment._id,
             userId: new ObjectId(userId),
           })
           .lean();
