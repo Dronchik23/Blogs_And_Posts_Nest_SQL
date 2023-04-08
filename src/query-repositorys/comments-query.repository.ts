@@ -103,12 +103,15 @@ export class CommentsQueryRepository {
     userId?: string,
   ): Promise<CommentViewModel> {
     try {
+      const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
+        (user: UserDBType) => user._id,
+      );
       const comment: CommentDBType = await this.commentsModel
         .findOne({
           _id: new ObjectId(commentId),
+          'commentatorInfo.userId': { $nin: bannedUserIds },
         })
         .lean();
-      console.log('comment findCommentByCommentId', comment);
 
       const commentWithLikesInfo = await this.getLikesInfoForComment(
         comment,

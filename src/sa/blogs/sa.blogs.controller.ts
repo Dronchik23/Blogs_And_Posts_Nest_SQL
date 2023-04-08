@@ -54,7 +54,6 @@ export class SABlogsController {
     }
   }
 
-  @SkipThrottle()
   @Get()
   async getAllBlogs(@Query() query: PaginationInputQueryModel) {
     return await this.blogsQueryRepository.findAllBlogs(

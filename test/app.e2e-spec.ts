@@ -1451,6 +1451,27 @@ describe('AppController (e2e)', () => {
             ...comment,
           });
       });
+      it('Should not return banned user comment', async () => {
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204);
+
+        const responseForUser = await request(server)
+          .get(`/sa/users/${user.id}`)
+          .auth('admin', 'qwerty')
+          .expect(200);
+
+        user = responseForUser.body;
+
+        expect(user.banInfo.isBanned).toBe(true);
+
+        await request(server).get(`/comments/${comment.id}`).expect(404);
+      });
     });
     describe('update comment tests', () => {
       it('should not update comment with incorrect input data', async () => {
