@@ -79,7 +79,7 @@ export class PostsQueryRepository {
 
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
-    const totalCount = await this.getAllPostCount();
+    const totalCount = mappedPosts.length;
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
     // exclude 0
@@ -132,9 +132,7 @@ export class PostsQueryRepository {
     }
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
-    const totalCount = await this.getPostsCount({
-      blogId,
-    });
+    const totalCount = mappedPosts.length;
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
@@ -143,10 +141,6 @@ export class PostsQueryRepository {
       totalCount: totalCount,
       items: mappedPosts,
     };
-  }
-
-  async getPostsCount(filter: FilterQuery<PostDBType>) {
-    return this.postsModel.countDocuments(filter);
   }
 
   private mapNewestLikes(likes: LikeDBType[]): NewestLikesType[] {
@@ -205,9 +199,5 @@ export class PostsQueryRepository {
       }
     }
     return post;
-  }
-
-  async getAllPostCount() {
-    return this.postsModel.countDocuments();
   }
 }

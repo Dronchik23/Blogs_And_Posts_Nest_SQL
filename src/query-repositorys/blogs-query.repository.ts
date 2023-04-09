@@ -7,12 +7,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import {
-  BlogDBType,
-  BlogOwnerInfoType,
-  PaginationType,
-} from '../types and models/types';
-import { BlogViewModel } from '../types and models/models';
+import { BlogDBType, PaginationType } from '../types and models/types';
+import { BlogViewModel, SABlogViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -22,7 +18,9 @@ export class BlogsQueryRepository {
   ) {}
 
   private searchNameTermFilter(searchNameTerm: string | undefined | null): any {
-    return { name: { $regex: searchNameTerm ?? '', $options: 'i' } };
+    return {
+      name: { $regex: searchNameTerm ?? '', $options: 'i' },
+    };
   }
 
   private fromBlogDBTypeBlogViewModel(blog: BlogDBType): BlogViewModel {
@@ -49,25 +47,46 @@ export class BlogsQueryRepository {
     }));
   }
 
+  private fromBlogDBTypeBlogViewModelWithPaginationForSa(
+    blogs: BlogDBType[],
+  ): SABlogViewModel[] {
+    return blogs.map((blog) => ({
+      id: blog._id.toString(),
+      name: blog.name,
+      description: blog.description,
+      websiteUrl: blog.websiteUrl,
+      createdAt: blog.createdAt,
+      isMembership: blog.isMembership,
+      blogOwnerInfo: blog.blogOwnerInfo,
+    }));
+  }
+
   async findAllBlogs(
     searchNameTerm: string,
     pageSize: number,
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
+    userId?: string,
   ): Promise<PaginationType> {
+    debugger;
     const filter = this.searchNameTermFilter(searchNameTerm);
 
-    const blogs = await this.blogsModel
+    const blogs: BlogDBType[] = await this.blogsModel
       .find(filter)
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
+    const filteredBlogs = blogs.filter(
+      (b) => b.blogOwnerInfo.userId === userId,
+    ); // get blogs only for thi user
 
-    const totalCount = await this.getBlogsCount(searchNameTerm);
+    const totalCount = filteredBlogs.length;
+
+    const mappedBlogs =
+      this.fromBlogDBTypeBlogViewModelWithPagination(filteredBlogs);
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 
@@ -94,11 +113,6 @@ export class BlogsQueryRepository {
     }
   }
 
-  async getBlogsCount(searchNameTerm?: string | null | undefined) {
-    const filter = this.searchNameTermFilter(searchNameTerm);
-    return this.blogsModel.countDocuments(filter);
-  }
-
   async findBlogByBlogIdAndUserId(blogId: string, userId: string) {
     try {
       return await this.blogsModel
@@ -110,5 +124,37 @@ export class BlogsQueryRepository {
     } catch (error) {
       throw new ForbiddenException();
     }
+  }
+
+  async findAllBlogsForSA(
+    searchNameTerm: string,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    pageNumber: number,
+  ): Promise<PaginationType> {
+    const filter = this.searchNameTermFilter(searchNameTerm);
+
+    const blogs: BlogDBType[] = await this.blogsModel
+      .find(filter)
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .lean();
+
+    const mappedBlogs =
+      this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
+
+    const totalCount = mappedBlogs.length;
+
+    const pagesCount = Math.ceil(totalCount / +pageSize);
+
+    return {
+      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
+      page: +pageNumber,
+      pageSize: +pageSize,
+      totalCount: totalCount,
+      items: mappedBlogs,
+    };
   }
 }

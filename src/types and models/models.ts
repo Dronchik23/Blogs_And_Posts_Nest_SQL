@@ -27,17 +27,6 @@ import {
   IsLoginAlreadyExist,
 } from '../validator';
 
-export class BlogViewModel {
-  id: string;
-  name: string;
-  description: string;
-  websiteUrl: string;
-  createdAt: string;
-  isMembership: boolean;
-
-  blogOwnerInfo?: BlogOwnerInfoType;
-}
-
 export class PaginationInputQueryModel {
   constructor() {
     this.sortBy = 'createdAt';
@@ -68,6 +57,26 @@ export class PostUpdateModel {
   @Length(1, 1000)
   @IsNotEmpty()
   content: string;
+}
+export class BlogViewModel {
+  id: string;
+  name: string;
+  description: string;
+  websiteUrl: string;
+  createdAt: string;
+  isMembership: boolean;
+
+  blogOwnerInfo?: BlogOwnerInfoType;
+}
+export class SABlogViewModel {
+  id: string;
+  name: string;
+  description: string;
+  websiteUrl: string;
+  createdAt: string;
+  isMembership: boolean;
+
+  blogOwnerInfo: BlogOwnerInfoType;
 }
 export class PostViewModel {
   id: string;

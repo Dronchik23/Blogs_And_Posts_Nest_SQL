@@ -52,14 +52,19 @@ export class BloggerBlogsController {
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
 
+  @UseGuards(BearerAuthGuard)
   @Get()
-  async getAllBlogs(@Query() query: PaginationInputQueryModel) {
+  async getAllBlogs(
+    @Query() query: PaginationInputQueryModel,
+    @CurrentUserId() currentUserId,
+  ) {
     return await this.blogsQueryRepository.findAllBlogs(
       query.searchNameTerm,
       +query.pageSize,
       query.sortBy,
       query.sortDirection,
       +query.pageNumber,
+      currentUserId,
     );
   }
 

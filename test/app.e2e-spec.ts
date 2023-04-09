@@ -409,15 +409,30 @@ describe('AppController (e2e)', () => {
     });
 
     it('should get all blogs', async () => {
-      await request(server).delete(wipeAllDataUrl);
-      await request(server).get(url).auth('admin', 'qwerty').expect(200, {
+      const response = await request(server)
+        .get(url)
+        .auth('admin', 'qwerty')
+        .expect(200);
+
+      expect(response.body).toEqual({
         pagesCount: 1,
         page: 1,
         pageSize: 10,
-        totalCount: 0,
-        items: [],
+        totalCount: 1,
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            name: expect.any(String),
+            description: expect.any(String),
+            websiteUrl: expect.any(String),
+            createdAt: expect.any(String),
+            isMembership: expect.any(Boolean),
+            blogOwnerInfo: expect.any(Object),
+          }),
+        ]),
       });
     });
+
     it('should return 404 for not existing blog', async () => {
       await request(server)
         .get(url + 1)
@@ -432,42 +447,66 @@ describe('AppController (e2e)', () => {
     });
 
     describe('get blogs tests', () => {
-      it('should get all blogs', async () => {
-        await request(server).delete(wipeAllDataUrl);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-        expect(user).toBeDefined();
-
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
-
-        accessToken = loginUser.body.accessToken;
-
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
-      });
       it('should return 404 for not existing blog', async () => {
         await request(server)
           .get(url + 1)
           .expect(404);
+      });
+      it('should return blogs created by blogger', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password2',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post(url)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          })
+          .expect(201);
+
+        const blog2 = responseForBlog.body;
+
+        expect(blog2).toEqual({
+          id: expect.any(String),
+          name: expect.any(String),
+          websiteUrl: expect.any(String),
+          description: expect.any(String),
+          createdAt: expect.any(String),
+          isMembership: expect.any(Boolean),
+        });
+
+        const response = await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+
+        expect(response.body).toEqual({
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          items: [blog2],
+        });
       });
     });
     describe('create blog tests', () => {

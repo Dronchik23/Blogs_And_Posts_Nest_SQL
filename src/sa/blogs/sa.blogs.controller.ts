@@ -56,7 +56,7 @@ export class SABlogsController {
 
   @Get()
   async getAllBlogs(@Query() query: PaginationInputQueryModel) {
-    return await this.blogsQueryRepository.findAllBlogs(
+    return await this.blogsQueryRepository.findAllBlogsForSA(
       query.searchNameTerm,
       +query.pageSize,
       query.sortBy,

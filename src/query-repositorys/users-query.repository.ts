@@ -80,7 +80,7 @@ export class UsersQueryRepository {
       banStatus,
     );
 
-    const users = await this.usersModel
+    const users: UserDBType[] = await this.usersModel
       .find(filter)
       .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
       .skip((pageNumber - 1) * pageSize)
@@ -89,11 +89,7 @@ export class UsersQueryRepository {
 
     const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
 
-    const totalCount = await this.getUsersCount(
-      searchLoginTerm,
-      searchEmailTerm,
-      banStatus,
-    );
+    const totalCount = mappedUsers.length;
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 
@@ -150,19 +146,6 @@ export class UsersQueryRepository {
     return this.usersModel.findOne({
       'emailConfirmation.confirmationCode': code,
     });
-  }
-
-  async getUsersCount(
-    searchLoginTerm: searchLoginOrEmailTermType,
-    searchEmailTerm: searchLoginOrEmailTermType,
-    banStatus: BanStatus,
-  ) {
-    const filter = this.searchLoginAndEmailTermFilter(
-      searchLoginTerm,
-      searchEmailTerm,
-      banStatus,
-    );
-    return this.usersModel.countDocuments(filter);
   }
 
   async findBannedUsers(): Promise<UserDBType[]> {
