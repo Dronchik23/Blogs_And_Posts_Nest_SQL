@@ -896,7 +896,7 @@ describe('AppController (e2e)', () => {
     describe('delete blog tests', () => {
       it('should not delete blog that not exist ', async () => {
         await request(server)
-          .delete('/blogger/blogs/uej997')
+          .delete('/blogger/blogs/63189b06003380064c4193be')
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(404);
       });
@@ -1066,6 +1066,51 @@ describe('AppController (e2e)', () => {
           items: [],
         });
       });
+      it('should not create post with blog of another user', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        const responseForBlog2 = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        const blog2 = responseForBlog2.body;
+        expect(blog2).toBeDefined();
+
+        await request(server)
+          .post(`/blogger/blogs/${blog2.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog2.id,
+          })
+          .expect(403);
+      });
       it('should create post with correct input data', async () => {
         const createResponseForPost = await request(server)
           .post(`/blogger/blogs/${blog.id}/posts`)
@@ -1104,7 +1149,9 @@ describe('AppController (e2e)', () => {
     describe('delete post tests', () => {
       it('should not delete post that not exist ', async () => {
         await request(server)
-          .delete(`/blogger/blogs/${blog.id}/posts/` + -12)
+          .delete(
+            `/blogger/blogs/63189b06003380064c4193be/posts/6432f156d3189076979f01c1`,
+          )
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(404);
       });

@@ -87,10 +87,18 @@ export class BloggerBlogsController {
   async createPostByBlogId(
     @Param('blogId') blogId: string,
     @Body() blogPostCreateDTO: BlogPostInputModel,
+    @CurrentUserId() currentUserId: string,
   ): Promise<PostViewModel> {
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
+    }
+    const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+      blogId,
+      currentUserId,
+    ); // find owner of the blog
+    if (!owner) {
+      throw new ForbiddenException();
     }
     const newPost = await this.commandBus.execute(
       new CreatePostCommand(
@@ -140,9 +148,13 @@ export class BloggerBlogsController {
     @Param('blogId') blogId: string,
     @CurrentUserId() currentUserid: string,
   ): Promise<boolean> {
+    debugger;
     const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
       blogId,
     );
+    if (!blog) {
+      throw new NotFoundException();
+    }
     if (blog.blogOwnerInfo.userId !== currentUserid) {
       throw new ForbiddenException();
     }
@@ -164,11 +176,15 @@ export class BloggerBlogsController {
     @Param('postId') postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<boolean> {
-    const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+    if (!blog) {
+      throw new NotFoundException();
+    }
+    const blogOwner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
       blogId,
       currentUserId,
-    ); // find owner of the blog
-    if (!owner) {
+    ); // find blogOwner of the blog
+    if (!blogOwner) {
       throw new ForbiddenException();
     }
 
