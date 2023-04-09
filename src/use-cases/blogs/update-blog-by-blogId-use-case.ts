@@ -3,6 +3,9 @@ import { Model, Schema } from 'mongoose';
 import { BlogDBType } from '../../types and models/types';
 import { BlogsRepository } from '../../blogs/blog.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
+import { throttlerMessage } from '@nestjs/throttler';
+import { ForbiddenException } from '@nestjs/common';
 
 export class UpdateBlogCommand {
   constructor(

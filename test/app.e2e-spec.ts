@@ -122,7 +122,7 @@ describe('AppController (e2e)', () => {
     const url = '/sa/users';
 
     it('should get all users', async () => {
-      //await request(server).delete(wipeAllDataUrl);
+      await request(server).delete(wipeAllDataUrl);
       await request(server).get(url).auth('admin', 'qwerty').expect(200, {
         pagesCount: 1,
         page: 1,
@@ -859,6 +859,38 @@ describe('AppController (e2e)', () => {
             ...blog,
             name: 'new valid name',
           });
+      });
+      it('should send 403 if user try to update elien blog', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        await request(server)
+          .put(`/blogger/blogs/${blog.id}`)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({
+            name: 'new valid name',
+            description: 'valid description',
+            websiteUrl: 'https://youtube.com',
+          })
+          .expect(403);
       });
     });
     describe('delete blog tests', () => {

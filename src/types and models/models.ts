@@ -65,7 +65,6 @@ export class BlogViewModel {
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
-
   blogOwnerInfo?: BlogOwnerInfoType;
 }
 export class SABlogViewModel {
@@ -75,7 +74,6 @@ export class SABlogViewModel {
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
-
   blogOwnerInfo: BlogOwnerInfoType;
 }
 export class PostViewModel {

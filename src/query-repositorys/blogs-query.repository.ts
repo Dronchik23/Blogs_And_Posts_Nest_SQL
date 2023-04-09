@@ -82,10 +82,11 @@ export class BlogsQueryRepository {
       (b) => b.blogOwnerInfo.userId === userId,
     ); // get blogs only for thi user
 
+    const totalCount = await this.blogsModel.countDocuments(filteredBlogs);
+    console.log('totalCount', totalCount);
+
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPagination(filteredBlogs);
-
-    const totalCount = filteredBlogs.length;
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -157,8 +158,14 @@ export class BlogsQueryRepository {
     };
   }
 
-  async getBlogsCount(searchNameTerm?: any) {
+  async getBlogsCount(searchNameTerm?: string | null | undefined) {
     const filter = this.searchNameTermFilter(searchNameTerm);
     return this.blogsModel.countDocuments(filter);
+  }
+
+  async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
+    return this.blogsModel.findOne({
+      _id: new ObjectId(blogId),
+    });
   }
 }

@@ -116,7 +116,14 @@ export class BloggerBlogsController {
   async updateBlogByBlogId(
     @Param('blogId') blogId: string,
     @Body() updateBlogDto: BlogUpdateModel,
+    @CurrentUserId() currentUserid: string,
   ): Promise<void | boolean> {
+    const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
+      blogId,
+    );
+    if (blog.blogOwnerInfo.userId !== currentUserid) {
+      throw new ForbiddenException();
+    }
     const isUpdated = await this.commandBus.execute(
       new UpdateBlogCommand(
         blogId,
@@ -132,8 +139,16 @@ export class BloggerBlogsController {
   @UseGuards(BearerAuthGuard)
   @Delete(':blogId')
   @HttpCode(204)
-  async deleteBlogByBlogId(@Param('blogId') blogId: string): Promise<boolean> {
-    debugger;
+  async deleteBlogByBlogId(
+    @Param('blogId') blogId: string,
+    @CurrentUserId() currentUserid: string,
+  ): Promise<boolean> {
+    const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
+      blogId,
+    );
+    if (blog.blogOwnerInfo.userId !== currentUserid) {
+      throw new ForbiddenException();
+    }
     const isDeleted = await this.commandBus.execute(
       new DeleteBlogCommand(blogId),
     );
@@ -185,7 +200,7 @@ export class BloggerBlogsController {
     @Param('postId') postId: string,
     @Body() postUpdateDTO: PostUpdateModel,
     @CurrentUserId() currentUserId: string,
-  ): Promise<void> {
+  ): Promise<any> {
     const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
       blogId,
       currentUserId,
