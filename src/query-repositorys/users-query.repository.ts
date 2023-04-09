@@ -90,7 +90,7 @@ export class UsersQueryRepository {
 
     const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
 
-    const totalCount = users.length;
+    const totalCount = await this.usersModel.countDocuments(filter);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -152,4 +152,5 @@ export class UsersQueryRepository {
   async findBannedUsers(): Promise<UserDBType[]> {
     return this.usersModel.find({ 'banInfo.isBanned': true }).lean();
   }
+
 }

@@ -79,7 +79,7 @@ export class PostsQueryRepository {
 
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
-    const totalCount = posts.length;
+    const totalCount = await this.postsModel.countDocuments();
 
     const pagesCount = Math.ceil(totalCount / pageSize);
     // exclude 0

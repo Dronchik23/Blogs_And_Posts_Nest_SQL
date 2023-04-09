@@ -86,7 +86,6 @@ export class BlogsQueryRepository {
       this.fromBlogDBTypeBlogViewModelWithPagination(filteredBlogs);
 
     const totalCount = filteredBlogs.length;
-    console.log(typeof totalCount);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -145,9 +144,9 @@ export class BlogsQueryRepository {
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
 
-    const totalCount = mappedBlogs.length;
+    const totalCount = await this.getBlogsCount(filter);
 
-    const pagesCount = Math.ceil(totalCount / +pageSize);
+    const pagesCount = Math.ceil(+totalCount / +pageSize);
 
     return {
       pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
@@ -158,8 +157,8 @@ export class BlogsQueryRepository {
     };
   }
 
-  /*  async getBlogsCount(searchNameTerm?: any) {
-    const filter = searchNameTermFilter(searchNameTerm);
+  async getBlogsCount(searchNameTerm?: any) {
+    const filter = this.searchNameTermFilter(searchNameTerm);
     return this.blogsModel.countDocuments(filter);
-  }*/
+  }
 }
