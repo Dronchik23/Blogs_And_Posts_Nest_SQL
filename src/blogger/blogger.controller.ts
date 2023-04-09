@@ -234,11 +234,6 @@ export class BloggerBlogsController {
       throw new NotFoundException();
     }
 
-    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
-    if (!blog) {
-      throw new NotFoundException();
-    }
-
     const isUpdated = await this.commandBus.execute(
       new UpdatePostCommand(
         postId,
