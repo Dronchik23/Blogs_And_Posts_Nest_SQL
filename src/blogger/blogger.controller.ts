@@ -126,6 +126,9 @@ export class BloggerBlogsController {
     const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
       blogId,
     );
+    if (!blog) {
+      throw new NotFoundException();
+    }
     if (blog.blogOwnerInfo.userId !== currentUserid) {
       throw new ForbiddenException();
     }
@@ -214,6 +217,10 @@ export class BloggerBlogsController {
     @Body() postUpdateDTO: PostUpdateModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+    if (!blog) {
+      throw new NotFoundException();
+    }
     const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
       blogId,
       currentUserId,
