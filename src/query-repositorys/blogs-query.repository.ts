@@ -69,7 +69,10 @@ export class BlogsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    const filter = this.searchNameTermFilter(searchNameTerm);
+    const filter = {
+      ...this.searchNameTermFilter(searchNameTerm),
+      'blogOwnerInfo.userId': userId,
+    };
 
     const blogs: BlogDBType[] = await this.blogsModel
       .find(filter)
@@ -78,20 +81,14 @@ export class BlogsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const filteredBlogs = blogs.filter(
-      (b) => b.blogOwnerInfo.userId === userId,
-    ); // get blogs only for thi user
+    const totalCount = await this.blogsModel.countDocuments(filter);
 
-    const totalCount = await this.blogsModel.countDocuments(filteredBlogs);
-    console.log('totalCount', totalCount);
-
-    const mappedBlogs =
-      this.fromBlogDBTypeBlogViewModelWithPagination(filteredBlogs);
+    const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
     return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
+      pagesCount: pagesCount === 0 ? 1 : pagesCount,
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
@@ -120,7 +117,7 @@ export class BlogsQueryRepository {
           _id: new ObjectId(blogId),
           'blogOwnerInfo.userId': userId,
         })
-        .exec();
+        .lean();
     } catch (error) {
       throw new ForbiddenException();
     }
@@ -133,6 +130,7 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
+    debugger;
     const filter = this.searchNameTermFilter(searchNameTerm);
 
     const blogs: BlogDBType[] = await this.blogsModel
@@ -145,7 +143,7 @@ export class BlogsQueryRepository {
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
 
-    const totalCount = await this.getBlogsCount(filter);
+    const totalCount = await this.getBlogsCount(searchNameTerm);
 
     const pagesCount = Math.ceil(+totalCount / +pageSize);
 
@@ -164,8 +162,14 @@ export class BlogsQueryRepository {
   }
 
   async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
-    return this.blogsModel.findOne({
-      _id: new ObjectId(blogId),
-    });
+    try {
+      return this.blogsModel
+        .findOne({
+          _id: new ObjectId(blogId),
+        })
+        .lean();
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 }

@@ -896,7 +896,7 @@ describe('AppController (e2e)', () => {
     describe('delete blog tests', () => {
       it('should not delete blog that not exist ', async () => {
         await request(server)
-          .delete(url + -12)
+          .delete('/blogger/blogs/uej997')
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(404);
       });

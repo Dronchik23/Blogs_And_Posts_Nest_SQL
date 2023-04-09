@@ -5,8 +5,6 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
-  HttpException,
-  HttpStatus,
   NotFoundException,
   Param,
   Post,
@@ -26,7 +24,6 @@ import {
   UserViewModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
-import { BasicAuthGuard } from '../auth/strategys/basic-strategy';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BlogsService } from '../blogs/blog.service';
 import { CreateBlogCommand } from '../use-cases/blogs/create-blog-use-case';
