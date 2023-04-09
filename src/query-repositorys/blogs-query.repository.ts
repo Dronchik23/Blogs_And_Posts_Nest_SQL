@@ -69,7 +69,6 @@ export class BlogsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    debugger;
     const filter = this.searchNameTermFilter(searchNameTerm);
 
     const blogs: BlogDBType[] = await this.blogsModel
@@ -83,12 +82,13 @@ export class BlogsQueryRepository {
       (b) => b.blogOwnerInfo.userId === userId,
     ); // get blogs only for thi user
 
-    const totalCount = filteredBlogs.length;
-
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPagination(filteredBlogs);
 
-    const pagesCount = Math.ceil(totalCount / +pageSize);
+    const totalCount = filteredBlogs.length;
+    console.log(typeof totalCount);
+
+    const pagesCount = Math.ceil(totalCount / pageSize);
 
     return {
       pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
@@ -157,4 +157,9 @@ export class BlogsQueryRepository {
       items: mappedBlogs,
     };
   }
+
+  /*  async getBlogsCount(searchNameTerm?: any) {
+    const filter = searchNameTermFilter(searchNameTerm);
+    return this.blogsModel.countDocuments(filter);
+  }*/
 }

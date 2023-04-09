@@ -122,17 +122,14 @@ describe('AppController (e2e)', () => {
     const url = '/sa/users';
 
     it('should get all users', async () => {
-      await request(server).delete(wipeAllDataUrl);
-      const a = await request(server)
-        .get(url)
-        .auth('admin', 'qwerty')
-        .expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+      //await request(server).delete(wipeAllDataUrl);
+      await request(server).get(url).auth('admin', 'qwerty').expect(200, {
+        pagesCount: 1,
+        page: 1,
+        pageSize: 10,
+        totalCount: 0,
+        items: [],
+      });
     });
     describe('ban user tests', () => {
       it('should not ban user that not exist', async () => {

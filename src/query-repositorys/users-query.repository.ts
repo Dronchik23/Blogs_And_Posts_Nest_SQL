@@ -74,6 +74,7 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: BanStatus,
   ): Promise<PaginationType> {
+    debugger;
     const filter = this.searchLoginAndEmailTermFilter(
       searchLoginTerm,
       searchEmailTerm,
@@ -89,9 +90,9 @@ export class UsersQueryRepository {
 
     const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
 
-    const totalCount = mappedUsers.length;
+    const totalCount = users.length;
 
-    const pagesCount = Math.ceil(totalCount / +pageSize);
+    const pagesCount = Math.ceil(totalCount / pageSize);
 
     return {
       pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
