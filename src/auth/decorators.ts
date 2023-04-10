@@ -13,6 +13,7 @@ export const CurrentUser = createParamDecorator(
     return request.user;
   },
 );
+
 export const CurrentUserIdFromToken = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();
@@ -32,12 +33,14 @@ export const CurrentUserIdFromToken = createParamDecorator(
     }
   },
 );
+
 export const JwtPayload = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const req = context.switchToHttp().getRequest();
     return req.jwtPayload;
   },
 );
+
 export const UserAgent = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
     const request = context.switchToHttp().getRequest();

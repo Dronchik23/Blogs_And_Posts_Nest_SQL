@@ -70,7 +70,6 @@ describe('AppController (e2e)', () => {
       });
 
     blog = responseForBlog.body;
-    console.log('blog beforeEach', blog);
     expect(blog).toBeDefined();
 
     const responseForPost = await request(server)
@@ -507,31 +506,10 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('create blog tests', () => {
+      beforeEach(async () => {
+        await request(server).delete('/testing/all-blogs');
+      }); //delete all blogs
       it('should not create blog with incorrect name', async () => {
-        const wipeAllDataUrl = '/testing/all-data';
-        await request(server).delete(wipeAllDataUrl);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-        expect(user).toBeDefined();
-
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
-
-        accessToken = loginUser.body.accessToken;
-
         await request(server)
           .post(url)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -542,13 +520,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
 
         await request(server)
           .post(url)
@@ -560,39 +541,18 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
       });
       it('should not create blog with incorrect websiteUrl', async () => {
-        const wipeAllDataUrl = '/testing/all-data';
-        await request(server).delete(wipeAllDataUrl);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-        expect(user).toBeDefined();
-
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
-
-        accessToken = loginUser.body.accessToken;
-
         await request(server)
           .post(url)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -603,13 +563,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
 
         await request(server)
           .post(url)
@@ -621,13 +584,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get('/blogs').expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
 
         await request(server)
           .post(url)
@@ -639,39 +605,18 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
       });
       it('should not create blog with incorrect description', async () => {
-        const wipeAllDataUrl = '/testing/all-data';
-        await request(server).delete(wipeAllDataUrl);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-        expect(user).toBeDefined();
-
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
-
-        accessToken = loginUser.body.accessToken;
-
         await request(server)
           .post(url)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -682,13 +627,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
 
         await request(server)
           .post(url)
@@ -700,16 +648,18 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get(url).expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get(url)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
       });
       it('should not create blog with incorrect authorization data', async () => {
-        await request(server).delete(wipeAllDataUrl);
         await request(server)
           .post(url)
           .set('Authorization', `Basic ${accessToken}`)
@@ -732,7 +682,7 @@ describe('AppController (e2e)', () => {
           });
       });
       it('should create blog with correct input data', async () => {
-        const responseForBlog = await request(server)
+        const responseForBlog2 = await request(server)
           .post(url)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
@@ -742,9 +692,9 @@ describe('AppController (e2e)', () => {
           })
           .expect(201);
 
-        const createdBlog = responseForBlog.body;
+        const createdBlog2 = responseForBlog2.body;
 
-        expect(createdBlog).toEqual({
+        expect(createdBlog2).toEqual({
           id: expect.any(String),
           name: expect.any(String),
           websiteUrl: expect.any(String),
@@ -753,14 +703,17 @@ describe('AppController (e2e)', () => {
           isMembership: expect.any(Boolean),
         });
 
-        const response = await request(server)
-          .get(`/blogs/${createdBlog.id}`)
+        const response2 = await request(server)
+          .get(`/blogs/${createdBlog2.id}`)
           .expect(200);
 
-        expect(response.body).toEqual(createdBlog);
+        expect(response2.body).toEqual(createdBlog2);
       });
     });
     describe('update blog tests', () => {
+      beforeEach(async () => {
+        await request(server).delete('/testing/all-posts');
+      }); //delete all posts
       it('should not update blog with incorrect input data', async () => {
         const reqWithIncorrectName = await request(server)
           .put(`/blogger/blogs/${blog.id}`)
@@ -922,31 +875,10 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('create post tests', () => {
+      beforeEach(async () => {
+        await request(server).delete('/testing/all-posts');
+      }); //delete all posts
       it('should not create post with incorrect input data', async () => {
-        const wipeAllDataUrl = '/testing/all-data';
-        await request(server).delete(wipeAllDataUrl);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-        expect(user).toBeDefined();
-
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
-
-        accessToken = loginUser.body.accessToken;
-
         const url = `/${bloggerUrl}/${blog.id}/posts`;
         await request(server)
           .post(url)
@@ -960,13 +892,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get('/posts').expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get('/posts')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
 
         await request(server)
           .post(url)
@@ -980,13 +915,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get('/posts').expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get('/posts')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
 
         await request(server)
           .post(url)
@@ -1000,39 +938,18 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
 
-        await request(server).get('/posts').expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get('/posts')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
       });
       it('should not create post with incorrect authorization data', async () => {
-        const wipeAllDataUrl = '/testing/all-data';
-        await request(server).delete(wipeAllDataUrl);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-        expect(user).toBeDefined();
-
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
-
-        accessToken = loginUser.body.accessToken;
-
         const url = `/${bloggerUrl}/${blog.id}/posts`;
         await request(server)
           .post(url)
@@ -1058,13 +975,16 @@ describe('AppController (e2e)', () => {
           })
           .expect(401);
 
-        await request(server).get('/posts').expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        await request(server)
+          .get('/posts')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 0,
+            items: [],
+          });
       });
       it('should not create post with blog of another user', async () => {
         const createUserDto2: UserInputModel = {
@@ -1123,9 +1043,9 @@ describe('AppController (e2e)', () => {
           })
           .expect(201);
 
-        post = createResponseForPost.body;
+        const post2 = createResponseForPost.body;
 
-        expect(post).toEqual({
+        expect(post2).toEqual({
           id: expect.any(String),
           title: expect.any(String),
           shortDescription: expect.any(String),
@@ -1137,14 +1057,11 @@ describe('AppController (e2e)', () => {
         });
 
         const postFoundedById = await request(server)
-          .get(`/posts/${post.id}`)
+          .get(`/posts/${post2.id}`)
           .expect(200);
 
-        expect(postFoundedById.body).toEqual(post);
+        expect(postFoundedById.body).toEqual(post2);
       });
-    });
-    describe('update post test', () => {
-      //some logic
     });
     describe('delete post tests', () => {
       it('should not delete post that not exist ', async () => {
@@ -1298,7 +1215,6 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
       it('should not update post of another user', async () => {
-        debugger;
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password2',
@@ -1352,50 +1268,43 @@ describe('AppController (e2e)', () => {
   });
   describe('posts', () => {
     const postsUrl = '/posts';
-
-    it('should get all posts', async () => {
-      await request(server).delete(wipeAllDataUrl);
-      await request(server).get('/posts').expect(200, {
-        pagesCount: 1,
-        page: 1,
-        pageSize: 10,
-        totalCount: 0,
-        items: [],
+    describe('get posts tests', () => {
+      it('should get all posts', async () => {
+        beforeEach(async () => {
+          await request(server).delete('/testing/all-posts');
+        }); //delete all posts
+        await request(server).get('/posts').expect(200, {
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+          totalCount: 0,
+          items: [],
+        });
+      });
+      it('should return 404 for not existing post', async () => {
+        await request(server)
+          .get(postsUrl + -1)
+          .expect(404);
       });
     });
-    it('should return 404 for not existing post', async () => {
-      await request(server)
-        .get(postsUrl + -1)
-        .expect(404);
-    });
     describe('create comment tests', () => {
+      beforeEach(async () => {
+        await request(server).delete('/testing/all-comments');
+      }); //delete all comments
       it('should not create comment with incorrect input data', async () => {
-        const localResponseForPost = await request(server)
-          .post(`/blogger/blogs/${blog.id}/posts`)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .send({
-            title: 'valid',
-            shortDescription: 'valid',
-            content: 'valid',
-            blogId: blog.id,
-          });
-
-        const post2 = localResponseForPost.body;
-        expect(post2).toBeDefined();
-
         await request(server)
-          .post(`/posts/${post2.id}/comments`)
+          .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ content: '' })
           .expect(400); // create comment with empty string
 
         await request(server)
-          .post(`/posts/${post2.id}/comments`)
+          .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ content: 4 })
           .expect(400); // create comment with number
 
-        await request(server).get(`/posts/${post2.id}/comments`).expect(200, {
+        await request(server).get(`/posts/${post.id}/comments`).expect(200, {
           pagesCount: 1,
           page: 1,
           pageSize: 10,
@@ -1404,32 +1313,19 @@ describe('AppController (e2e)', () => {
         });
       });
       it('should not create comment with incorrect authorization data', async () => {
-        const localResponseForPost = await request(server)
-          .post(`/blogger/blogs/${blog.id}/posts`)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .send({
-            title: 'valid',
-            shortDescription: 'valid',
-            content: 'valid',
-            blogId: blog.id,
-          });
-
-        const post2 = localResponseForPost.body;
-        expect(post2).toBeDefined();
-
         await request(server)
-          .post(`/posts/${post2.id}/comments`)
+          .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Basic ${accessToken}`)
           .send({ content: 'valid content string more than 20 letters' })
           .expect(401); // create comment with bad auth data
 
         await request(server)
-          .post(`/posts/${post2.id}/comments`)
+          .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Bearer `)
           .send({ content: 'valid content string more than 20 letters' })
           .expect(401); // create comment without token
 
-        await request(server).get(`/posts/${post2.id}/comments`).expect(200, {
+        await request(server).get(`/posts/${post.id}/comments`).expect(200, {
           pagesCount: 1,
           page: 1,
           pageSize: 10,
@@ -1438,19 +1334,19 @@ describe('AppController (e2e)', () => {
         });
       });
       it('should create comment with correct data', async () => {
-        const response = await request(server)
+        const responseForComment2 = await request(server)
           .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({ content: 'valid content string more than 20 letters' })
           .expect(201); // create comment with valid data
 
-        const comment = response.body;
+        const comment2 = responseForComment2.body;
 
         const commentFoundedById = await request(server)
-          .get(`/comments/${comment.id}`)
+          .get(`/comments/${comment2.id}`)
           .expect(200);
 
-        expect(commentFoundedById.body).toEqual(comment);
+        expect(commentFoundedById.body).toEqual(comment2);
       });
     });
     describe('like post tests', () => {
@@ -1566,7 +1462,7 @@ describe('AppController (e2e)', () => {
             ...comment,
           });
       });
-      it('Should not return banned user comment', async () => {
+      it('Should not return comment of banned user', async () => {
         await request(server)
           .put(`/sa/users/${user.id}/ban`)
           .auth('admin', 'qwerty')
@@ -1676,7 +1572,6 @@ describe('AppController (e2e)', () => {
           .expect(404);
       });
       it('should not like post with incorrect input data', async () => {
-        debugger;
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -1724,7 +1619,7 @@ describe('AppController (e2e)', () => {
         expect(commentFoundedById.body.likesInfo.likesCount).toEqual(1);
         expect(commentFoundedById.body.likesInfo.dislikesCount).toEqual(0);
       });
-      it('should dislike post with correct data', async () => {
+      it('should dislike comment with correct data', async () => {
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -1740,15 +1635,36 @@ describe('AppController (e2e)', () => {
         expect(commentFoundedById.body.likesInfo.dislikesCount).toEqual(1);
         expect(commentFoundedById.body.likesInfo.likesCount).toEqual(0);
       });
-      it('Should not return banned user like for comment', async () => {
+      it('Should not return like for comment of banned user', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `use2r@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
-          .set('Authorization', `Bearer ${accessToken}`)
+          .set('Authorization', `Bearer ${accessToken2}`)
           .send({ likeStatus: 'Like' })
           .expect(204);
 
         await request(server)
-          .put(`/sa/users/${user.id}/ban`)
+          .put(`/sa/users/${user2.id}/ban`)
           .auth('admin', 'qwerty')
           .send({
             isBanned: true,
@@ -1758,7 +1674,6 @@ describe('AppController (e2e)', () => {
 
         const commentFoundedById = await request(server)
           .get(`/comments/${comment.id}`)
-          .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
         expect(commentFoundedById.body.likesInfo.myStatus).toEqual('None');
@@ -1769,15 +1684,32 @@ describe('AppController (e2e)', () => {
   });
   describe('auth', () => {
     describe('password-recovery tests', () => {
-      it('should send password recovery with incorrect input data', async () => {
+      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds', async () => {
+        const email = 'any@gmail.com';
+        for (let i = 0; i < 5; i++) {
+          await request(server)
+            .post('/auth/password-recovery')
+            .send({
+              email,
+            })
+            .expect(204);
+        }
         await request(server)
+          .post('/auth/password-recovery')
+          .send({
+            email,
+          })
+          .expect(429);
+      }, 10000);
+      it('should send password recovery with incorrect input data', () => {
+        request(server)
           .post('/auth/login')
           .send({
             email: '',
           })
           .expect(400);
 
-        await request(server)
+        request(server)
           .post('/auth/login')
           .send({
             loginOrEmail: user.login,
@@ -1785,41 +1717,21 @@ describe('AppController (e2e)', () => {
           })
           .expect(400);
       });
-      it('should return 204 even if current email is not registered', async () => {
-        await request(server)
+      it('should return 204 even if current email is not registered', () => {
+        request(server)
           .post('/auth/password-recovery')
           .send({
             email: 'user799jj@gmail.com',
           })
           .expect(204);
       });
-      it('should send email with new recovery code', async () => {
-        await request(server)
+      it('should send email with new recovery code', () => {
+        request(server)
           .post('/auth/password-recovery')
           .send({
             email: 'user@gmail.com',
           })
           .expect(204);
-      });
-      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds', (done) => {
-        setTimeout(async () => {
-          const email = 'any@gmail.com';
-          for (let i = 0; i < 5; i++) {
-            await request(server)
-              .post('/auth/password-recovery')
-              .send({
-                email,
-              })
-              .expect(204);
-          }
-          await request(server)
-            .post('/auth/password-recovery')
-            .send({
-              email,
-            })
-            .expect(429);
-          done();
-        }, 10000);
       });
     });
     describe('new password tests', () => {
@@ -1856,90 +1768,7 @@ describe('AppController (e2e)', () => {
           .expect(429);
       });
     });
-    describe('login tests', () => {
-      it('should login with incorrect input data', (done) => {
-        setTimeout(async () => {
-          await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: '',
-              password: 'password',
-            })
-            .expect(400);
-
-          await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: '',
-              password: 'password',
-            })
-            .expect(400);
-          done();
-        });
-      }, 10000);
-      it('should send 401 if password, login or email is wrong', (done) => {
-        setTimeout(async () => {
-          await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: 'us',
-              password: 'password',
-            })
-            .expect(401);
-
-          await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: 'user',
-              password: 'pass',
-            })
-            .expect(401);
-
-          await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: 'us@gmail.com',
-              password: 'password',
-            })
-            .expect(401);
-
-          done();
-        }, 10000);
-      });
-      it('should login user with correct login', (done) => {
-        setTimeout(async () => {
-          const loginUser2 = await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: 'user',
-              password: 'password',
-            })
-            .expect(200);
-
-          accessToken = loginUser2.body.accessToken;
-
-          expect(accessToken).toBeDefined();
-
-          done();
-        }, 10000);
-      });
-      it('should login user with correct email', (done) => {
-        setTimeout(async () => {
-          const loginUser2 = await request(server)
-            .post('/auth/login')
-            .send({
-              loginOrEmail: 'user@gmail.com',
-              password: 'password',
-            })
-            .expect(200);
-
-          accessToken = loginUser2.body.accessToken;
-
-          expect(accessToken).toBeDefined();
-
-          done();
-        }, 10000);
-      });
+    describe('login tests ', () => {
       it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to login', async () => {
         for (let i = 0; i < 5; i++) {
           await request(server).post('/auth/login').send({
@@ -1947,7 +1776,6 @@ describe('AppController (e2e)', () => {
             password: 'password',
           });
         }
-
         await request(server)
           .post('/auth/login')
           .send({
@@ -1955,226 +1783,294 @@ describe('AppController (e2e)', () => {
             password: 'password',
           })
           .expect(429);
+      }, 110000);
+      it('should login with incorrect input data', async () => {
+        await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: '',
+            password: 'password',
+          })
+          .expect(400);
+
+        await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: '',
+            password: 'password',
+          })
+          .expect(400);
+      }, 110000);
+      it('should send 401 if password, login or email is wrong', async () => {
+        await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: 'us',
+            password: 'password',
+          })
+          .expect(401);
+
+        await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: 'user',
+            password: 'pass',
+          })
+          .expect(401);
+
+        await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: 'us@gmail.com',
+            password: 'password',
+          })
+          .expect(401);
+      }, 11000);
+      it('should login user with correct login', async () => {
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: 'user',
+            password: 'password',
+          })
+          .expect(200);
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        expect(accessToken2).toBeDefined();
+      }, 11000);
+      it('should login user with correct email', async () => {
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .send({
+            loginOrEmail: 'user@gmail.com',
+            password: 'password',
+          })
+          .expect(200);
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        expect(accessToken2).toBeDefined();
+      }, 11000);
+    });
+    describe('registration confirmation test', () => {
+      it('should not confirmation with incorrect input data', async () => {
+        await request(server)
+          .post('/auth/registration-confirmation')
+          .send({
+            code: '',
+          })
+          .expect(400);
       });
-      describe('registration confirmation test', () => {
-        it('should not confirmation with incorrect input data', async () => {
-          await request(server)
-            .post('/auth/registration-confirmation')
-            .send({
-              code: '',
-            })
-            .expect(400);
-        });
-        it('should confirm registration with correct input data', async () => {
-          await request(server).delete(wipeAllDataUrl);
+      it('should confirm registration with correct input data', async () => {
+        await request(server).delete(wipeAllDataUrl);
 
-          const mailBox: MailBoxImap = expect.getState().mailBox;
+        const mailBox: MailBoxImap = expect.getState().mailBox;
 
-          const createUserDto: UserInputModel = {
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `andreantsygin@yandex.by`,
+        };
+
+        await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        const email = await mailBox.waitNewMessage(2);
+        const html = await mailBox.getMessageHtml(email);
+
+        expect(html).not.toBeNull();
+        const code = html.split('code=')[1].split("'")[0];
+        expect(code).toBeDefined();
+        expect(isUUID(code)).toBeTruthy();
+        expect.setState({ code });
+
+        await request(server)
+          .post('/auth/registration-confirmation')
+          .send({
+            code: code,
+          })
+          .expect(204);
+      });
+      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to change password', async () => {
+        for (let i = 0; i < 5; i++) {
+          await request(server).post('/auth/registration-confirmation').send({
+            code: 'valid',
+          });
+        }
+
+        await request(server)
+          .post('/auth/registration-confirmation')
+          .send({
+            loginOrEmail: 'user',
+            password: 'password',
+          })
+          .expect(429);
+      });
+    });
+    describe('registration tests', () => {
+      it('should not registered with incorrect input data', async () => {
+        await request(server)
+          .post('/auth/registration')
+          .send({
+            login: '',
+            password: 'validpassword',
+            email: 'user2@gmail.com',
+          })
+          .expect(400);
+
+        await request(server)
+          .post('/auth/registration')
+          .send({
+            login: 'valid',
+            password: '',
+            email: 'user2@gmail.com',
+          })
+          .expect(400);
+
+        await request(server)
+          .post('/auth/registration')
+          .send({
+            login: 'valid',
+            password: 'validpassword',
+            email: 'user.com',
+          })
+          .expect(400);
+      });
+      it('should registered with correct input data', async () => {
+        await request(server)
+          .post('/auth/registration')
+          .send({
+            login: 'valid',
+            password: 'validpassword',
+            email: 'user2@gmail.com',
+          })
+          .expect(204);
+      });
+      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to use registration', async () => {
+        for (let i = 0; i < 5; i++) {
+          await request(server).post('/auth/registration').send({
+            login: 'valid',
+            password: 'validpassword',
+            email: 'user2@gmail.com',
+          });
+        }
+
+        await request(server)
+          .post('/auth/registration')
+          .send({
+            login: 'valid',
+            password: 'validpassword',
+            email: 'user2@gmail.com',
+          })
+          .expect(429);
+      });
+    });
+    describe('registration email resending tests', () => {
+      it('should not resend email with incorrect input data', async () => {
+        await request(server)
+          .post('/auth/registration-email-resending')
+          .send({
+            email: '',
+          })
+          .expect(400);
+      });
+      it('should resend email with correct input data', async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const user = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send({
             login: `user`,
             password: 'password',
-            email: `andreantsygin@yandex.by`,
-          };
+            email: `andreantsygin@yandex.ru`,
+          }); // create user
 
-          await request(server)
-            .post('/sa/users')
-            .auth('admin', 'qwerty')
-            .send(createUserDto);
+        await request(server)
+          .post('/auth/registration-email-resending')
+          .send({
+            email: 'andreantsygin@yandex.ru',
+          })
+          .expect(204);
 
-          const email = await mailBox.waitNewMessage(2);
-          const html = await mailBox.getMessageHtml(email);
+        const mailBox: MailBoxImap = expect.getState().mailBox;
 
-          expect(html).not.toBeNull();
-          const code = html.split('code=')[1].split("'")[0];
-          expect(code).toBeDefined();
-          expect(isUUID(code)).toBeTruthy();
-          expect.setState({ code });
+        const email = await mailBox.waitNewMessage(2);
+        const html = await mailBox.getMessageHtml(email);
 
-          await request(server)
-            .post('/auth/registration-confirmation')
-            .send({
-              code: code,
-            })
-            .expect(204);
-        });
-        it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to change password', async () => {
-          for (let i = 0; i < 5; i++) {
-            await request(server).post('/auth/registration-confirmation').send({
-              code: 'valid',
-            });
-          }
-
-          await request(server)
-            .post('/auth/registration-confirmation')
-            .send({
-              loginOrEmail: 'user',
-              password: 'password',
-            })
-            .expect(429);
-        });
+        expect(html).not.toBeNull();
+        const code = html.split('code=')[1].split("'")[0];
+        expect(code).toBeDefined();
+        expect(isUUID(code)).toBeTruthy();
+        expect.setState({ code });
       });
-      describe('registration tests', () => {
-        it('should not registered with incorrect input data', async () => {
-          await request(server)
-            .post('/auth/registration')
-            .send({
-              login: '',
-              password: 'validpassword',
-              email: 'user2@gmail.com',
-            })
-            .expect(400);
-
-          await request(server)
-            .post('/auth/registration')
-            .send({
-              login: 'valid',
-              password: '',
-              email: 'user2@gmail.com',
-            })
-            .expect(400);
-
-          await request(server)
-            .post('/auth/registration')
-            .send({
-              login: 'valid',
-              password: 'validpassword',
-              email: 'user.com',
-            })
-            .expect(400);
-        });
-        it('should registered with correct input data', async () => {
-          await request(server)
-            .post('/auth/registration')
-            .send({
-              login: 'valid',
-              password: 'validpassword',
-              email: 'user2@gmail.com',
-            })
-            .expect(204);
-        });
-        it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to use registration', async () => {
-          for (let i = 0; i < 5; i++) {
-            await request(server).post('/auth/registration').send({
-              login: 'valid',
-              password: 'validpassword',
-              email: 'user2@gmail.com',
-            });
-          }
-
-          await request(server)
-            .post('/auth/registration')
-            .send({
-              login: 'valid',
-              password: 'validpassword',
-              email: 'user2@gmail.com',
-            })
-            .expect(429);
-        });
-      });
-      describe('registration email resending tests', () => {
-        it('should not resend email with incorrect input data', async () => {
-          await request(server)
-            .post('/auth/registration-email-resending')
-            .send({
-              email: '',
-            })
-            .expect(400);
-        });
-        it('should resend email with correct input data', async () => {
-          await request(server).delete(wipeAllDataUrl);
-
-          const user = await request(server)
-            .post('/sa/users')
-            .auth('admin', 'qwerty')
-            .send({
-              login: `user`,
-              password: 'password',
-              email: `andreantsygin@yandex.ru`,
-            }); // create user
-
-          await request(server)
-            .post('/auth/registration-email-resending')
-            .send({
-              email: 'andreantsygin@yandex.ru',
-            })
-            .expect(204);
-
-          const mailBox: MailBoxImap = expect.getState().mailBox;
-
-          const email = await mailBox.waitNewMessage(2);
-          const html = await mailBox.getMessageHtml(email);
-
-          expect(html).not.toBeNull();
-          const code = html.split('code=')[1].split("'")[0];
-          expect(code).toBeDefined();
-          expect(isUUID(code)).toBeTruthy();
-          expect.setState({ code });
-        });
-        it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to resend email', async () => {
-          for (let i = 0; i < 5; i++) {
-            await request(server)
-              .post('/auth/registration-email-resending')
-              .send({
-                email: 'user@gmail.com',
-              });
-          }
-
+      it('should send 429 if more than 5 attempts from one IP-address during 10 seconds try to resend email', async () => {
+        for (let i = 0; i < 5; i++) {
           await request(server)
             .post('/auth/registration-email-resending')
             .send({
               email: 'user@gmail.com',
-            })
-            .expect(429);
-        });
+            });
+        }
+
+        await request(server)
+          .post('/auth/registration-email-resending')
+          .send({
+            email: 'user@gmail.com',
+          })
+          .expect(429);
       });
-      describe('logout tests', () => {
-        it('should logout if refreshToken is actual', async () => {
-          await request(server)
-            .post('/auth/logout')
-            .set('Cookie', `refreshToken=${refreshToken}`)
-            .expect(204);
-        });
-        it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
-          await request(server)
-            .post('/auth/logout')
-            .set('Cookie', `refreshToken=`)
-            .expect(401);
-
-          await request(server)
-            .post('/auth/logout')
-            .set('Cookie', `refreshToken=${refreshToken + 1}`)
-            .expect(401);
-        });
-        it('should send 401 if refreshToken inside cookie is expired', async () => {
-          // распарсиваем токен, чтобы получить его содержимое
-          const decodedToken: any = jwt.decode(refreshToken);
-
-          // изменяем поле exp на дату из прошлого (например, на дату вчера)
-          decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
-
-          // заново подписываем токен с измененным содержимым
-          const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
-
-          // отправляем запрос с измененным токеном
-          await request(server)
-            .post('/auth/logout')
-            .set('Cookie', `refreshToken=${invalidToken}`)
-            .expect(401);
-        });
+    });
+    describe('logout tests', () => {
+      it('should logout if refreshToken is actual', async () => {
+        await request(server)
+          .post('/auth/logout')
+          .set('Cookie', `refreshToken=${refreshToken}`)
+          .expect(204);
       });
-      describe('me tests', () => {
-        it('should send 401 if authorization data is incorrect', async () => {
-          await request(server)
-            .get('/auth/me')
-            .set('Authorization', `Bearer `)
-            .expect(401);
-        });
-        it('should send 200 if authorization data is correct', async () => {
-          await request(server)
-            .get('/auth/me')
-            .set('Authorization', `Bearer ${accessToken}`)
-            .expect(200);
-        });
+      it('should send 401 if refreshToken inside cookie is missing or incorrect', async () => {
+        await request(server)
+          .post('/auth/logout')
+          .set('Cookie', `refreshToken=`)
+          .expect(401);
+
+        await request(server)
+          .post('/auth/logout')
+          .set('Cookie', `refreshToken=${refreshToken + 1}`)
+          .expect(401);
+      });
+      it('should send 401 if refreshToken inside cookie is expired', async () => {
+        // распарсиваем токен, чтобы получить его содержимое
+        const decodedToken: any = jwt.decode(refreshToken);
+
+        // изменяем поле exp на дату из прошлого (например, на дату вчера)
+        decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
+
+        // заново подписываем токен с измененным содержимым
+        const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
+
+        // отправляем запрос с измененным токеном
+        await request(server)
+          .post('/auth/logout')
+          .set('Cookie', `refreshToken=${invalidToken}`)
+          .expect(401);
+      });
+    });
+    describe('me tests', () => {
+      it('should send 401 if authorization data is incorrect', async () => {
+        await request(server)
+          .get('/auth/me')
+          .set('Authorization', `Bearer `)
+          .expect(401);
+      });
+      it('should send 200 if authorization data is correct', async () => {
+        await request(server)
+          .get('/auth/me')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
       });
     });
     describe('devices', () => {
@@ -2277,13 +2173,13 @@ describe('AppController (e2e)', () => {
         });
         it('should send 401 if refreshToken inside cookie is expired', async () => {
           // распарсиваем токен, чтобы получить его содержимое
-          const decodedToken: any = jwt.decode(refreshToken);
+          const decodedToken2: any = jwt.decode(refreshToken);
 
           // изменяем поле exp на дату из прошлого (например, на дату вчера)
-          decodedToken.exp = Math.floor(Date.now() / 1000) - 86400;
+          decodedToken2.exp = Math.floor(Date.now() / 1000) - 86400;
 
           // заново подписываем токен с измененным содержимым
-          const invalidToken = jwt.sign(decodedToken, settings.JWT_SECRET);
+          const invalidToken = jwt.sign(decodedToken2, settings.JWT_SECRET);
 
           // отправляем запрос с измененным токеном
           await request(server)

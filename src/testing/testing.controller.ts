@@ -27,4 +27,22 @@ export class TestingController {
     await this.commentsRepository.deleteAllComments();
     await this.likesRepository.deleteAllLikes();
   }
+
+  @Delete('all-blogs')
+  @HttpCode(204)
+  async deleteAllBlogs() {
+    await this.blogsRepository.deleteAllBlogs();
+  }
+
+  @Delete('all-posts')
+  @HttpCode(204)
+  async deleteAllPosts() {
+    await this.postsRepository.deleteAllPosts();
+  }
+
+  @Delete('all-comments')
+  @HttpCode(204)
+  async deleteAllComments() {
+    await this.commentsRepository.deleteAllComments();
+  }
 }
