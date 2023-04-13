@@ -63,8 +63,7 @@ export class BlogsRepository {
   }
 
   async deleteAllBlogs() {
-    const result = await this.blogsModel.deleteMany({});
-    return result.deletedCount;
+    await this.blogsModel.deleteMany({});
   }
 
   async bindBlogToUser(blogId: string, user: UserViewModel): Promise<boolean> {

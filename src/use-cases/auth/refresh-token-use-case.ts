@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../sa/users/users-repository.service';
-import { JwtService } from '../../jwt/jwt.service';
+import { CustomJwtService } from '../../jwt/jwt.service';
 import { JWTPayloadType, TokenType } from '../../types and models/types';
 import { DevicesQueryRepository } from '../../query-repositorys/devices-query.repository';
 import { DevicesRepository } from '../../devices/device.repository';
@@ -17,7 +17,7 @@ export class RefreshTokenService
     private readonly usersRepository: UsersRepository,
     private readonly devicesQueryService: DevicesQueryRepository,
     private readonly devicesRepository: DevicesRepository,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: CustomJwtService,
   ) {}
 
   async execute(command: RefreshTokenCommand): Promise<TokenType> {

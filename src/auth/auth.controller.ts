@@ -14,7 +14,7 @@ import {
 import { Response } from 'express';
 import { UsersService } from '../sa/users/users.service';
 import { TokenType, UserDBType } from '../types and models/types';
-import { JwtService } from '../jwt/jwt.service';
+import { CustomJwtService } from '../jwt/jwt.service';
 import { DevicesService } from '../devices/device.service';
 import {
   CodeInputModel,
@@ -43,7 +43,7 @@ import { RegistrationEmailResendingCommand } from '../use-cases/auth/registratio
 export class AuthController {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService,
+    private jwtService: CustomJwtService,
     private devicesService: DevicesService,
     private usersQueryRepository: UsersQueryRepository,
     private commandBus: CommandBus,

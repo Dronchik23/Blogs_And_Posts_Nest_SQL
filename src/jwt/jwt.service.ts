@@ -5,7 +5,7 @@ import { TokensRepository } from '../tokens/tokens.repository';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable({ scope: Scope.DEFAULT })
-export class JwtService {
+export class CustomJwtService {
   constructor(
     private readonly tokensRepository: TokensRepository,
     private readonly configService: ConfigService,

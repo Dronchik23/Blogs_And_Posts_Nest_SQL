@@ -24,7 +24,7 @@ export class LikesRepository {
     return newLike;
   }
 
-  async deleteAllLikes(): Promise<DeleteResult> {
-    return this.likeModel.deleteMany().exec();
+  async deleteAllLikes() {
+    await this.likeModel.deleteMany();
   }
 }

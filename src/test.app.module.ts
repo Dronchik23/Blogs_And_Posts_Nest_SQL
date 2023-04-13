@@ -85,6 +85,7 @@ import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 export const useCases = [
   CreateBlogService,
@@ -120,9 +121,15 @@ export const queryRepos = [
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://solikamsk:solikamsk@cluster0.uu9g6jj.mongodb.net/?retryWrites=true&w=majority',
-    ),
+    MongooseModule.forRootAsync({
+      useFactory: async () => {
+        const mongoServer = await MongoMemoryServer.create();
+        const mongoUri = mongoServer.getUri();
+        return {
+          uri: mongoUri,
+        };
+      },
+    }),
     ThrottlerModule.forRoot({
       ttl: 10,
       limit: 5,
@@ -136,7 +143,6 @@ export const queryRepos = [
       { name: 'Like', schema: LikeSchema },
       { name: 'TokenBlackList', schema: TokenBlackListSchema },
     ]),
-    MongooseModule.forRoot('mongodb://localhost/nest'),
     ConfigModule.forRoot({ isGlobal: true }),
     MailerModule.forRoot({
       transport: {
@@ -201,7 +207,7 @@ export const queryRepos = [
     },
   ],
 })
-export class AppModule implements NestModule {
+export class TestAppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(QueryParamsMiddleware)

@@ -7,7 +7,6 @@ import {
 } from 'class-validator';
 import { injectable } from 'inversify';
 import { UserDBType } from './types and models/types';
-import { CommentsRepository } from './comments/comment.repository';
 import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
 import { UsersQueryRepository } from './query-repositorys/users-query.repository';
 import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';

@@ -45,4 +45,10 @@ export class TestingController {
   async deleteAllComments() {
     await this.commentsRepository.deleteAllComments();
   }
+
+  @Delete('all-users')
+  @HttpCode(204)
+  async deleteAllUsers() {
+    await this.usersRepository.deleteAllUsers();
+  }
 }

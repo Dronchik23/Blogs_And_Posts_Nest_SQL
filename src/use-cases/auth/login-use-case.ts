@@ -8,7 +8,7 @@ import {
   TokenType,
   UserDBType,
 } from '../../types and models/types';
-import { JwtService } from '../../jwt/jwt.service';
+import { CustomJwtService } from '../../jwt/jwt.service';
 import { DevicesRepository } from '../../devices/device.repository';
 
 export class LoginCommand {
@@ -25,7 +25,7 @@ export class LoginService implements ICommandHandler<LoginCommand> {
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly devicesRepository: DevicesRepository,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: CustomJwtService,
     private readonly usersQueryRepository: UsersQueryRepository,
   ) {}
 

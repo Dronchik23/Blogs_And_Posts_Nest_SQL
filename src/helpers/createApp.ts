@@ -7,9 +7,10 @@ import { useContainer } from 'class-validator';
 import { AppModule } from '../app.module';
 import { HttpExceptionFilter } from '../exeption.filter';
 import cookieParser from 'cookie-parser';
+import { TestAppModule } from '../test.app.module';
 
 export const createApp = (app: INestApplication) => {
-  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  useContainer(app.select(TestAppModule), { fallbackOnErrors: true });
   app.enableCors();
   app.use(cookieParser());
   app.useGlobalPipes(

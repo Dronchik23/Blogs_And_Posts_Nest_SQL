@@ -69,7 +69,6 @@ export class CommentsRepository {
   }
 
   async deleteAllComments() {
-    const result = await this.commentsModel.deleteMany({});
-    return result.deletedCount;
+    await this.commentsModel.deleteMany({});
   }
 }

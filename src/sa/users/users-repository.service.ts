@@ -34,6 +34,7 @@ export class UsersRepository {
   }
 
   async deleteUserByUserId(id: string) {
+    debugger;
     try {
       const result = await this.usersModel.deleteOne({
         _id: new mongoose.Types.ObjectId(id),
@@ -44,8 +45,9 @@ export class UsersRepository {
     }
   }
 
-  async deleteAllUsers(): Promise<any> {
-    return this.usersModel.deleteMany({});
+  async deleteAllUsers() {
+    console.log('delete');
+    await this.usersModel.deleteMany({});
   }
 
   async updateConfirmationCodeByUserId(

@@ -74,7 +74,6 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: BanStatus,
   ): Promise<PaginationType> {
-    debugger;
     const filter = this.searchLoginAndEmailTermFilter(
       searchLoginTerm,
       searchEmailTerm,
@@ -152,5 +151,4 @@ export class UsersQueryRepository {
   async findBannedUsers(): Promise<UserDBType[]> {
     return this.usersModel.find({ 'banInfo.isBanned': true }).lean();
   }
-
 }
