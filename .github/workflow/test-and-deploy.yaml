@@ -14,20 +14,22 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: yarn # устанавливаем зависимости
+        run: npm # устанавливаем зависимости
 
       - name: Test
-        run: yarn test # запускаем скрипт тестами
+        run: npm test # запускаем скрипт тестами
 
   deploy:
     name: Deploy
     needs: tests # указываем зависимую джобу т/е в данном случае деплой не запустится если тесты завершились ошибкой
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: amondnet/vercel-action@v20
         with:
           args: "deploy"
         env:
-          FLY_API_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-project-id: ${{ secrets.blog-and-post-nest }}
 
 
