@@ -13,27 +13,7 @@ describe('sa/users (e2e)', () => {
   let server: any;
   let user: UserViewModel;
   const url = '/sa/users';
-  const wipeAllUsers = '/testing/all-users';
   const wipeAllData = '/testing/all-data';
-
-  /*  beforeEach(async () => {
-    await request(server).delete(wipeAllData);
-
-    const createUserDto: UserInputModel = {
-      login: `user`,
-      password: 'password',
-      email: `user@gmail.com`,
-    };
-
-    const responseForUser = await request(server)
-      .post('/sa/users')
-      .auth('admin', 'qwerty')
-      .send(createUserDto);
-
-    user = responseForUser.body;
-
-    expect(user).toBeDefined();
-  });*/
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({

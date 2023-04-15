@@ -143,18 +143,6 @@ export class Device {
   userId: ObjectId;
 }
 export const DeviceSchema = SchemaFactory.createForClass(Device);
-@Schema()
-export class AccountData {
-  @Prop()
-  login: string;
-  @Prop()
-  email: string;
-  @Prop()
-  passwordHash: string;
-  @Prop()
-  createdAt: string;
-}
-export const AccountDataSchema = SchemaFactory.createForClass(AccountData);
 
 export type UserDocument = User & Document;
 @Schema()

@@ -1,100 +1,31 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from './../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { MailBoxImap } from './imap.service';
-import { isUUID } from 'class-validator';
-import jwt from 'jsonwebtoken';
-import { settings } from '../src/jwt/jwt.settings';
-import { DeviceDBType } from '../src/types and models/types';
+import { disconnect } from 'mongoose';
+import { AppModule } from '../src/app.module';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { sleep } from './helpers/sleepfunction';
 
-describe('AppController (e2e)', () => {
+describe('blogger tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
+  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
-  let refreshToken;
-  let deviceId;
   let blog;
   let post;
   let user;
   let comment;
-  const bloggerUrl = 'blogger/blogs';
+  const url = '/blogger/blogs';
   const wipeAllDataUrl = '/testing/all-data';
 
-  beforeEach(async () => {
-    await request(server).delete(wipeAllDataUrl);
-
-    const createUserDto: UserInputModel = {
-      login: `user`,
-      password: 'password',
-      email: `user@gmail.com`,
-    };
-
-    const responseForUser = await request(server)
-      .post('/sa/users')
-      .auth('admin', 'qwerty')
-      .send(createUserDto);
-
-    user = responseForUser.body;
-    expect(user).toBeDefined();
-
-    const loginUser = await request(server).post('/auth/login').send({
-      loginOrEmail: createUserDto.login,
-      password: createUserDto.password,
-    });
-
-    accessToken = loginUser.body.accessToken;
-
-    refreshToken = loginUser.headers['set-cookie'][0]
-      .split(';')[0]
-      .split('=')[1];
-    console.log('refreshToken', refreshToken);
-
-    const decodedToken: any = await jwt.verify(
-      refreshToken,
-      settings.JWT_REFRESH_SECRET,
-    );
-
-    deviceId = decodedToken.deviceId;
-
-    const responseForBlog = await request(server)
-      .post('/blogger/blogs')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        name: 'name',
-        websiteUrl: 'https://youtube.com',
-        description: 'valid description',
-      });
-
-    blog = responseForBlog.body;
-    expect(blog).toBeDefined();
-
-    const responseForPost = await request(server)
-      .post(`/blogger/blogs/${blog.id}/posts`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        title: 'valid',
-        shortDescription: 'valid',
-        content: 'valid',
-        blogId: blog.id,
-      });
-
-    post = responseForPost.body;
-    expect(post).toBeDefined();
-
-    const responseForComment = await request(server)
-      .post(`/posts/${post.id}/comments`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ content: 'valid content string more than 20 letters' });
-
-    comment = responseForComment.body;
-    expect(comment).toBeDefined();
-  });
-
   beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    process.env['MONGO_URI'] = mongoUri;
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -103,58 +34,48 @@ describe('AppController (e2e)', () => {
     app = createApp(app);
     await app.init();
     server = app.getHttpServer();
-
-    const mailBox = new MailBoxImap();
-    await mailBox.connectToMail();
-
-    expect.setState({ mailBox });
   });
 
   afterAll(async () => {
-    const mailBox: MailBoxImap = expect.getState().mailBox;
-    await mailBox.disconnect();
-
     await app.close();
+    await disconnect();
   });
 
   describe('bloggers/blogs', () => {
-    const url = '/blogger/blogs';
-
-    beforeAll(async () => {
-      await request(server).delete(wipeAllDataUrl);
-    });
-
     describe('get blogs tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+      });
       it('should return 404 for not existing blog', async () => {
         await request(server)
           .get(url + 1)
           .expect(404);
       });
       it('should return blogs created by blogger', async () => {
-        const createUserDto2: UserInputModel = {
-          login: `user2`,
-          password: 'password2',
-          email: `user2@gmail.com`,
-        };
-
-        const responseForUser2 = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto2);
-
-        const user2 = responseForUser2.body;
-        expect(user2).toBeDefined();
-
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
-
-        const accessToken2 = loginUser2.body.accessToken;
-
         const responseForBlog = await request(server)
           .post(url)
-          .set('Authorization', `Bearer ${accessToken2}`)
+          .set('Authorization', `Bearer ${accessToken}`)
           .send({
             name: 'name',
             websiteUrl: 'https://youtube.com',
@@ -175,7 +96,7 @@ describe('AppController (e2e)', () => {
 
         const response = await request(server)
           .get(url)
-          .set('Authorization', `Bearer ${accessToken2}`)
+          .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
         expect(response.body).toEqual({
@@ -188,9 +109,30 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('create blog tests', () => {
-      beforeEach(async () => {
-        await request(server).delete('/testing/all-blogs');
-      }); //delete all blogs
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+      });
       it('should not create blog with incorrect name', async () => {
         await request(server)
           .post(url)
@@ -240,7 +182,7 @@ describe('AppController (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             name: 'valid',
-            websiteUrl: '',
+            websiteUrl: 'bad url',
             description: 'valid description',
           })
           .expect(400);
@@ -393,9 +335,42 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('update blog tests', () => {
-      beforeEach(async () => {
-        await request(server).delete('/testing/all-posts');
-      }); //delete all posts
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+      });
       it('should not update blog with incorrect input data', async () => {
         const reqWithIncorrectName = await request(server)
           .put(`/blogger/blogs/${blog.id}`)
@@ -529,6 +504,42 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('delete blog tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+      });
       it('should not delete blog that not exist ', async () => {
         await request(server)
           .delete('/blogger/blogs/63189b06003380064c4193be')
@@ -547,7 +558,6 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
       it('should delete blog with correct id', async () => {
-        await request(server).get(`/blogs/${blog.id}`).expect(200);
         await request(server)
           .delete(`/blogger/blogs/${blog.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -557,13 +567,49 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('create post tests', () => {
-      beforeEach(async () => {
-        await request(server).delete('/testing/all-posts');
-      }); //delete all posts
+      beforeAll(async () => {
+        await sleep(10);
+
+        await request(server).delete('/testing/all-users');
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+        console.log('etot', accessToken);
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+      });
       it('should not create post with incorrect input data', async () => {
-        const url = `/${bloggerUrl}/${blog.id}/posts`;
+        console.log('i etot', accessToken);
         await request(server)
-          .post(url)
+          .post(`/blogger/blogs/${blog.id}/posts`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             title: '',
@@ -586,7 +632,7 @@ describe('AppController (e2e)', () => {
           });
 
         await request(server)
-          .post(url)
+          .post(`/blogger/blogs/${blog.id}/posts`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             title: '  ',
@@ -609,7 +655,7 @@ describe('AppController (e2e)', () => {
           });
 
         await request(server)
-          .post(url)
+          .post(`/blogger/blogs/${blog.id}/posts`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             title: 'titlemorethen30symbols1234567po',
@@ -632,9 +678,8 @@ describe('AppController (e2e)', () => {
           });
       });
       it('should not create post with incorrect authorization data', async () => {
-        const url = `/${bloggerUrl}/${blog.id}/posts`;
         await request(server)
-          .post(url)
+          .post(`/blogger/blogs/${blog.id}/posts`)
           .set('Authorization', `Basic ${accessToken}`)
           .send({
             title: 'valid',
@@ -646,7 +691,7 @@ describe('AppController (e2e)', () => {
           .expect(401);
 
         await request(server)
-          .post(url)
+          .post(`/blogger/blogs/${blog.id}/posts`)
           .set('Authorization', `Bearer `)
           .send({
             title: 'valid',
@@ -746,6 +791,55 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('delete post tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+      });
       it('should not delete post that not exist ', async () => {
         await request(server)
           .delete(
@@ -804,6 +898,65 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('update post tests', () => {
+      beforeAll(async () => {
+        await sleep(10);
+
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+
+        const responseForComment = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content string more than 20 letters' });
+
+        comment = responseForComment.body;
+        expect(comment).toBeDefined();
+      });
       it('should not update post with incorrect input data', async () => {
         const reqWithIncorrectTitle = await request(server)
           .put(`/blogger/blogs/${blog.id}/posts/${post.id}`)

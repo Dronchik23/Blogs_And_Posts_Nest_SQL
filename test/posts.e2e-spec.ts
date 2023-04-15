@@ -1,129 +1,48 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from './../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
 import { MailBoxImap } from './imap.service';
-import { isUUID } from 'class-validator';
 import jwt from 'jsonwebtoken';
 import { settings } from '../src/jwt/jwt.settings';
-import { DeviceDBType } from '../src/types and models/types';
+import { TestAppModule } from '../src/test.app.module';
+import { disconnect } from 'mongoose';
 
 describe('AppController (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
   let server: any;
   let accessToken;
-  let refreshToken;
-  let deviceId;
   let blog;
   let post;
   let user;
-  let comment;
-  const bloggerUrl = 'blogger/blogs';
+  const postsUrl = '/posts';
   const wipeAllDataUrl = '/testing/all-data';
-
-  beforeEach(async () => {
-    await request(server).delete(wipeAllDataUrl);
-
-    const createUserDto: UserInputModel = {
-      login: `user`,
-      password: 'password',
-      email: `user@gmail.com`,
-    };
-
-    const responseForUser = await request(server)
-      .post('/sa/users')
-      .auth('admin', 'qwerty')
-      .send(createUserDto);
-
-    user = responseForUser.body;
-    expect(user).toBeDefined();
-
-    const loginUser = await request(server).post('/auth/login').send({
-      loginOrEmail: createUserDto.login,
-      password: createUserDto.password,
-    });
-
-    accessToken = loginUser.body.accessToken;
-
-    refreshToken = loginUser.headers['set-cookie'][0]
-      .split(';')[0]
-      .split('=')[1];
-    console.log('refreshToken', refreshToken);
-
-    const decodedToken: any = await jwt.verify(
-      refreshToken,
-      settings.JWT_REFRESH_SECRET,
-    );
-
-    deviceId = decodedToken.deviceId;
-
-    const responseForBlog = await request(server)
-      .post('/blogger/blogs')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        name: 'name',
-        websiteUrl: 'https://youtube.com',
-        description: 'valid description',
-      });
-
-    blog = responseForBlog.body;
-    expect(blog).toBeDefined();
-
-    const responseForPost = await request(server)
-      .post(`/blogger/blogs/${blog.id}/posts`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        title: 'valid',
-        shortDescription: 'valid',
-        content: 'valid',
-        blogId: blog.id,
-      });
-
-    post = responseForPost.body;
-    expect(post).toBeDefined();
-
-    const responseForComment = await request(server)
-      .post(`/posts/${post.id}/comments`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ content: 'valid content string more than 20 letters' });
-
-    comment = responseForComment.body;
-    expect(comment).toBeDefined();
-  });
+  const wipeAllComments = '/testing/all-comments';
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [TestAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     app = createApp(app);
     await app.init();
     server = app.getHttpServer();
-
-    const mailBox = new MailBoxImap();
-    await mailBox.connectToMail();
-
-    expect.setState({ mailBox });
   });
 
   afterAll(async () => {
-    const mailBox: MailBoxImap = expect.getState().mailBox;
-    await mailBox.disconnect();
-
     await app.close();
+    await disconnect();
   });
 
   describe('posts', () => {
-    const postsUrl = '/posts';
     describe('get posts tests', () => {
       it('should get all posts', async () => {
-        await request(server).delete('/testing/all-posts');
+        await request(server).delete(wipeAllDataUrl);
 
-        await request(server).get('/posts').expect(200, {
+        await request(server).get(postsUrl).expect(200, {
           pagesCount: 1,
           page: 1,
           pageSize: 10,
@@ -138,10 +57,72 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('create comment tests', () => {
-      beforeEach(async () => {
-        await request(server).delete('/testing/all-comments');
-      }); //delete all comments
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+      });
+      it('should create comment with correct data', async () => {
+        const responseForComment2 = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content string more than 20 letters' })
+          .expect(201); // create comment with valid data
+
+        const comment2 = responseForComment2.body;
+
+        const commentFoundedById = await request(server)
+          .get(`/comments/${comment2.id}`)
+          .expect(200);
+
+        expect(commentFoundedById.body).toEqual(comment2);
+      });
       it('should not create comment with incorrect input data', async () => {
+        await request(server).delete(wipeAllComments);
         await request(server)
           .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -163,6 +144,8 @@ describe('AppController (e2e)', () => {
         });
       });
       it('should not create comment with incorrect authorization data', async () => {
+        await request(server).delete(wipeAllComments);
+
         await request(server)
           .post(`/posts/${post.id}/comments`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -183,26 +166,60 @@ describe('AppController (e2e)', () => {
           items: [],
         });
       });
-      it('should create comment with correct data', async () => {
-        const responseForComment2 = await request(server)
-          .post(`/posts/${post.id}/comments`)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .send({ content: 'valid content string more than 20 letters' })
-          .expect(201); // create comment with valid data
-
-        const comment2 = responseForComment2.body;
-
-        const commentFoundedById = await request(server)
-          .get(`/comments/${comment2.id}`)
-          .expect(200);
-
-        expect(commentFoundedById.body).toEqual(comment2);
-      });
     });
     describe('like post tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+      });
       it('should not like not existing post', async () => {
         await request(server)
-          .get(`/posts/` + 100 + `/like-status`)
+          .get(postsUrl + 100 + `/like-status`)
           .expect(404);
       });
       it('should not like post with incorrect input data', async () => {

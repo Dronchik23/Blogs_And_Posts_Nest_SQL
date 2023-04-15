@@ -36,7 +36,7 @@ import {
 import { TestingController } from './testing/testing.controller';
 import { EmailAdapter } from './email/email.adapter';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   IsEmailAlreadyConfirmedConstraint,
   IsEmailAlreadyExistConstraint,
@@ -85,6 +85,7 @@ import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
+import { MongoMemoryServer } from 'mongodb-memory-server';
 
 export const useCases = [
   CreateBlogService,
@@ -120,9 +121,17 @@ export const queryRepos = [
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      'mongodb+srv://solikamsk:solikamsk@cluster0.uu9g6jj.mongodb.net/?retryWrites=true&w=majority',
-    ),
+    ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => {
+        console.log(configService.get('MONGO_URI'), ' 123');
+        return {
+          uri: configService.get('MONGO_URI'),
+        };
+      },
+      inject: [ConfigService],
+    }),
     ThrottlerModule.forRoot({
       ttl: 10,
       limit: 5,
@@ -136,8 +145,7 @@ export const queryRepos = [
       { name: 'Like', schema: LikeSchema },
       { name: 'TokenBlackList', schema: TokenBlackListSchema },
     ]),
-    MongooseModule.forRoot('mongodb://localhost/nest'),
-    ConfigModule.forRoot({ isGlobal: true }),
+
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

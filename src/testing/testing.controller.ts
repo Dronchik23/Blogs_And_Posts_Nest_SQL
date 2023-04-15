@@ -51,4 +51,10 @@ export class TestingController {
   async deleteAllUsers() {
     await this.usersRepository.deleteAllUsers();
   }
+
+  @Delete('all-likes')
+  @HttpCode(204)
+  async deleteAllLikes() {
+    await this.likesRepository.deleteAllLikes();
+  }
 }

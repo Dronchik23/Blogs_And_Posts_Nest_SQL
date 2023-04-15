@@ -5,11 +5,12 @@ import { ConfigService } from '@nestjs/config';
 @Injectable({ scope: Scope.DEFAULT })
 export class EmailAdapter {
   constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
+    private mailerService: MailerService,
+    private configService: ConfigService,
   ) {}
 
   async sendEmail(email: string, subject: string, message: string) {
+    console.log('email will be sent');
     const user = this.configService.get<string>('EMAIL_USER');
     const pass = this.configService.get<string>('EMAIL_PASSWORD');
 

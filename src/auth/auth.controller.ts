@@ -22,7 +22,6 @@ import {
   NewPasswordInputModel,
   RegistrationEmailResendingModel,
   UserInputModel,
-  UserViewModel,
 } from '../types and models/models';
 import { BearerAuthGuard } from './strategys/bearer-strategy';
 import { SkipThrottle } from '@nestjs/throttler';

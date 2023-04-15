@@ -86,6 +86,8 @@ import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-us
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MokEmailAdapter } from './email/mok.email.adapter';
+import { MokEmailService } from './email/mok.email.service';
 
 export const useCases = [
   CreateBlogService,

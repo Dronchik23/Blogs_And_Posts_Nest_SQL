@@ -89,6 +89,7 @@ export class BloggerBlogsController {
     @Body() blogPostCreateDTO: BlogPostInputModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<PostViewModel> {
+    debugger;
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();

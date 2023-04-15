@@ -4,99 +4,37 @@ import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { MailBoxImap } from './imap.service';
-import { isUUID } from 'class-validator';
-import jwt from 'jsonwebtoken';
-import { settings } from '../src/jwt/jwt.settings';
-import { DeviceDBType } from '../src/types and models/types';
+import { TestAppModule } from '../src/test.app.module';
+import { disconnect } from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { MongooseModule } from '@nestjs/mongoose';
 
-describe('AppController (e2e)', () => {
+describe('comments tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
   let server: any;
   let accessToken;
-  let refreshToken;
-  let deviceId;
   let blog;
   let post;
   let user;
   let comment;
-  const bloggerUrl = 'blogger/blogs';
+  let mongoServer: MongoMemoryServer;
   const wipeAllDataUrl = '/testing/all-data';
-
-  beforeEach(async () => {
-    await request(server).delete(wipeAllDataUrl);
-
-    const createUserDto: UserInputModel = {
-      login: `user`,
-      password: 'password',
-      email: `user@gmail.com`,
-    };
-
-    const responseForUser = await request(server)
-      .post('/sa/users')
-      .auth('admin', 'qwerty')
-      .send(createUserDto);
-
-    user = responseForUser.body;
-    expect(user).toBeDefined();
-
-    const loginUser = await request(server).post('/auth/login').send({
-      loginOrEmail: createUserDto.login,
-      password: createUserDto.password,
-    });
-
-    accessToken = loginUser.body.accessToken;
-
-    refreshToken = loginUser.headers['set-cookie'][0]
-      .split(';')[0]
-      .split('=')[1];
-    console.log('refreshToken', refreshToken);
-
-    const decodedToken: any = await jwt.verify(
-      refreshToken,
-      settings.JWT_REFRESH_SECRET,
-    );
-
-    deviceId = decodedToken.deviceId;
-
-    const responseForBlog = await request(server)
-      .post('/blogger/blogs')
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        name: 'name',
-        websiteUrl: 'https://youtube.com',
-        description: 'valid description',
-      });
-
-    blog = responseForBlog.body;
-    expect(blog).toBeDefined();
-
-    const responseForPost = await request(server)
-      .post(`/blogger/blogs/${blog.id}/posts`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({
-        title: 'valid',
-        shortDescription: 'valid',
-        content: 'valid',
-        blogId: blog.id,
-      });
-
-    post = responseForPost.body;
-    expect(post).toBeDefined();
-
-    const responseForComment = await request(server)
-      .post(`/posts/${post.id}/comments`)
-      .set('Authorization', `Bearer ${accessToken}`)
-      .send({ content: 'valid content string more than 20 letters' });
-
-    comment = responseForComment.body;
-    expect(comment).toBeDefined();
-  });
+  const wipeAllLikes = '/testing/all-likes';
 
   beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        TestAppModule,
+        MongooseModule.forRootAsync({
+          useFactory: async () => ({
+            uri: mongoUri,
+          }),
+        }),
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -107,10 +45,68 @@ describe('AppController (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
+    await disconnect();
   });
 
   describe('comments', () => {
     describe('get comment test', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+
+        const responseForComment = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content string more than 20 letters' });
+
+        comment = responseForComment.body;
+        expect(comment).toBeDefined();
+      });
       it('should not get comment that not exist', async () => {
         await request(server)
           .get('/comments' + 1)
@@ -146,6 +142,63 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('update comment tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+
+        const responseForComment = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content string more than 20 letters' });
+
+        comment = responseForComment.body;
+        expect(comment).toBeDefined();
+      });
       it('should not update comment with incorrect input data', async () => {
         debugger;
         const reqWithIncorrectContent = await request(server)
@@ -227,6 +280,63 @@ describe('AppController (e2e)', () => {
       });
     });
     describe('like comment tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+
+        const responseForComment = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content string more than 20 letters' });
+
+        comment = responseForComment.body;
+        expect(comment).toBeDefined();
+      });
       it('should not comment not existing post', async () => {
         await request(server)
           .get(`/comments/` + 100 + `/like-status`)
@@ -265,6 +375,7 @@ describe('AppController (e2e)', () => {
           .expect(401);
       });
       it('should like comment with correct data', async () => {
+        await request(server).delete(wipeAllLikes);
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -297,6 +408,8 @@ describe('AppController (e2e)', () => {
         expect(commentFoundedById.body.likesInfo.likesCount).toEqual(0);
       });
       it('Should not return like for comment of banned user', async () => {
+        await request(server).delete(wipeAllLikes);
+
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
