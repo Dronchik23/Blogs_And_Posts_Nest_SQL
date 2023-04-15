@@ -1,5 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { UsersController } from './sa/users/users.controller';
 import { UsersRepository } from './sa/users/users-repository.service';
 import { UsersService } from './sa/users/users.service';
@@ -84,7 +83,6 @@ import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
-import { AppService } from './app.service';
 
 export const useCases = [
   CreateBlogService,
@@ -163,7 +161,6 @@ export const queryRepos = [
   ],
   controllers: [
     TestingController,
-    AppController,
     UsersController,
     BlogsController,
     PostsController,
@@ -174,7 +171,6 @@ export const queryRepos = [
     SABlogsController,
   ],
   providers: [
-    AppService,
     UsersService,
     UsersRepository,
     EmailService,
