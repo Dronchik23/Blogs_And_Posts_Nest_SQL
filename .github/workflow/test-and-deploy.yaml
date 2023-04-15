@@ -24,8 +24,7 @@ jobs:
     needs: tests # указываем зависимую джобу т/е в данном случае деплой не запустится если тесты завершились ошибкой
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: superfly/flyctl-actions@1.1 # This is the action
+      - uses: amondnet/vercel-action@v20
         with:
           args: "deploy"
         env:
