@@ -3,17 +3,26 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { MailBoxImap } from './imap.service';
-import jwt from 'jsonwebtoken';
-import { settings } from '../src/jwt/jwt.settings';
-import { TestAppModule } from '../src/test.app.module';
 import { disconnect } from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { AppModule } from '../src/app.module';
+import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('AppController (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
+  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
+  const mokEmailAdapter = {
+    async sendEmail(
+      email: string,
+      subject: string,
+      message: string,
+    ): Promise<void> {
+      return;
+    },
+  };
   let blog;
   let post;
   let user;
@@ -22,9 +31,16 @@ describe('AppController (e2e)', () => {
   const wipeAllComments = '/testing/all-comments';
 
   beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    process.env['MONGO_URI'] = mongoUri;
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TestAppModule],
-    }).compile();
+      imports: [AppModule],
+    })
+      .overrideProvider(EmailAdapter)
+      .useValue(mokEmailAdapter)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app = createApp(app);

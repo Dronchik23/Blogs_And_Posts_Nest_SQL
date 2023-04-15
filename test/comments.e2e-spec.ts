@@ -8,34 +8,41 @@ import { TestAppModule } from '../src/test.app.module';
 import { disconnect } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';
+import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('comments tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
+  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   let blog;
   let post;
   let user;
   let comment;
-  let mongoServer: MongoMemoryServer;
+  const mokEmailAdapter = {
+    async sendEmail(
+      email: string,
+      subject: string,
+      message: string,
+    ): Promise<void> {
+      return;
+    },
+  };
   const wipeAllDataUrl = '/testing/all-data';
   const wipeAllLikes = '/testing/all-likes';
 
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
+    process.env['MONGO_URI'] = mongoUri;
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        TestAppModule,
-        MongooseModule.forRootAsync({
-          useFactory: async () => ({
-            uri: mongoUri,
-          }),
-        }),
-      ],
-    }).compile();
+      imports: [AppModule],
+    })
+      .overrideProvider(EmailAdapter)
+      .useValue(mokEmailAdapter)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app = createApp(app);

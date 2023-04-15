@@ -5,20 +5,40 @@ import { UserInputModel, UserViewModel } from '../src/types and models/models';
 import request from 'supertest';
 import { TestAppModule } from '../src/test.app.module';
 import { disconnect } from 'mongoose';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import { AppModule } from '../src/app.module';
+import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('sa/users (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
+  let mongoServer: MongoMemoryServer;
   let server: any;
   let user: UserViewModel;
+  const mokEmailAdapter = {
+    async sendEmail(
+      email: string,
+      subject: string,
+      message: string,
+    ): Promise<void> {
+      return;
+    },
+  };
   const url = '/sa/users';
   const wipeAllData = '/testing/all-data';
 
   beforeAll(async () => {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
+    process.env['MONGO_URI'] = mongoUri;
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [TestAppModule],
-    }).compile();
+      imports: [AppModule],
+    })
+      .overrideProvider(EmailAdapter)
+      .useValue(mokEmailAdapter)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app = createApp(app);

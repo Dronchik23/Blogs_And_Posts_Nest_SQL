@@ -7,6 +7,7 @@ import { disconnect } from 'mongoose';
 import { AppModule } from '../src/app.module';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { sleep } from './helpers/sleepfunction';
+import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('blogger tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
@@ -18,6 +19,15 @@ describe('blogger tests (e2e)', () => {
   let post;
   let user;
   let comment;
+  const mokEmailAdapter = {
+    async sendEmail(
+      email: string,
+      subject: string,
+      message: string,
+    ): Promise<void> {
+      return;
+    },
+  };
   const url = '/blogger/blogs';
   const wipeAllDataUrl = '/testing/all-data';
 
@@ -28,7 +38,10 @@ describe('blogger tests (e2e)', () => {
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(EmailAdapter)
+      .useValue(mokEmailAdapter)
+      .compile();
 
     app = moduleFixture.createNestApplication();
     app = createApp(app);
