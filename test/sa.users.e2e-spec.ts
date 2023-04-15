@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel, UserViewModel } from '../src/types and models/models';
 import request from 'supertest';
-import { TestAppModule } from '../src/test.app.module';
 import { disconnect } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AppModule } from '../src/app.module';

@@ -4,10 +4,8 @@ import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { TestAppModule } from '../src/test.app.module';
 import { disconnect } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { MongooseModule } from '@nestjs/mongoose';
 import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('comments tests (e2e)', () => {

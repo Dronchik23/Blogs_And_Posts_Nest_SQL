@@ -6,7 +6,6 @@ import {
 import { useContainer } from 'class-validator';
 import { HttpExceptionFilter } from '../exeption.filter';
 import cookieParser from 'cookie-parser';
-import { TestAppModule } from '../test.app.module';
 import { AppModule } from '../app.module';
 
 export const createApp = (app: INestApplication) => {
