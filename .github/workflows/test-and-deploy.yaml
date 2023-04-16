@@ -15,10 +15,10 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install dependencies
-        run: npm # устанавливаем зависимости
+        run: yarn # устанавливаем зависимости
 
       - name: Test
-        run: npm test # запускаем скрипт тестами
+        run: yarn test # запускаем скрипт тестами
 
   Deploy-Preview:
     runs-on: ubuntu-latest
