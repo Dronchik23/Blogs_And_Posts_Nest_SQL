@@ -63,6 +63,7 @@ export class BlogDBType {
     public createdAt: string,
     public isMembership: boolean,
     public blogOwnerInfo: BlogOwnerInfoType,
+    public banInfo: BanBlogInfoType,
   ) {}
 }
 export class PostDBType {
@@ -96,6 +97,14 @@ export class BanInfoType {
     this.isBanned = isBanned;
     this.banDate = banDate;
     this.banReason = banReason;
+  }
+}
+export class BanBlogInfoType {
+  isBanned: boolean;
+  banDate: string;
+  constructor(isBanned = false, banDate = null) {
+    this.isBanned = isBanned;
+    this.banDate = banDate;
   }
 }
 export class CommentDBType {

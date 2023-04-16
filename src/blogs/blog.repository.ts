@@ -93,4 +93,25 @@ export class BlogsRepository {
 
     return result.matchedCount === 1;
   }
+
+  async changeBanStatusForBlog(
+    blogId: string,
+    isBanned: boolean,
+    banDate: string,
+  ) {
+    debugger;
+    if (isBanned === false) {
+      banDate = null;
+    } // if user unbanned - clear banDate
+    const result = await this.blogsModel.updateOne(
+      { _id: new mongoose.Types.ObjectId(blogId) },
+      {
+        $set: {
+          'banInfo.isBanned': isBanned,
+          'banInfo.banDate': banDate,
+        },
+      },
+    );
+    return result.matchedCount === 1;
+  }
 }

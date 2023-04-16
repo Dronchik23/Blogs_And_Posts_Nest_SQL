@@ -58,6 +58,7 @@ export class BlogsQueryRepository {
       createdAt: blog.createdAt,
       isMembership: blog.isMembership,
       blogOwnerInfo: blog.blogOwnerInfo,
+      banInfo: blog.banInfo,
     }));
   }
 
@@ -130,7 +131,6 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    debugger;
     const filter = this.searchNameTermFilter(searchNameTerm);
 
     const blogs: BlogDBType[] = await this.blogsModel

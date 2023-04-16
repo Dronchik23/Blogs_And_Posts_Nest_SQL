@@ -91,7 +91,7 @@ export class UsersRepository {
     return result.matchedCount === 1;
   }
 
-  async changeBunStatusForUser(
+  async changeBanStatusForUser(
     userId: string,
     isBanned: boolean,
     banReason: string,

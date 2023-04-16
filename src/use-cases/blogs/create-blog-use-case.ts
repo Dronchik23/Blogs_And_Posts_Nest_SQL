@@ -2,7 +2,11 @@ import { BlogsRepository } from '../../blogs/blog.repository';
 import { BlogViewModel, UserViewModel } from '../../types and models/models';
 import { ObjectId } from 'mongodb';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogDBType, BlogOwnerInfoType } from '../../types and models/types';
+import {
+  BanBlogInfoType,
+  BlogDBType,
+  BlogOwnerInfoType,
+} from '../../types and models/types';
 
 export class CreateBlogCommand {
   constructor(
@@ -20,6 +24,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
 
   async execute(command: CreateBlogCommand): Promise<BlogViewModel> {
     const blogOwnerInfo = new BlogOwnerInfoType();
+    const banInfo = new BanBlogInfoType();
     blogOwnerInfo.userId = command.userId;
     blogOwnerInfo.userLogin = command.login;
 
@@ -31,6 +36,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
       new Date().toISOString(),
       false,
       blogOwnerInfo,
+      banInfo,
     );
 
     return await this.blogsRepository.createBlog(newBlog);

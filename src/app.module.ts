@@ -79,10 +79,11 @@ import { RegistrationEmailResendingService } from './use-cases/auth/registration
 import { DeleteAllDevicesExcludeCurrentService } from './use-cases/devices/delete -all-devices-exclude-current-use-case';
 import { LogoutService } from './use-cases/auth/logout-use-case';
 import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
-import { BunUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
+import { BanUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
+import { BanBlogByBlogIdService } from './use-cases/blogs/ban-blog-by-blogId-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -104,9 +105,10 @@ export const useCases = [
   LogoutService,
   DeleteAllDevicesExcludeCurrentService,
   DeleteDeviceByDeviceIdService,
-  BunUserByUserIService,
+  BanUserByUserIService,
   UpdateLikeStatusService,
   UpdatePostService,
+  BanBlogByBlogIdService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,

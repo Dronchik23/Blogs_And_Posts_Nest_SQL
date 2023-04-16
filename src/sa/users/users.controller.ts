@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
-  BunUserInputModel,
+  BanUserInputModel,
   PaginationInputQueryModel,
   UserInputModel,
   UserViewModel,
@@ -25,7 +25,7 @@ import { UsersQueryRepository } from '../../query-repositorys/users-query.reposi
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateUserCommand } from '../../use-cases/users/create-user-use-case';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
-import { BunUserByUserIdCommand } from '../../use-cases/users/bun-user-by-userId-use-case';
+import { BanUserByUserIdCommand } from '../../use-cases/users/bun-user-by-userId-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
 @SkipThrottle()
 @Controller({ path: 'sa/users', scope: Scope.REQUEST })
@@ -93,15 +93,15 @@ export class UsersController {
   @UseGuards(BasicAuthGuard)
   @Put(':userId/ban')
   @HttpCode(204)
-  async bunUserByUserId(
+  async banUserByUserId(
     @Param('userId') userId: string,
-    @Body() bunUserDTO: BunUserInputModel,
+    @Body() banUserDTO: BanUserInputModel,
   ): Promise<boolean> {
     return await this.commandBus.execute(
-      new BunUserByUserIdCommand(
+      new BanUserByUserIdCommand(
         userId,
-        bunUserDTO.isBanned,
-        bunUserDTO.banReason,
+        banUserDTO.isBanned,
+        banUserDTO.banReason,
       ),
     );
   }

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   HttpCode,
@@ -10,7 +11,10 @@ import {
   Scope,
   UseGuards,
 } from '@nestjs/common';
-import { PaginationInputQueryModel } from '../../types and models/models';
+import {
+  BanBlogInputModel,
+  PaginationInputQueryModel,
+} from '../../types and models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BlogsService } from '../../blogs/blog.service';
 import { UsersService } from '../users/users.service';
@@ -19,6 +23,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { BindBlogToUserCommand } from '../../use-cases/blogs/bind-blog-to-user-use-case';
+import { BanBlogByBlogIdCommand } from '../../use-cases/blogs/ban-blog-by-blogId-use-case';
 
 @SkipThrottle()
 @Controller({ path: 'sa/blogs', scope: Scope.REQUEST })
@@ -62,6 +67,18 @@ export class SABlogsController {
       query.sortBy,
       query.sortDirection,
       +query.pageNumber,
+    );
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put(':blogId/ban')
+  @HttpCode(204)
+  async banBlogByBlogId(
+    @Param('blogId') blogId: string,
+    @Body() banBlogDTO: BanBlogInputModel,
+  ): Promise<boolean> {
+    return await this.commandBus.execute(
+      new BanBlogByBlogIdCommand(blogId, banBlogDTO.isBanned),
     );
   }
 }

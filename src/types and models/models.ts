@@ -238,13 +238,17 @@ export class CommentUpdateModel {
   @IsNotEmpty()
   content: string;
 }
-export class BunUserInputModel {
+export class BanUserInputModel {
   @IsBoolean()
   isBanned: boolean;
   @IsString()
   @Matches(/^(?!\s*$).+/)
   @Length(20)
   banReason: string;
+}
+export class BanBlogInputModel {
+  @IsBoolean()
+  isBanned: boolean;
 }
 export class NewPasswordInputModel {
   @IsString()

@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { UsersRepository } from '../../sa/users/users-repository.service';
 
-export class BunUserByUserIdCommand {
+export class BanUserByUserIdCommand {
   constructor(
     public userId: string,
     public isBanned: boolean,
@@ -10,20 +10,20 @@ export class BunUserByUserIdCommand {
   ) {}
 }
 
-@CommandHandler(BunUserByUserIdCommand)
-export class BunUserByUserIService
-  implements ICommandHandler<BunUserByUserIdCommand>
+@CommandHandler(BanUserByUserIdCommand)
+export class BanUserByUserIService
+  implements ICommandHandler<BanUserByUserIdCommand>
 {
   constructor(
     private readonly userQueryRepo: UsersQueryRepository,
     private readonly userRepo: UsersRepository,
   ) {}
 
-  async execute(command: BunUserByUserIdCommand): Promise<boolean> {
+  async execute(command: BanUserByUserIdCommand): Promise<boolean> {
     const user = await this.userQueryRepo.findUserByUserId(command.userId);
     if (user.banInfo.isBanned === command.isBanned) return null;
     const banDate = new Date().toISOString();
-    return await this.userRepo.changeBunStatusForUser(
+    return await this.userRepo.changeBanStatusForUser(
       command.userId,
       command.isBanned,
       command.banReason,

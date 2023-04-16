@@ -3,6 +3,7 @@ import { Document, Types } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import {
   AccountDataType,
+  BanBlogInfoType,
   BanInfoType,
   BlogOwnerInfoType,
   CommentatorInfoType,
@@ -99,6 +100,7 @@ export const TokenBlackListSchema =
   SchemaFactory.createForClass(TokenBlackList);
 
 export type BlogDocument = Blog & Document;
+
 @Schema()
 export class Blog {
   @Prop()
@@ -121,6 +123,9 @@ export class Blog {
 
   @Prop()
   blogOwnerInfo: BlogOwnerInfoType;
+
+  @Prop()
+  banInfo: BanBlogInfoType;
 }
 export const BlogSchema = SchemaFactory.createForClass(Blog);
 
