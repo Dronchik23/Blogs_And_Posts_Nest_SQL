@@ -10,7 +10,7 @@ import { EmailAdapter } from '../src/email/email.adapter';
 import { UsersQueryRepository } from '../src/query-repositorys/users-query.repository';
 import { UserDBType } from '../src/types and models/types';
 import { ObjectId } from 'mongodb';
-//
+
 describe('blogger tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;

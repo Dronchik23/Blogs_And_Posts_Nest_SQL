@@ -87,6 +87,8 @@ import { BanBlogByBlogIdService } from './use-cases/blogs/ban-blog-by-blogId-use
 import { BanUserByUserIdByBloggerService } from './use-cases/blogger/users/ban-user-by-userId-by-blogger-use-case';
 import { BloggerUsersController } from './blogger/blogger.users.controller';
 import { FindBannedUsersByBlogIdService } from './use-cases/blogger/users/find-banned-users-by-blogId-use-case';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 export const useCases = [
   CreateBlogService,
@@ -167,6 +169,7 @@ export const queryRepos = [
     CqrsModule,
   ],
   controllers: [
+    AppController,
     TestingController,
     UsersController,
     BlogsController,
@@ -179,6 +182,7 @@ export const queryRepos = [
     SABlogsController,
   ],
   providers: [
+    AppService,
     UsersService,
     UsersRepository,
     EmailService,
