@@ -1,21 +1,23 @@
 import { ObjectId } from 'mongodb';
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import {
+  BlogDBType,
   CommentDBType,
   LikeDBType,
   LikeStatus,
   PaginationType,
+  PostDBType,
   UserDBType,
 } from '../types and models/types';
-import { CommentViewModel, UserViewModel } from '../types and models/models';
+import { CommentViewModel } from '../types and models/models';
 import {
+  BlogDocument,
   CommentDocument,
-  Like,
   LikeDocument,
+  PostDocument,
 } from '../types and models/schemas';
-import { Comment } from '../types and models/schemas';
 import { UsersQueryRepository } from './users-query.repository';
 import { NotFoundException } from '@nestjs/common';
 
@@ -24,9 +26,14 @@ export class CommentsQueryRepository {
   constructor(
     @InjectModel('Comment')
     private readonly commentsModel: Model<CommentDocument>,
+
     @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
 
     private readonly usersQueryRepo: UsersQueryRepository,
+
+    @InjectModel('Blog') private readonly blogsModel: Model<BlogDocument>,
+
+    @InjectModel('Post') private readonly postsModel: Model<PostDocument>,
   ) {}
 
   private fromCommentDBTypeToCommentViewModel = (
@@ -157,5 +164,74 @@ export class CommentsQueryRepository {
       }
     }
     return comment;
+  }
+
+  async findAllCommentsForBlogOwner(
+    searchNameTerm: string,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    pageNumber: number,
+    userId: string,
+  ): Promise<PaginationType> {
+    debugger;
+    const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
+      (user: UserDBType) => user._id,
+    );
+
+    const filter = {
+      'blogOwnerInfo.userId': userId,
+    };
+
+    const blogs: BlogDBType[] = await this.blogsModel.find(filter);
+
+    const blogIds: string[] = blogs.map((blog: BlogDBType) =>
+      blog._id.toString(),
+    ); // find all blogIds of current user
+
+    const posts: PostDBType[] = await this.postsModel.find({
+      blogId: { $in: blogIds },
+    });
+
+    const postIds: string[] = posts.map((post: PostDBType) =>
+      post._id.toString(),
+    ); // find all postId of current user blogs
+
+    const comments: CommentDBType[] = await this.commentsModel // find all comments for all posts of current user
+      .find({
+        postId: { $in: postIds },
+        'commentatorInfo.userId': { $nin: bannedUserIds },
+      })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .lean();
+
+    const commentsWithLikesInfo = await Promise.all(
+      comments.map(async (comment) => {
+        return this.getLikesInfoForComment(comment, userId);
+      }),
+    );
+
+    const mappedComments =
+      this.fromCommentDBTypeToCommentViewModelWithPagination(
+        commentsWithLikesInfo,
+      );
+
+    const totalCount = await this.commentsModel.countDocuments({
+      postId: { $in: postIds },
+      'commentatorInfo.userId': { $nin: bannedUserIds },
+      'blogOwnerInfo.userId': userId,
+    });
+
+    const pagesCount = Math.ceil(totalCount / +pageSize);
+
+    return {
+      pagesCount: pagesCount === 0 ? 1 : pagesCount, //
+      page: +pageNumber,
+      pageSize: +pageSize,
+      totalCount: totalCount,
+      items: mappedComments,
+    };
   }
 }

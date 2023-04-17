@@ -4,7 +4,6 @@ import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
   BanStatus,
   PaginationType,
-  searchLoginOrEmailTermType,
   UserDBType,
 } from '../types and models/types';
 import { UserViewModel } from '../types and models/models';
@@ -35,9 +34,9 @@ export class UsersQueryRepository {
   }
 
   private searchLoginAndEmailTermFilter(
-    searchLoginTerm: string,
-    searchEmailTerm: string,
-    banStatus: BanStatus,
+    searchLoginTerm?: string,
+    searchEmailTerm?: string,
+    banStatus?: BanStatus,
   ): FilterQuery<UserDBType> {
     const filter: FilterQuery<UserDBType> = {
       $or: [
@@ -150,5 +149,40 @@ export class UsersQueryRepository {
 
   async findBannedUsers(): Promise<UserDBType[]> {
     return this.usersModel.find({ 'banInfo.isBanned': true }).lean();
+  }
+
+  async findBannedUsersByBlogId(
+    blogId: string,
+    pageNumber: number,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    searchLoginTerm: string,
+  ) {
+    const filter = {
+      ...this.searchLoginAndEmailTermFilter(searchLoginTerm),
+      'banInfo.banReason': { $regex: blogId, $options: 'i' },
+    };
+
+    const users: UserDBType[] = await this.usersModel
+      .find(filter)
+      .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .lean();
+
+    const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
+
+    const totalCount = await this.usersModel.countDocuments(filter);
+
+    const pagesCount = Math.ceil(totalCount / pageSize);
+
+    return {
+      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
+      page: +pageNumber,
+      pageSize: +pageSize,
+      totalCount: totalCount,
+      items: mappedUsers,
+    };
   }
 }

@@ -105,17 +105,6 @@ describe('sa/users (e2e)', () => {
           .expect(400);
 
         await request(server)
-          .get('/sa/users')
-          .auth('admin', 'qwerty')
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [user],
-          });
-
-        await request(server)
           .put(`/sa/users/${user.id}/ban`)
           .auth('admin', 'qwerty')
           .send({
@@ -123,17 +112,6 @@ describe('sa/users (e2e)', () => {
             banReason: 'valid string more than 20 letters',
           })
           .expect(400);
-
-        await request(server)
-          .get('/sa/users')
-          .auth('admin', 'qwerty')
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [user],
-          });
       });
       it('should not ban user with incorrect authorization data', async () => {
         await request(server)

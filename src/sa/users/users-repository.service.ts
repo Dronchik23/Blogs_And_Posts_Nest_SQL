@@ -91,7 +91,7 @@ export class UsersRepository {
     return result.matchedCount === 1;
   }
 
-  async changeBanStatusForUser(
+  async changeBanStatusForUserBySA(
     userId: string,
     isBanned: boolean,
     banReason: string,
@@ -107,6 +107,31 @@ export class UsersRepository {
           'banInfo.isBanned': isBanned,
           'banInfo.banDate': banDate,
           'banInfo.banReason': banReason,
+        },
+      },
+    );
+    return result.matchedCount === 1;
+  }
+
+  async changeBanStatusForUserByBlogger(
+    userId: string,
+    isBanned: boolean,
+    banReason: string,
+    banDate: string,
+    blogId: string,
+  ) {
+    if (!isBanned) {
+      banReason = null;
+      banDate = null;
+    } // if user unbanned - clear banReason and banDate
+    const banReasonWithBlogId = banReason ? `${banReason} ${blogId}` : blogId;
+    const result = await this.usersModel.updateOne(
+      { _id: new mongoose.Types.ObjectId(userId) },
+      {
+        $set: {
+          'banInfo.isBanned': isBanned,
+          'banInfo.banDate': banDate,
+          'banInfo.banReason': banReasonWithBlogId,
         },
       },
     );

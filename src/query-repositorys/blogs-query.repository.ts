@@ -162,10 +162,14 @@ export class BlogsQueryRepository {
   }
 
   async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
-    return this.blogsModel
-      .findOne({
-        _id: new ObjectId(blogId),
-      })
-      .lean();
+    try {
+      return this.blogsModel
+        .findOne({
+          _id: new ObjectId(blogId),
+        })
+        .lean();
+    } catch (error) {
+      throw new NotFoundException();
+    }
   }
 }

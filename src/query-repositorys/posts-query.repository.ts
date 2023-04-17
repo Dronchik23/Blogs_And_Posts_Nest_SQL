@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import {
   LikeDBType,
   LikeStatus,
@@ -9,7 +9,7 @@ import {
   PostDBType,
 } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
-import { LikeDocument, Post, PostDocument } from '../types and models/schemas';
+import { LikeDocument, PostDocument } from '../types and models/schemas';
 import { ObjectId } from 'mongodb';
 import { NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';

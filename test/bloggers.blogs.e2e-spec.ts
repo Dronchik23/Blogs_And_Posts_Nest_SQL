@@ -605,7 +605,6 @@ describe('blogger tests (e2e)', () => {
         });
 
         accessToken = loginUser.body.accessToken;
-        console.log('etot', accessToken);
 
         const responseForBlog = await request(server)
           .post('/blogger/blogs')
@@ -1110,6 +1109,116 @@ describe('blogger tests (e2e)', () => {
           .expect(200, {
             ...post,
             title: 'new title',
+          });
+      });
+    });
+    describe('get comments tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+
+        const responseForComment = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ content: 'valid content string more than 20 letters' });
+
+        comment = responseForComment.body;
+        expect(comment).toBeDefined();
+      });
+      it(
+        'should not get comments with incorrect authorization datanp' + '',
+        async () => {
+          await request(server)
+            .get(url + `/comments`)
+            .set('Authorization', `Bearer `)
+            .expect(401);
+        },
+      );
+      it('should get all comments', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user = responseForUser2.body;
+        expect(user).toBeDefined();
+
+        const loginUser2 = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto2.login,
+          password: createUserDto2.password,
+        });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        const responseForComment2 = await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({ content: 'valid content string more than 20 letters' })
+          .expect(201); // create comment with valid data
+
+        const comment2 = responseForComment2.body;
+        expect(comment2).toBeDefined();
+
+        await request(server)
+          .get(url + `/comments`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 2,
+            items: [comment2, comment],
           });
       });
     });

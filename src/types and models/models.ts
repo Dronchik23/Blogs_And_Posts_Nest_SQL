@@ -7,10 +7,7 @@ import {
 } from './types';
 import {
   IsBoolean,
-  IsEmail,
   IsEnum,
-  IsIn,
-  IsInt,
   IsNotEmpty,
   IsString,
   IsUrl,
@@ -21,7 +18,6 @@ import {
 import {
   IsBlogExist,
   IsCodeAlreadyConfirmed,
-  IsCommentExist,
   IsEmailAlreadyConfirmed,
   IsEmailAlreadyExist,
   IsLoginAlreadyExist,
@@ -258,4 +254,22 @@ export class NewPasswordInputModel {
   @IsString()
   @IsNotEmpty()
   recoveryCode: string;
+}
+export class BloggerBanUserInputModel {
+  @IsBoolean()
+  isBanned: boolean;
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(20)
+  banReason: string;
+  @IsString()
+  @IsNotEmpty()
+  @IsBlogExist()
+  blogId: string;
+}
+export class FindBannedUsersByBlogIdInputModel {
+  // @IsString()
+  // @IsNotEmpty()
+  // @IsBlogExist()
+  blogId: string;
 }

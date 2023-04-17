@@ -37,6 +37,7 @@ import { DeletePostCommand } from '../use-cases/posts/delete-post-by-postId-use-
 import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { CurrentUser, CurrentUserId } from '../auth/decorators';
+import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
 
 @SkipThrottle()
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
@@ -47,6 +48,7 @@ export class BloggerBlogsController {
     private readonly commandBus: CommandBus,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) {}
 
   @UseGuards(BearerAuthGuard)
@@ -56,6 +58,23 @@ export class BloggerBlogsController {
     @CurrentUserId() currentUserId,
   ) {
     return await this.blogsQueryRepository.findAllBlogs(
+      query.searchNameTerm,
+      +query.pageSize,
+      query.sortBy,
+      query.sortDirection,
+      +query.pageNumber,
+      currentUserId,
+    );
+  }
+
+  @UseGuards(BearerAuthGuard)
+  @Get('/comments')
+  @HttpCode(200)
+  async getAllCommentsForBlogOwner(
+    @Query() query: PaginationInputQueryModel,
+    @CurrentUserId() currentUserId,
+  ) {
+    return await this.commentsQueryRepository.findAllCommentsForBlogOwner(
       query.searchNameTerm,
       +query.pageSize,
       query.sortBy,
@@ -89,7 +108,6 @@ export class BloggerBlogsController {
     @Body() blogPostCreateDTO: BlogPostInputModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<PostViewModel> {
-    debugger;
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();

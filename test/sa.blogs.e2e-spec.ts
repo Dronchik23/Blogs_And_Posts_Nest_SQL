@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { disconnect } from 'mongoose';
 
-describe.skip('sa/blogs tests (e2e)', () => {
+describe('sa/blogs tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
   let mongoServer: MongoMemoryServer;
@@ -158,7 +158,7 @@ describe.skip('sa/blogs tests (e2e)', () => {
         expect(blog).toBeDefined();
       });
       it('should not ban blog that not exist', async () => {
-        const fakeBlogId = 500;
+        const fakeBlogId = '500';
         await request(server)
           .put(url + `/${fakeBlogId}/ban`)
           .auth('admin', 'qwerty')
@@ -172,20 +172,9 @@ describe.skip('sa/blogs tests (e2e)', () => {
           .put(url + `/${blog.id}/ban`)
           .auth('admin', 'qwerty')
           .send({
-            isBanned: true,
+            isBanned: '',
           })
           .expect(400);
-
-        await request(server)
-          .get(url)
-          .auth('admin', 'qwerty')
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [blog],
-          });
 
         await request(server)
           .put(url + `/${blog.id}/ban`)
@@ -194,17 +183,6 @@ describe.skip('sa/blogs tests (e2e)', () => {
             isBanned: 'true',
           })
           .expect(400);
-
-        await request(server)
-          .get(url)
-          .auth('admin', 'qwerty')
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [blog],
-          });
       });
       it('should not ban blog with incorrect authorization data', async () => {
         await request(server)

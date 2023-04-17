@@ -52,7 +52,7 @@ import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
-import { BloggerBlogsController } from './blogger/blogger.controller';
+import { BloggerBlogsController } from './blogger/blogger.blogs.controller';
 import { SABlogsController } from './sa/blogs/sa.blogs.controller';
 import { CreateBlogService } from './use-cases/blogs/create-blog-use-case';
 import { CqrsModule } from '@nestjs/cqrs';
@@ -79,11 +79,14 @@ import { RegistrationEmailResendingService } from './use-cases/auth/registration
 import { DeleteAllDevicesExcludeCurrentService } from './use-cases/devices/delete -all-devices-exclude-current-use-case';
 import { LogoutService } from './use-cases/auth/logout-use-case';
 import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
-import { BanUserByUserIService } from './use-cases/users/bun-user-by-userId-use-case';
+import { BanUserByUserIdService } from './use-cases/users/bun-user-by-userId-use-case';
 import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
 import { BanBlogByBlogIdService } from './use-cases/blogs/ban-blog-by-blogId-use-case';
+import { BanUserByUserIdByBloggerService } from './use-cases/blogger/users/ban-user-by-userId-by-blogger-use-case';
+import { BloggerUsersController } from './blogger/blogger.users.controller';
+import { FindBannedUsersByBlogIdService } from './use-cases/blogger/users/find-banned-users-by-blogId-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -105,10 +108,12 @@ export const useCases = [
   LogoutService,
   DeleteAllDevicesExcludeCurrentService,
   DeleteDeviceByDeviceIdService,
-  BanUserByUserIService,
+  BanUserByUserIdService,
   UpdateLikeStatusService,
   UpdatePostService,
   BanBlogByBlogIdService,
+  BanUserByUserIdByBloggerService,
+  FindBannedUsersByBlogIdService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,
@@ -169,6 +174,7 @@ export const queryRepos = [
     CommentsController,
     AuthController,
     DevicesController,
+    BloggerUsersController,
     BloggerBlogsController,
     SABlogsController,
   ],
@@ -215,9 +221,10 @@ export class AppModule implements NestModule {
         'posts',
         'comments',
         'sa/users',
+        'sa/blogs',
         'security/devices',
         'blogger/blogs',
-        'sa/blogs',
+        'blogger/users',
       );
   }
 }
