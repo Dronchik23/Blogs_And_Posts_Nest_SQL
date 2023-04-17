@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
 import { disconnect } from 'mongoose';
@@ -237,7 +237,7 @@ describe('comments tests (e2e)', () => {
 
         await request(server)
           .put(`/comments/${comment.id}`)
-          .set('Authorization', ``)
+          .set('Authorization', `invalid`)
           .send({ content: 'valid content whit many letters' })
           .expect(401);
       });
