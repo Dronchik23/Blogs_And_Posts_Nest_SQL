@@ -51,7 +51,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { settings } from './jwt/jwt.settings';
 import { JwtStrategy } from './auth/guards/bearer-auth.guard';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { QueryParamsMiddleware } from './middlewares/query-params-parsing.middleware';
 import { BloggerBlogsController } from './blogger/blogger.blogs.controller';
 import { SABlogsController } from './sa/blogs/sa.blogs.controller';
 import { CreateBlogService } from './use-cases/blogs/create-blog-use-case';
@@ -219,7 +218,7 @@ export const queryRepos = [
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(QueryParamsMiddleware)
+      .apply()
       .forRoutes(
         'blogs',
         'posts',

@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import {
   BanBlogInputModel,
-  PaginationInputQueryModel,
+  BlogPaginationQueryModel,
 } from '../../types and models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BlogsService } from '../../blogs/blog.service';
@@ -60,7 +60,7 @@ export class SABlogsController {
   }
 
   @Get()
-  async getAllBlogs(@Query() query: PaginationInputQueryModel) {
+  async getAllBlogs(@Query() query: BlogPaginationQueryModel) {
     return await this.blogsQueryRepository.findAllBlogsForSA(
       query.searchNameTerm,
       +query.pageSize,

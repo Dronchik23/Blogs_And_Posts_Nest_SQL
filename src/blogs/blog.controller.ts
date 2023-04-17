@@ -8,8 +8,9 @@ import {
 } from '@nestjs/common';
 import { BlogsService } from './blog.service';
 import {
+  BlogPaginationQueryModel,
   BlogViewModel,
-  PaginationInputQueryModel,
+  PostPaginationQueryModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { CurrentUserIdFromToken } from '../auth/decorators';
@@ -33,7 +34,7 @@ export class BlogsController {
   ) {}
   @SkipThrottle()
   @Get()
-  async getAllBlogs(@Query() query: PaginationInputQueryModel) {
+  async getAllBlogs(@Query() query: BlogPaginationQueryModel) {
     return await this.blogsQueryRepository.findAllBlogs(
       query.searchNameTerm,
       +query.pageSize,
@@ -45,7 +46,7 @@ export class BlogsController {
   @Get(':blogId/posts')
   async getPostByBlogId(
     @Param('blogId') blogId: string,
-    @Query() query: PaginationInputQueryModel,
+    @Query() query: PostPaginationQueryModel,
     @CurrentUserIdFromToken() currentUserId: string | null,
   ): Promise<PaginationType> {
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);

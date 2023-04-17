@@ -16,7 +16,6 @@ export class DeleteBlogService implements ICommandHandler<DeleteBlogCommand> {
   ) {}
 
   async execute(command: DeleteBlogCommand): Promise<boolean> {
-    debugger;
     return await this.blogsRepository.deleteBlogByBlogId(command.id);
   }
 }

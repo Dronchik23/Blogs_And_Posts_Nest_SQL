@@ -15,8 +15,8 @@ import {
 import { UsersService } from './users.service';
 import {
   BanUserInputModel,
-  PaginationInputQueryModel,
   UserInputModel,
+  UserPaginationQueryModel,
   UserViewModel,
 } from '../../types and models/models';
 import { PaginationType } from '../../types and models/types';
@@ -39,7 +39,7 @@ export class UsersController {
   @UseGuards(BasicAuthGuard)
   @Get()
   async getAllUsers(
-    @Query() query: PaginationInputQueryModel,
+    @Query() query: UserPaginationQueryModel,
   ): Promise<PaginationType> {
     return this.usersQueryRepository.getAllUsers(
       query.searchLoginTerm,

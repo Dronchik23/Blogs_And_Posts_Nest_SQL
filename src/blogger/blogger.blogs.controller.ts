@@ -15,10 +15,11 @@ import {
 } from '@nestjs/common';
 import {
   BlogInputModel,
+  BlogPaginationQueryModel,
   BlogPostInputModel,
   BlogUpdateModel,
   BlogViewModel,
-  PaginationInputQueryModel,
+  CommentPaginationQueryModel,
   PostUpdateModel,
   PostViewModel,
   UserViewModel,
@@ -54,7 +55,7 @@ export class BloggerBlogsController {
   @UseGuards(BearerAuthGuard)
   @Get()
   async getAllBlogs(
-    @Query() query: PaginationInputQueryModel,
+    @Query() query: BlogPaginationQueryModel,
     @CurrentUserId() currentUserId,
   ) {
     return await this.blogsQueryRepository.findAllBlogs(
@@ -71,7 +72,7 @@ export class BloggerBlogsController {
   @Get('/comments')
   @HttpCode(200)
   async getAllCommentsForBlogOwner(
-    @Query() query: PaginationInputQueryModel,
+    @Query() query: CommentPaginationQueryModel,
     @CurrentUserId() currentUserId,
   ) {
     return await this.commentsQueryRepository.findAllCommentsForBlogOwner(
@@ -170,7 +171,6 @@ export class BloggerBlogsController {
     @Param('blogId') blogId: string,
     @CurrentUserId() currentUserid: string,
   ): Promise<boolean> {
-    debugger;
     const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
       blogId,
     );

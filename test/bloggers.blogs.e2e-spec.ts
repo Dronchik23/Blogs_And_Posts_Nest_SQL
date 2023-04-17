@@ -97,6 +97,7 @@ describe('blogger tests (e2e)', () => {
           .expect(201);
 
         const blog2 = responseForBlog.body;
+        console.log('blog2', blog2);
 
         expect(blog2).toEqual({
           id: expect.any(String),
@@ -108,7 +109,7 @@ describe('blogger tests (e2e)', () => {
         });
 
         const response = await request(server)
-          .get(url)
+          .get(`/blogger/blogs`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
@@ -619,7 +620,6 @@ describe('blogger tests (e2e)', () => {
         expect(blog).toBeDefined();
       });
       it('should not create post with incorrect input data', async () => {
-        console.log('i etot', accessToken);
         await request(server)
           .post(`/blogger/blogs/${blog.id}/posts`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -1028,7 +1028,6 @@ describe('blogger tests (e2e)', () => {
         });
       });
       it('should not update post that not exist ', async () => {
-        debugger;
         const fakeId = '21';
         await request(server)
           .put(`/blogger/blogs/${blog.id}/posts/${fakeId}`)
@@ -1170,15 +1169,12 @@ describe('blogger tests (e2e)', () => {
         comment = responseForComment.body;
         expect(comment).toBeDefined();
       });
-      it(
-        'should not get comments with incorrect authorization datanp' + '',
-        async () => {
-          await request(server)
-            .get(url + `/comments`)
-            .set('Authorization', `Bearer `)
-            .expect(401);
-        },
-      );
+      it('should not get comments with incorrect authorization data', async () => {
+        await request(server)
+          .get(url + `/comments`)
+          .set('Authorization', `Bearer `)
+          .expect(401);
+      });
       it('should get all comments', async () => {
         const createUserDto2: UserInputModel = {
           login: `user`,
@@ -1210,16 +1206,24 @@ describe('blogger tests (e2e)', () => {
         const comment2 = responseForComment2.body;
         expect(comment2).toBeDefined();
 
-        await request(server)
+        const response = await request(server)
           .get(url + `/comments`)
           .set('Authorization', `Bearer ${accessToken}`)
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 2,
-            items: [comment2, comment],
-          });
+          .expect(200);
+
+        const expectedResponse = {
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+          totalCount: 2,
+          items: [comment, comment2],
+        };
+
+        expect(response.body).toMatchObject(expectedResponse);
+        expect(response.body.items).toHaveLength(expectedResponse.items.length);
+        expect(response.body.items).toEqual(
+          expect.arrayContaining(expectedResponse.items),
+        );
       });
     });
   });

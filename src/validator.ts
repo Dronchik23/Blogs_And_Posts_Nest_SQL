@@ -57,6 +57,7 @@ export class IsEmailAlreadyConfirmedConstraint
     const user: UserDBType = await this.usersQueryRepository.findUserByEmail(
       email,
     );
+    debugger;
     const isEmailNotConfirmed =
       user && user.emailConfirmation.isConfirmed === true;
     return !isEmailNotConfirmed;

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import {
   BloggerBanUserInputModel,
-  PaginationInputQueryModel,
+  UserPaginationQueryModel,
 } from '../types and models/models';
 import { PostsService } from '../posts/post.service';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -53,7 +53,7 @@ export class BloggerUsersController {
   @HttpCode(200)
   async findBannedUsersByBlogId(
     @Param('blogId') blogId: string,
-    @Query() query: PaginationInputQueryModel,
+    @Query() query: UserPaginationQueryModel,
   ): Promise<PaginationType> {
     return await this.commandBus.execute(
       new findBannedUsersByBlogIdCommand(

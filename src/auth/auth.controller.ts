@@ -168,7 +168,6 @@ export class AuthController {
   async registrationEmailResending(
     @Body() registrationEmailResendingDTO: RegistrationEmailResendingModel,
   ) {
-    debugger;
     const email = await this.commandBus.execute(
       new RegistrationEmailResendingCommand(
         registrationEmailResendingDTO.email,
