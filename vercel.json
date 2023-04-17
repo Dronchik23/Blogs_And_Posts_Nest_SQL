@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "blogs & posts on nest",
+  "name": "blogs & posts on nest #2",
   "builds": [
     {
       "src": "src/main.ts",
