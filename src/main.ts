@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { JWTPayloadType } from './types and models/types';
 import { createApp } from './helpers/createApp';
 
-//const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 async function bootstrap() {
   const rawApp = await NestFactory.create(AppModule);
