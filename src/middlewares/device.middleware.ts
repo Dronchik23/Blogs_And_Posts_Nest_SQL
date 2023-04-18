@@ -18,7 +18,7 @@ export class DeviceMiddleware {
     if (!device) {
       return res.sendStatus(404);
     }
-
+    //@ts-ignore
     if (device!.userId !== new ObjectId(req.userId)) return res.sendStatus(403);
 
     next();
