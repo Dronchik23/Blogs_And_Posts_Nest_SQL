@@ -1,9 +1,9 @@
-import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { DeviceDocument } from '../types and models/schemas';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class DevicesQueryRepository {
   constructor(
     @InjectModel('Device') private readonly devicesModel: Model<DeviceDocument>,

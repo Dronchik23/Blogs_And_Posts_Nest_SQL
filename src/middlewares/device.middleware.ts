@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { ObjectId } from 'mongodb';
 import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
+import mongoose from 'mongoose';
 
 @Injectable()
 export class DeviceMiddleware {
@@ -18,8 +18,9 @@ export class DeviceMiddleware {
     if (!device) {
       return res.sendStatus(404);
     }
-    //@ts-ignore
-    if (device!.userId !== new ObjectId(req.userId)) return res.sendStatus(403);
+
+    if (device!.userId !== new mongoose.Types.ObjectId(req.userId))
+      return res.sendStatus(403);
 
     next();
   }

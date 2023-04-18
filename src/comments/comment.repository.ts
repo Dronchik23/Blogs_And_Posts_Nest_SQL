@@ -1,17 +1,17 @@
 import { ObjectId } from 'mongodb';
-import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { CommentDBType } from '../types and models/types';
-import { CommentViewModel, UserViewModel } from '../types and models/models';
+import { CommentViewModel } from '../types and models/models';
 import {
   CommentDocument,
   Like,
   LikeDocument,
 } from '../types and models/schemas';
 import { Comment } from '../types and models/schemas';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class CommentsRepository {
   constructor(
     @InjectModel('Comment')

@@ -1,11 +1,11 @@
-import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { PostDBType } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { Post, PostDocument } from '../types and models/schemas';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class PostsRepository {
   constructor(
     @InjectModel('Post') private readonly postsModel: Model<PostDocument>,

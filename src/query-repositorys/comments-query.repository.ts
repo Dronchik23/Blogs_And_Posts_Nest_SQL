@@ -1,5 +1,4 @@
 import { ObjectId } from 'mongodb';
-import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -19,9 +18,9 @@ import {
   PostDocument,
 } from '../types and models/schemas';
 import { UsersQueryRepository } from './users-query.repository';
-import { NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class CommentsQueryRepository {
   constructor(
     @InjectModel('Comment')

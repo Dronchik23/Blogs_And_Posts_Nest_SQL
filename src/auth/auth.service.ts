@@ -1,4 +1,4 @@
-import { injectable } from 'inversify';
+import { Injectable } from '@nestjs/common';
 
-@injectable()
+@Injectable()
 export class AuthService {}

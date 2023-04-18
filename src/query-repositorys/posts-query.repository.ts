@@ -1,4 +1,3 @@
-import { injectable } from 'inversify';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
@@ -11,10 +10,10 @@ import {
 import { PostViewModel } from '../types and models/models';
 import { LikeDocument, PostDocument } from '../types and models/schemas';
 import { ObjectId } from 'mongodb';
-import { NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
 
-@injectable()
+@Injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectModel('Post') private readonly postsModel: Model<PostDocument>,

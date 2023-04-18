@@ -33,7 +33,6 @@ import {
 } from './types and models/schemas';
 import { TestingController } from './testing/testing.controller';
 import { EmailAdapter } from './email/email.adapter';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   IsEmailAlreadyConfirmedConstraint,
@@ -88,6 +87,7 @@ import { BloggerUsersController } from './blogger/blogger.users.controller';
 import { FindBannedUsersByBlogIdService } from './use-cases/blogger/users/find-banned-users-by-blogId-use-case';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 export const useCases = [
   CreateBlogService,

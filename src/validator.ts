@@ -5,14 +5,14 @@ import {
   ValidatorConstraintInterface,
   ValidatorConstraint,
 } from 'class-validator';
-import { injectable } from 'inversify';
 import { UserDBType } from './types and models/types';
 import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
 import { UsersQueryRepository } from './query-repositorys/users-query.repository';
 import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';
+import { Injectable } from '@nestjs/common';
 
 @ValidatorConstraint({ async: true })
-@injectable()
+@Injectable()
 export class isCodeAlreadyConfirmedConstraint
   implements ValidatorConstraintInterface
 {
@@ -47,7 +47,7 @@ export function IsCodeAlreadyConfirmed(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint({ async: true })
-@injectable()
+@Injectable()
 export class IsEmailAlreadyConfirmedConstraint
   implements ValidatorConstraintInterface
 {
@@ -80,7 +80,7 @@ export function IsEmailAlreadyConfirmed(validationOptions?: ValidationOptions) {
   };
 }
 @ValidatorConstraint({ async: true })
-@injectable()
+@Injectable()
 export class IsEmailAlreadyExistConstraint
   implements ValidatorConstraintInterface
 {
@@ -108,7 +108,7 @@ export function IsEmailAlreadyExist(validationOptions?: ValidationOptions) {
   };
 }
 @ValidatorConstraint({ async: true })
-@injectable()
+@Injectable()
 export class IsLoginAlreadyExistConstraint
   implements ValidatorConstraintInterface
 {
@@ -137,7 +137,7 @@ export function IsLoginAlreadyExist(validationOptions?: ValidationOptions) {
 }
 
 @ValidatorConstraint({ async: true })
-@injectable()
+@Injectable()
 export class isBlogExistConstraint implements ValidatorConstraintInterface {
   constructor(private readonly blogsQueryRepository: BlogsQueryRepository) {}
   async validate(blogId: string) {
@@ -167,7 +167,7 @@ export function IsBlogExist(validationOptions?: ValidationOptions) {
   };
 }
 @ValidatorConstraint({ async: true })
-@injectable()
+@Injectable()
 export class isCommentExistConstraint implements ValidatorConstraintInterface {
   constructor(
     private readonly commentsQueryRepository: CommentsQueryRepository,
