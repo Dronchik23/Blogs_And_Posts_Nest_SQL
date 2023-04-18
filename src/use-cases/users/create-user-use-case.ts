@@ -50,7 +50,7 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
     const result = await this.usersRepository.createUser(user);
 
     try {
-      this.emailService.sendEmailRegistrationMessage(user);
+      await this.emailService.sendEmailRegistrationMessage(user);
     } catch (err) {
       console.error(err);
     }

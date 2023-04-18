@@ -42,8 +42,6 @@ import {
   isBlogExistConstraint,
   isCommentExistConstraint,
 } from './validator';
-import { useContainer } from 'class-validator';
-import { Container } from 'typedi';
 import { BasicAuthStrategy } from './auth/guards/basic-auth.guard';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
@@ -138,8 +136,8 @@ export const queryRepos = [
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({
-      ttl: 10000,
-      limit: 500000,
+      ttl: 10,
+      limit: 5,
     }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },
@@ -231,5 +229,3 @@ export class AppModule implements NestModule {
       );
   }
 }
-
-useContainer(Container);

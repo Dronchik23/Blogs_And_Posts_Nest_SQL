@@ -11,11 +11,7 @@ import {
 } from '@nestjs/common';
 import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
-import {
-  CurrentUserId,
-  CurrentUserIdFromToken,
-  JwtPayload,
-} from '../auth/decorators';
+import { CurrentUserId, JwtPayload } from '../auth/decorators';
 import { Device } from '../types and models/schemas';
 import { SkipThrottle } from '@nestjs/throttler';
 import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
@@ -35,10 +31,7 @@ export class DevicesController {
   @UseGuards(RefreshTokenGuard)
   @Get()
   async getAllDevices(@CurrentUserId() currentUserId) {
-    const allDevices = await this.devicesQueryService.findAllDevicesByUserId(
-      currentUserId,
-    );
-    return allDevices;
+    return await this.devicesQueryService.findAllDevicesByUserId(currentUserId);
   }
 
   @UseGuards(RefreshTokenGuard)
