@@ -161,7 +161,7 @@ export class UsersQueryRepository {
   ) {
     const filter = {
       ...this.searchLoginAndEmailTermFilter(searchLoginTerm),
-      'banInfo.banReason': { $regex: blogId, $options: 'i' },
+      'banInfo.blogId': blogId,
     };
 
     const users: UserDBType[] = await this.usersModel

@@ -12,6 +12,7 @@ import { LikeDocument, PostDocument } from '../types and models/schemas';
 import { ObjectId } from 'mongodb';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
+import { BlogsQueryRepository } from './blogs-query.repository';
 
 @Injectable()
 export class PostsQueryRepository {
@@ -19,6 +20,7 @@ export class PostsQueryRepository {
     @InjectModel('Post') private readonly postsModel: Model<PostDocument>,
     @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
     private readonly usersQueryRepo: UsersQueryRepository,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
   private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
@@ -65,6 +67,7 @@ export class PostsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
+    debugger;
     const posts: PostDBType[] = await this.postsModel
       .find({})
       .skip((pageNumber - 1) * pageSize)
@@ -72,11 +75,20 @@ export class PostsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    for (const post of posts) {
+    const bannedBlogIds = (
+      await this.blogsQueryRepository.findBannedBlogs()
+    ).map((u) => u._id.toString());
+
+    const sortedPosts = posts.filter((post: PostDBType) => {
+      return !bannedBlogIds.includes(post.blogId);
+    });
+
+    for (const post of sortedPosts) {
       await this.getLikesInfoForPost(post, userId);
     }
 
-    const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
+    const mappedPosts =
+      this.fromPostDBTypeToPostViewModelWithPagination(sortedPosts);
 
     const totalCount = await this.postsModel.countDocuments();
 
@@ -96,6 +108,7 @@ export class PostsQueryRepository {
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
+    debugger;
     try {
       const post: PostDBType = await this.postsModel
         .findOne({

@@ -98,7 +98,8 @@ export class UsersRepository {
     banDate: string,
   ) {
     if (isBanned === false) {
-      (banReason = null), (banDate = null);
+      banReason = null;
+      banDate = null;
     } // if user unbanned - clear banReason and banDate
     const result = await this.usersModel.updateOne(
       { _id: new mongoose.Types.ObjectId(userId) },
@@ -124,14 +125,14 @@ export class UsersRepository {
       banReason = null;
       banDate = null;
     } // if user unbanned - clear banReason and banDate
-    const banReasonWithBlogId = banReason ? `${banReason} ${blogId}` : blogId;
     const result = await this.usersModel.updateOne(
       { _id: new mongoose.Types.ObjectId(userId) },
       {
         $set: {
           'banInfo.isBanned': isBanned,
           'banInfo.banDate': banDate,
-          'banInfo.banReason': banReasonWithBlogId,
+          'banInfo.banReason': banReason,
+          'banInfo.blogId': blogId,
         },
       },
     );

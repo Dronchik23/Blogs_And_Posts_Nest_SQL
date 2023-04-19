@@ -62,7 +62,7 @@ export class BlogsQueryRepository {
     }));
   }
 
-  async findAllBlogs(
+  async findAllBlogsForBlogger(
     searchNameTerm: string,
     pageSize: number,
     sortBy: string,
@@ -73,6 +73,39 @@ export class BlogsQueryRepository {
     const filter = {
       ...this.searchNameTermFilter(searchNameTerm),
       'blogOwnerInfo.userId': userId,
+    };
+
+    const blogs: BlogDBType[] = await this.blogsModel
+      .find(filter)
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize)
+      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
+      .lean();
+
+    const totalCount = await this.blogsModel.countDocuments(filter);
+
+    const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
+
+    const pagesCount = Math.ceil(totalCount / pageSize);
+
+    return {
+      pagesCount: pagesCount === 0 ? 1 : pagesCount,
+      page: +pageNumber,
+      pageSize: +pageSize,
+      totalCount: totalCount,
+      items: mappedBlogs,
+    };
+  }
+
+  async findAllBlogs(
+    searchNameTerm: string,
+    pageSize: number,
+    sortBy: string,
+    sortDirection: string,
+    pageNumber: number,
+  ): Promise<PaginationType> {
+    const filter = {
+      ...this.searchNameTermFilter(searchNameTerm),
     };
 
     const blogs: BlogDBType[] = await this.blogsModel
@@ -171,5 +204,9 @@ export class BlogsQueryRepository {
     } catch (error) {
       throw new NotFoundException();
     }
+  }
+
+  async findBannedBlogs(): Promise<BlogDBType[]> {
+    return this.blogsModel.find({ 'banInfo.isBanned': true }).lean();
   }
 }

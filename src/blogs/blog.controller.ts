@@ -32,6 +32,7 @@ export class BlogsController {
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
+
   @SkipThrottle()
   @Get()
   async getAllBlogs(@Query() query: BlogPaginationQueryModel) {
@@ -43,6 +44,7 @@ export class BlogsController {
       +query.pageNumber,
     );
   }
+
   @Get(':blogId/posts')
   async getPostByBlogId(
     @Param('blogId') blogId: string,

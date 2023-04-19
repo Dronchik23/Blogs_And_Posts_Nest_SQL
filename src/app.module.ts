@@ -86,6 +86,7 @@ import { FindBannedUsersByBlogIdService } from './use-cases/blogger/users/find-b
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { MongooseConfigService } from './connect-config';
 
 export const useCases = [
   CreateBlogService,
@@ -127,17 +128,12 @@ export const queryRepos = [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        console.log(configService.get('MONGO_URI'), ' 123');
-        return {
-          uri: configService.get('MONGO_URI'),
-        };
-      },
+      useClass: MongooseConfigService,
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({
-      ttl: 100,
-      limit: 500,
+      ttl: 10000,
+      limit: 50000,
     }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },

@@ -97,7 +97,6 @@ describe('blogger tests (e2e)', () => {
           .expect(201);
 
         const blog2 = responseForBlog.body;
-        console.log('blog2', blog2);
 
         expect(blog2).toEqual({
           id: expect.any(String),

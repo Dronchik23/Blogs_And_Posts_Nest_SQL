@@ -58,7 +58,7 @@ export class BloggerBlogsController {
     @Query() query: BlogPaginationQueryModel,
     @CurrentUserId() currentUserId,
   ) {
-    return await this.blogsQueryRepository.findAllBlogs(
+    return await this.blogsQueryRepository.findAllBlogsForBlogger(
       query.searchNameTerm,
       +query.pageSize,
       query.sortBy,

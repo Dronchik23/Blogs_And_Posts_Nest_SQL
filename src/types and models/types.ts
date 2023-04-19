@@ -5,7 +5,6 @@ import {
   PostViewModel,
   UserViewModel,
 } from './models';
-import mongoose from 'mongoose';
 
 // types
 export type PaginationType = {
@@ -20,14 +19,8 @@ export type PaginationType = {
     | CommentViewModel[]
     | DeviceDBType[];
 };
-export type ErrorType = {
-  errorsMessages: [{ message: string; field: string }];
-};
 export type TokenType = {
   accessToken: string;
-  refreshToken: string;
-};
-export type TokenBlackListType = {
   refreshToken: string;
 };
 export type JWTPayloadType = {
@@ -35,12 +28,6 @@ export type JWTPayloadType = {
   deviceId: string;
   iat: number;
 };
-export type AttemptsType = {
-  ip: string;
-  url: string;
-  attemptsTime: string;
-};
-export type searchLoginOrEmailTermType = string | undefined;
 
 //enums
 export enum LikeStatus {
@@ -92,6 +79,7 @@ export class BanInfoType {
   isBanned: boolean;
   banDate: string;
   banReason: string;
+  blogId?: string;
 
   constructor(isBanned = false, banDate = null, banReason = null) {
     this.isBanned = isBanned;

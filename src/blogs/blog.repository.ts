@@ -99,7 +99,6 @@ export class BlogsRepository {
     isBanned: boolean,
     banDate: string,
   ) {
-    debugger;
     if (isBanned === false) {
       banDate = null;
     } // if user unbanned - clear banDate

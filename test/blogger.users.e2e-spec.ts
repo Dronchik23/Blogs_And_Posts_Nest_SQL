@@ -112,7 +112,8 @@ describe('blogger tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
             isBanned: true,
-            banReason: '',
+            banReason: 'not20string',
+            blogId: blog.id,
           })
           .expect(400);
 
@@ -120,7 +121,7 @@ describe('blogger tests (e2e)', () => {
           .put(url + `/${user.id}/ban`)
           .set('Authorization', `Bearer ${accessToken}`)
           .send({
-            isBanned: 'true',
+            isBanned: '',
             banReason: 'valid string more than 20 letters',
             blogId: blog.id,
           })
