@@ -19,11 +19,9 @@ export class isCodeAlreadyConfirmedConstraint
   constructor(private readonly usersQueryRepository: UsersQueryRepository) {}
 
   async validate(code: string): Promise<boolean> {
-    console.log('code', code);
     const user = await this.usersQueryRepository.findUserByConfirmationCode(
       code,
     );
-    console.log('user validator', user);
     const isEmailNotConfirmed =
       user && user.emailConfirmation.isConfirmed === true;
     return !isEmailNotConfirmed;
@@ -33,7 +31,6 @@ export class isCodeAlreadyConfirmedConstraint
     return 'Confirmation code already confirmed';
   }
 }
-
 export function IsCodeAlreadyConfirmed(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
     registerDecorator({
@@ -67,7 +64,6 @@ export class IsEmailAlreadyConfirmedConstraint
     return 'Email is already confirmed';
   }
 }
-
 export function IsEmailAlreadyConfirmed(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
     registerDecorator({
@@ -79,6 +75,7 @@ export function IsEmailAlreadyConfirmed(validationOptions?: ValidationOptions) {
     });
   };
 }
+
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class IsEmailAlreadyExistConstraint
@@ -95,7 +92,6 @@ export class IsEmailAlreadyExistConstraint
     return 'Email already exists';
   }
 }
-
 export function IsEmailAlreadyExist(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
     registerDecorator({
@@ -107,6 +103,7 @@ export function IsEmailAlreadyExist(validationOptions?: ValidationOptions) {
     });
   };
 }
+
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class IsLoginAlreadyExistConstraint
@@ -123,7 +120,6 @@ export class IsLoginAlreadyExistConstraint
     return 'Login already exists';
   }
 }
-
 export function IsLoginAlreadyExist(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
     registerDecorator({
@@ -143,9 +139,7 @@ export class isBlogExistConstraint implements ValidatorConstraintInterface {
   async validate(blogId: string) {
     try {
       const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
-      if (blog) {
-        return true;
-      } else return false;
+      return !!blog;
     } catch (e) {
       return false;
     }
@@ -166,6 +160,7 @@ export function IsBlogExist(validationOptions?: ValidationOptions) {
     });
   };
 }
+
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class isCommentExistConstraint implements ValidatorConstraintInterface {
@@ -188,6 +183,7 @@ export class isCommentExistConstraint implements ValidatorConstraintInterface {
     return 'comment does not exist';
   }
 }
+
 export function IsCommentExist(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
     registerDecorator({

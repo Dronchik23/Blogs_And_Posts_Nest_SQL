@@ -75,6 +75,7 @@ export class UsersController {
       ),
     );
   }
+
   @UseGuards(BasicAuthGuard)
   @Delete(':userId')
   @HttpCode(204)

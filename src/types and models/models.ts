@@ -9,7 +9,6 @@ import {
   IsBoolean,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   IsUrl,
@@ -24,27 +23,11 @@ import {
   IsEmailAlreadyExist,
   IsLoginAlreadyExist,
 } from '../validator';
-import { Transform } from 'class-transformer';
-
-// export class PaginationInputQueryModel {
-//   constructor() {
-//     this.sortBy = 'createdAt';
-//     this.sortDirection = 'desc';
-//   }
-//   @
-//   searchNameTerm?: string;
-//   pageSize: number;
-//   sortBy: string;
-//   sortDirection: string;
-//   pageNumber: number;
-//   searchLoginTerm?: string;
-//   searchEmailTerm?: string;
-//   banStatus: BanStatus;
-// }
+import { Transform, Type } from 'class-transformer';
 
 export class DefaultPaginationData {
+  @Type(() => Number)
   @IsOptional()
-  @IsNumber()
   pageSize = 10;
   @IsOptional()
   @IsString()
@@ -55,13 +38,8 @@ export class DefaultPaginationData {
     return params.value === 'asc' ? 'asc' : 'desc';
   })
   sortDirection: 'asc' | 'desc' = 'desc';
-  @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
   pageNumber: number | null = 1;
-  @IsOptional()
-  @IsString()
-  //@IsEnum(BanStatus)
-  banStatus: BanStatus;
 }
 
 export class UserPaginationQueryModel extends DefaultPaginationData {
@@ -71,6 +49,10 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
   searchEmailTerm: null;
+  @IsOptional()
+  @IsString()
+  @IsEnum(BanStatus)
+  banStatus: BanStatus;
 }
 export class BlogPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()

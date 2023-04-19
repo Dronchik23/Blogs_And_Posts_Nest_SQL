@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { UsersController } from './sa/users/users.controller';
 import { UsersRepository } from './sa/users/users-repository.service';
 import { UsersService } from './sa/users/users.service';
@@ -136,8 +136,8 @@ export const queryRepos = [
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({
-      ttl: 100,
-      limit: 50,
+      ttl: 10,
+      limit: 5,
     }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },
@@ -213,19 +213,4 @@ export const queryRepos = [
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply()
-      .forRoutes(
-        'blogs',
-        'posts',
-        'comments',
-        'sa/users',
-        'sa/blogs',
-        'security/devices',
-        'blogger/blogs',
-        'blogger/users',
-      );
-  }
-}
+export class AppModule {}
