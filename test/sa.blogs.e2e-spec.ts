@@ -215,10 +215,33 @@ describe('sa/blogs tests (e2e)', () => {
           .auth('admin', 'qwerty');
 
         const { items } = responseForBlog2.body;
-        console.log(items);
+        console.log('items', items);
         const bannedBlog = items.find((item) => item.banInfo.isBanned);
 
+        expect(responseForBlog2.body);
+
         expect(bannedBlog).toBeDefined();
+      });
+      it('should unban blog with correct data', async () => {
+        await request(server)
+          .put(url + `/${blog.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: false,
+          })
+          .expect(204);
+
+        const responseForBlog2 = await request(server)
+          .get(url)
+          .auth('admin', 'qwerty');
+
+        const { items } = responseForBlog2.body;
+        console.log('items', items);
+        const bannedBlog = items.find((item) => item.banInfo.isBanned);
+
+        expect(responseForBlog2.body);
+
+        expect(bannedBlog).toBeUndefined();
       });
     });
   });

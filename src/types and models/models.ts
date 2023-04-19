@@ -31,7 +31,7 @@ export class DefaultPaginationData {
   pageSize = 10;
   @IsOptional()
   @IsString()
-  sortBy: string;
+  sortBy = 'createdAt';
   @IsOptional()
   @IsString()
   @Transform((params) => {
@@ -45,10 +45,10 @@ export class DefaultPaginationData {
 export class UserPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
-  searchLoginTerm: null;
+  searchLoginTerm: string | null = null;
   @IsOptional()
   @IsString()
-  searchEmailTerm: null;
+  searchEmailTerm: string | null = null;
   @IsOptional()
   @IsString()
   @IsEnum(BanStatus)
@@ -57,7 +57,7 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
 export class BlogPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
-  searchNameTerm: null;
+  searchNameTerm: string | null = null;
 }
 export class CommentPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()

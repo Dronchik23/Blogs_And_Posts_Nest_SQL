@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import { BlogDBType, PaginationType } from '../types and models/types';
+import {
+  BlogDBType,
+  PaginationType,
+  PostDBType,
+} from '../types and models/types';
 import { BlogViewModel, SABlogViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
@@ -115,9 +119,16 @@ export class BlogsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const totalCount = await this.blogsModel.countDocuments(filter);
+    const bannedBlogIds = (await this.findBannedBlogs()).map((u) => u._id);
 
-    const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
+    const sortedBlogs = blogs.filter((blog: BlogDBType) => {
+      return !bannedBlogIds.includes(blog._id);
+    });
+
+    const totalCount = await this.blogsModel.countDocuments(sortedBlogs);
+
+    const mappedBlogs =
+      this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 

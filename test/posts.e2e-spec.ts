@@ -54,7 +54,7 @@ describe('AppController (e2e)', () => {
   });
 
   describe('posts', () => {
-    describe('get posts tests', () => {
+    describe('get all posts tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllDataUrl);
 
@@ -146,6 +146,90 @@ describe('AppController (e2e)', () => {
           totalCount: 1,
           items: [],
         });
+      });
+    });
+    describe('get post by postId tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllDataUrl);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server).post('/auth/login').send({
+          loginOrEmail: createUserDto.login,
+          password: createUserDto.password,
+        });
+
+        accessToken = loginUser.body.accessToken;
+
+        const responseForBlog = await request(server)
+          .post('/blogger/blogs')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            name: 'name',
+            websiteUrl: 'https://youtube.com',
+            description: 'valid description',
+          });
+
+        blog = responseForBlog.body;
+        expect(blog).toBeDefined();
+
+        const responseForPost = await request(server)
+          .post(`/blogger/blogs/${blog.id}/posts`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            title: 'valid',
+            shortDescription: 'valid',
+            content: 'valid',
+            blogId: blog.id,
+          });
+
+        post = responseForPost.body;
+        expect(post).toBeDefined();
+      });
+      it('should get post by postId', async () => {
+        await request(server)
+          .get(postsUrl + `/${post.id}`)
+          .expect(200, post);
+      });
+      it('should return 404 for not existing post', async () => {
+        await request(server)
+          .get(postsUrl + -1)
+          .expect(404);
+      });
+      it('Should not return banned blog post', async () => {
+        await request(server)
+          .put('/sa/blogs' + `/${blog.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+          })
+          .expect(204);
+
+        const responseForBlog2 = await request(server)
+          .get('/sa/blogs')
+          .auth('admin', 'qwerty');
+
+        const { items } = responseForBlog2.body;
+
+        const bannedBlog = items.find((item) => item.banInfo.isBanned);
+
+        expect(bannedBlog).toBeDefined();
+
+        await request(server)
+          .get(postsUrl + `/${post.id}`)
+          .expect(404);
       });
     });
     describe('create comment tests', () => {

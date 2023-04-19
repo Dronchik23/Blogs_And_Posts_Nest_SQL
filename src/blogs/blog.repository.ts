@@ -102,6 +102,7 @@ export class BlogsRepository {
     if (isBanned === false) {
       banDate = null;
     } // if user unbanned - clear banDate
+    debugger;
     const result = await this.blogsModel.updateOne(
       { _id: new mongoose.Types.ObjectId(blogId) },
       {

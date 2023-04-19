@@ -89,7 +89,7 @@ export class BanInfoType {
 }
 export class BanBlogInfoType {
   isBanned: boolean;
-  banDate: string;
+  banDate: string | null;
   constructor(isBanned = false, banDate = null) {
     this.isBanned = isBanned;
     this.banDate = banDate;

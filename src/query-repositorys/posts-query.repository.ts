@@ -40,6 +40,7 @@ export class PostsQueryRepository {
       },
     };
   };
+
   private fromPostDBTypeToPostViewModelWithPagination = (
     posts: PostDBType[],
   ): PostViewModel[] => {
@@ -60,6 +61,12 @@ export class PostsQueryRepository {
     }));
   };
 
+  private async getBannedBlogIds(): Promise<string[]> {
+    const bannedBlogs = await this.blogsQueryRepository.findBannedBlogs();
+    const bannedBlogIds = bannedBlogs.map((u) => u._id.toString());
+    return bannedBlogIds;
+  }
+
   async findAllPosts(
     pageSize: number,
     sortBy: string,
@@ -75,9 +82,7 @@ export class PostsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const bannedBlogIds = (
-      await this.blogsQueryRepository.findBannedBlogs()
-    ).map((u) => u._id.toString());
+    const bannedBlogIds = await this.getBannedBlogIds();
 
     const sortedPosts = posts.filter((post: PostDBType) => {
       return !bannedBlogIds.includes(post.blogId);
@@ -108,13 +113,18 @@ export class PostsQueryRepository {
     postId: string,
     userId?: string,
   ): Promise<PostViewModel | null> {
-    debugger;
     try {
       const post: PostDBType = await this.postsModel
         .findOne({
           _id: new ObjectId(postId),
         })
         .lean();
+
+      const bannedBlogIds = await this.getBannedBlogIds();
+
+      if (bannedBlogIds.includes(post.blogId)) {
+        throw new NotFoundException();
+      }
 
       const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
 
