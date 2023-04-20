@@ -16,7 +16,11 @@ export class UsersRepository {
       login: user.accountData.login,
       email: user.accountData.email,
       createdAt: user.accountData.createdAt,
-      banInfo: user.banInfo,
+      banInfo: {
+        isBanned: user.banInfo.isBanned,
+        banDate: user.banInfo.banDate,
+        banReason: user.banInfo.banReason,
+      },
     };
   }
 

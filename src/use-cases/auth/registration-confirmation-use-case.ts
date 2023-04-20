@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
-import { UsersRepository } from '../../sa/users/users-repository.service';
+import { UsersRepository } from '../../sa/users/users-repository';
 
 export class RegistrationConfirmationCommand {
   constructor(public code: string) {}

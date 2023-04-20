@@ -10,7 +10,7 @@ import {
   UserDBType,
 } from '../../types and models/types';
 import { ObjectId } from 'mongodb';
-import { UsersRepository } from '../../sa/users/users-repository.service';
+import { UsersRepository } from '../../sa/users/users-repository';
 import { UserViewModel } from '../../types and models/models';
 import { EmailService } from '../../email/email.service';
 

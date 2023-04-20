@@ -66,6 +66,7 @@ export class PostsController {
       CurrentUserId,
     );
   }
+
   @SkipThrottle()
   @UseGuards(BearerAuthGuard)
   @Post(':postId/comments')

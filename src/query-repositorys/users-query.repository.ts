@@ -8,6 +8,7 @@ import {
 } from '../types and models/types';
 import { UserViewModel } from '../types and models/models';
 import { UserDocument } from '../types and models/schemas';
+import { ObjectId } from 'mongodb';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersQueryRepository {
@@ -184,5 +185,9 @@ export class UsersQueryRepository {
       totalCount: totalCount,
       items: mappedUsers,
     };
+  }
+
+  async findUserWithDBType(userId: string) {
+    return this.usersModel.findOne({ _id: new ObjectId(userId) }).lean();
   }
 }

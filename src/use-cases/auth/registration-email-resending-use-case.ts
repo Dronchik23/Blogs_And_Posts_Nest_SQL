@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { randomUUID } from 'crypto';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
-import { UsersRepository } from '../../sa/users/users-repository.service';
+import { UsersRepository } from '../../sa/users/users-repository';
 import { EmailService } from '../../email/email.service';
 
 export class RegistrationEmailResendingCommand {

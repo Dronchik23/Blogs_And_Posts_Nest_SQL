@@ -86,9 +86,16 @@ export class BlogsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const totalCount = await this.blogsModel.countDocuments(filter);
+    const bannedBlogIds = await this.getBannedBlogsIds();
 
-    const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
+    const sortedBlogs = blogs.filter((blog) => {
+      return !bannedBlogIds.includes(blog._id);
+    });
+
+    const totalCount = await this.blogsModel.countDocuments(sortedBlogs);
+
+    const mappedBlogs =
+      this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -119,9 +126,9 @@ export class BlogsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const bannedBlogIds = (await this.findBannedBlogs()).map((u) => u._id);
+    const bannedBlogIds = await this.getBannedBlogsIds();
 
-    const sortedBlogs = blogs.filter((blog: BlogDBType) => {
+    const sortedBlogs = blogs.filter((blog) => {
       return !bannedBlogIds.includes(blog._id);
     });
 
@@ -217,7 +224,12 @@ export class BlogsQueryRepository {
     }
   }
 
-  async findBannedBlogs(): Promise<BlogDBType[]> {
-    return this.blogsModel.find({ 'banInfo.isBanned': true }).lean();
+  async getBannedBlogsIds(): Promise<ObjectId[]> {
+    const bannedBlogs: BlogDBType[] = await this.blogsModel
+      .find({ 'banInfo.isBanned': true })
+      .lean();
+
+    const bannedBlogIds = bannedBlogs.map((u) => u._id);
+    return bannedBlogIds;
   }
 }

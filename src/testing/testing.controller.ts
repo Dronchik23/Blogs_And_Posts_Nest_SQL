@@ -1,6 +1,6 @@
 import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blog.repository';
-import { UsersRepository } from '../sa/users/users-repository.service';
+import { UsersRepository } from '../sa/users/users-repository';
 import { DevicesRepository } from '../devices/device.repository';
 import { CommentsRepository } from '../comments/comment.repository';
 import { LikesRepository } from '../likes/like.repository';

@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../sa/users/users-repository.service';
+import { UsersRepository } from '../../sa/users/users-repository';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';

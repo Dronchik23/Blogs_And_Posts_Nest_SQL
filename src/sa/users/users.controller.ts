@@ -27,6 +27,7 @@ import { CreateUserCommand } from '../../use-cases/users/create-user-use-case';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
 import { BanUserByUserIdBySACommand } from '../../use-cases/users/bun-user-by-userId-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
+
 @SkipThrottle()
 @Controller({ path: 'sa/users', scope: Scope.REQUEST })
 export class UsersController {

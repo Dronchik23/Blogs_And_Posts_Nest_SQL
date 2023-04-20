@@ -61,12 +61,6 @@ export class PostsQueryRepository {
     }));
   };
 
-  private async getBannedBlogIds(): Promise<string[]> {
-    const bannedBlogs = await this.blogsQueryRepository.findBannedBlogs();
-    const bannedBlogIds = bannedBlogs.map((u) => u._id.toString());
-    return bannedBlogIds;
-  }
-
   async findAllPosts(
     pageSize: number,
     sortBy: string,
@@ -82,10 +76,10 @@ export class PostsQueryRepository {
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const bannedBlogIds = await this.getBannedBlogIds();
+    const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
 
     const sortedPosts = posts.filter((post: PostDBType) => {
-      return !bannedBlogIds.includes(post.blogId);
+      return !bannedBlogIds.includes(new ObjectId(post.blogId));
     });
 
     for (const post of sortedPosts) {
@@ -120,9 +114,9 @@ export class PostsQueryRepository {
         })
         .lean();
 
-      const bannedBlogIds = await this.getBannedBlogIds();
+      const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
 
-      if (bannedBlogIds.includes(post.blogId)) {
+      if (bannedBlogIds.includes(new ObjectId(post.blogId))) {
         throw new NotFoundException();
       }
 

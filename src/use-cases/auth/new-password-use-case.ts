@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UsersRepository } from '../../sa/users/users-repository.service';
+import { UsersRepository } from '../../sa/users/users-repository';
 import * as bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 

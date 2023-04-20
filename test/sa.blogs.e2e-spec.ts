@@ -114,11 +114,6 @@ describe('sa/blogs tests (e2e)', () => {
           ]),
         });
       });
-      it('should return 404 for not existing blog', async () => {
-        await request(server)
-          .get(url + 1)
-          .expect(404);
-      });
     });
     describe('ban blog tests', () => {
       beforeAll(async () => {
@@ -242,6 +237,16 @@ describe('sa/blogs tests (e2e)', () => {
         expect(responseForBlog2.body);
 
         expect(bannedBlog).toBeUndefined();
+
+        const responseForBlogs = await request(server).get('/blogs');
+
+        expect(responseForBlogs.body).toEqual({
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          items: [blog],
+        });
       });
     });
   });

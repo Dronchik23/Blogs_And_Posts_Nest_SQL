@@ -21,6 +21,7 @@ import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { BanUserByUserIdByBloggerCommand } from '../use-cases/blogger/users/ban-user-by-userId-by-blogger-use-case';
 import { findBannedUsersByBlogIdCommand } from '../use-cases/blogger/users/find-banned-users-by-blogId-use-case';
 import { PaginationType } from '../types and models/types';
+import { CurrentUserId } from '../auth/decorators';
 
 @SkipThrottle()
 @Controller({ path: 'blogger/users', scope: Scope.REQUEST })
@@ -54,9 +55,11 @@ export class BloggerUsersController {
   async findBannedUsersByBlogId(
     @Param('blogId') blogId: string,
     @Query() query: UserPaginationQueryModel,
+    @CurrentUserId() currentUserId: string,
   ): Promise<PaginationType> {
     return await this.commandBus.execute(
       new findBannedUsersByBlogIdCommand(
+        currentUserId,
         blogId,
         +query.pageNumber,
         +query.pageSize,

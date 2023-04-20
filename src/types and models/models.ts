@@ -1,9 +1,9 @@
 import {
-  BanInfoType,
   BanStatus,
   BlogOwnerInfoType,
   ExtendedLikesInfoType,
   LikeStatus,
+  UserBanInfoType,
 } from './types';
 import {
   IsBoolean,
@@ -62,7 +62,7 @@ export class BlogPaginationQueryModel extends DefaultPaginationData {
 export class CommentPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
-  searchNameTerm: null;
+  searchNameTerm: string | null = null;
 }
 export class PostPaginationQueryModel extends DefaultPaginationData {}
 
@@ -116,7 +116,7 @@ export class UserViewModel {
   login: string;
   email: string;
   createdAt: string;
-  banInfo: BanInfoType;
+  banInfo: UserBanInfoType;
 }
 export class CommentInputModel {
   @IsString()
