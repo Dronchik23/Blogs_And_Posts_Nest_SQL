@@ -26,7 +26,6 @@ export class FindBannedUsersByBlogIdService
   ) {}
 
   async execute(command: findBannedUsersByBlogIdCommand): Promise<any> {
-    debugger;
     const blog: BlogDBType =
       await this.blogsQueryRepo.findBlogByBlogIdWithBlogDBType(command.blogId);
     if (!blog) {
@@ -44,9 +43,6 @@ export class FindBannedUsersByBlogIdService
         command.sortDirection,
         command.searchLoginTerm,
       );
-    if (!bannedUsers) {
-      throw new NotFoundException();
-    }
 
     return bannedUsers;
   }

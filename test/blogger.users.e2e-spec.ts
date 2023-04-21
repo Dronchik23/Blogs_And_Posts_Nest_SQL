@@ -19,6 +19,7 @@ describe('blogger tests (e2e)', () => {
   let accessToken;
   let blog;
   let user;
+  let user2;
   let usersQueryRepository: UsersQueryRepository;
   const mokEmailAdapter = {
     async sendEmail(
@@ -188,6 +189,26 @@ describe('blogger tests (e2e)', () => {
             _id: new ObjectId(user2.id),
           });
         expect(bannedUser.banInfo.isBanned).toBeTruthy();
+      });
+      it('should unban user with correct data', async () => {
+        await request(server)
+          .put(url + `/${user2.id}/ban`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            isBanned: false,
+            banReason: 'valid string more than 20 letters ',
+            blogId: blog.id,
+          })
+          .expect(204); // unban user2
+        console.log('user2', user2);
+
+        const unBannedUser: UserDBType =
+          await usersQueryRepository.usersModel.findOne({
+            _id: new ObjectId(user2.id),
+          });
+        console.log('unBannedUser', unBannedUser);
+
+        expect(unBannedUser.banInfo.isBanned).toBeFalsy();
       });
     });
     describe('get banned users by blogId tests', () => {
