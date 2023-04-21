@@ -146,9 +146,17 @@ export class BlogsQueryRepository {
 
   async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
     try {
+      const bannedBlogIds: string[] = await this.getBannedBlogsIds();
+      const bannedBlogObjectIds: ObjectId[] = bannedBlogIds.map(
+        (id) => new ObjectId(id),
+      );
+
       const blog = await this.blogsModel
         .findOne({
-          _id: new ObjectId(id),
+          $and: [
+            { _id: new ObjectId(id) },
+            { _id: { $nin: bannedBlogObjectIds } },
+          ],
         })
         .exec();
 

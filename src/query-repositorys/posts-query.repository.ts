@@ -70,6 +70,7 @@ export class PostsQueryRepository {
   ): Promise<PaginationType> {
     const bannedBlogIds: string[] =
       await this.blogsQueryRepository.getBannedBlogsIds();
+
     const filter = { blogId: { $nin: bannedBlogIds } };
     const posts: PostDBType[] = await this.postsModel
       .find(filter)

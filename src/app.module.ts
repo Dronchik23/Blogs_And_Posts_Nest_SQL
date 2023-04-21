@@ -132,8 +132,8 @@ export const queryRepos = [
       inject: [ConfigService],
     }),
     ThrottlerModule.forRoot({
-      ttl: 10,
-      limit: 5,
+      ttl: 1000000,
+      limit: 5000000,
     }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },

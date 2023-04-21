@@ -102,7 +102,7 @@ describe('blogs test (e2e)', () => {
         });
       });
     });
-    describe('get blog by id tests', () => {
+    describe('get blog by blogId tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllDataUrl);
 

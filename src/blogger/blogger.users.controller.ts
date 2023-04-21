@@ -38,9 +38,11 @@ export class BloggerUsersController {
   async banUserByUserId(
     @Param('userId') userId: string,
     @Body() BloggerBanUserDTO: BloggerBanUserInputModel,
+    @CurrentUserId() currentUserId: string,
   ): Promise<boolean> {
     return await this.commandBus.execute(
       new BanUserByUserIdByBloggerCommand(
+        currentUserId,
         userId,
         BloggerBanUserDTO.isBanned,
         BloggerBanUserDTO.banReason,
