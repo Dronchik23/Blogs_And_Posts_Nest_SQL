@@ -68,28 +68,23 @@ export class PostsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    debugger;
+    const bannedBlogIds: string[] =
+      await this.blogsQueryRepository.getBannedBlogsIds();
+    const filter = { blogId: { $nin: bannedBlogIds } };
     const posts: PostDBType[] = await this.postsModel
-      .find({})
+      .find(filter)
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
       .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
       .lean();
 
-    const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
-
-    const sortedPosts = posts.filter((post: PostDBType) => {
-      return !bannedBlogIds.includes(new ObjectId(post.blogId));
-    });
-
-    for (const post of sortedPosts) {
+    for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
     }
 
-    const mappedPosts =
-      this.fromPostDBTypeToPostViewModelWithPagination(sortedPosts);
+    const totalCount = posts.length;
 
-    const totalCount = await this.postsModel.countDocuments();
+    const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
     // exclude 0
@@ -116,7 +111,7 @@ export class PostsQueryRepository {
 
       const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
 
-      if (bannedBlogIds.includes(new ObjectId(post.blogId))) {
+      if (bannedBlogIds.includes(post.blogId)) {
         throw new NotFoundException();
       }
 

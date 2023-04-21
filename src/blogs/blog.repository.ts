@@ -52,11 +52,7 @@ export class BlogsRepository {
       const result = await this.blogsModel.deleteOne({
         _id: new mongoose.Types.ObjectId(id),
       });
-      if (result.deletedCount === 1) {
-        return true;
-      } else {
-        return false;
-      }
+      return result.deletedCount === 1;
     } catch (e) {
       return false;
     }
@@ -102,7 +98,6 @@ export class BlogsRepository {
     if (isBanned === false) {
       banDate = null;
     } // if user unbanned - clear banDate
-    debugger;
     const result = await this.blogsModel.updateOne(
       { _id: new mongoose.Types.ObjectId(blogId) },
       {

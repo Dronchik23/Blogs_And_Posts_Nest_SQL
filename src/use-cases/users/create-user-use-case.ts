@@ -4,9 +4,9 @@ import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import {
   AccountDataType,
-  BanInfoType,
   EmailConfirmationType,
   PasswordRecoveryType,
+  UserBanInfoType,
   UserDBType,
 } from '../../types and models/types';
 import { ObjectId } from 'mongodb';
@@ -45,7 +45,7 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
       ),
       new EmailConfirmationType(code, expirationDate, false),
       new PasswordRecoveryType(null, true),
-      new BanInfoType(),
+      new UserBanInfoType(),
     );
     const result = await this.usersRepository.createUser(user);
 

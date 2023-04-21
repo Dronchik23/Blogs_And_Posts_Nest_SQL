@@ -265,6 +265,7 @@ describe('blogger tests (e2e)', () => {
           .expect(200)
           .expect((res) => {
             const user = res.body.items[0];
+
             expect(res.body.pagesCount).toBe(1);
             expect(res.body.page).toBe(1);
             expect(res.body.pageSize).toBe(10);

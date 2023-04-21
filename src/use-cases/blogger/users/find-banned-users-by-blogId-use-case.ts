@@ -2,12 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../../../query-repositorys/users-query.repository';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BlogsQueryRepository } from '../../../query-repositorys/blogs-query.repository';
-import {
-  BlogDBType,
-  BlogOwnerInfoType,
-  PaginationType,
-} from '../../../types and models/types';
-import { BlogViewModel } from '../../../types and models/models';
+import { BlogDBType, PaginationType } from '../../../types and models/types';
 
 export class findBannedUsersByBlogIdCommand {
   constructor(
@@ -31,9 +26,9 @@ export class FindBannedUsersByBlogIdService
   ) {}
 
   async execute(command: findBannedUsersByBlogIdCommand): Promise<any> {
-    const blog: BlogViewModel = await this.blogsQueryRepo.findBlogByBlogId(
-      command.blogId,
-    );
+    debugger;
+    const blog: BlogDBType =
+      await this.blogsQueryRepo.findBlogByBlogIdWithBlogDBType(command.blogId);
     if (!blog) {
       throw new NotFoundException();
     }

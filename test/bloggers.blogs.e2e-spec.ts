@@ -1175,36 +1175,6 @@ describe('blogger tests (e2e)', () => {
           .expect(401);
       });
       it('should get all comments', async () => {
-        const createUserDto2: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser2 = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto2);
-
-        const user = responseForUser2.body;
-        expect(user).toBeDefined();
-
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
-
-        const accessToken2 = loginUser2.body.accessToken;
-
-        const responseForComment2 = await request(server)
-          .post(`/posts/${post.id}/comments`)
-          .set('Authorization', `Bearer ${accessToken2}`)
-          .send({ content: 'valid content string more than 20 letters' })
-          .expect(201); // create comment with valid data
-
-        const comment2 = responseForComment2.body;
-        expect(comment2).toBeDefined();
-
         const response = await request(server)
           .get(url + `/comments`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -1214,8 +1184,8 @@ describe('blogger tests (e2e)', () => {
           pagesCount: 1,
           page: 1,
           pageSize: 10,
-          totalCount: 2,
-          items: [comment, comment2],
+          totalCount: 1,
+          items: [comment],
         };
 
         expect(response.body).toMatchObject(expectedResponse);

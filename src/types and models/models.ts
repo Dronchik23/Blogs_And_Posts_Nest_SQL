@@ -157,27 +157,6 @@ export class BlogInputModel {
   @Length(0, 100)
   websiteUrl: string;
 }
-export class PostInputModel {
-  @IsString()
-  @Matches(/^(?!\s*$).+/)
-  @Length(1, 30)
-  @IsNotEmpty()
-  title: string;
-  @IsString()
-  @Matches(/^(?!\s*$).+/)
-  @Length(1, 100)
-  @IsNotEmpty()
-  shortDescription: string;
-  @IsString()
-  @Matches(/^(?!\s*$).+/)
-  @Length(1, 1000)
-  @IsNotEmpty()
-  content: string;
-  @IsString()
-  @IsNotEmpty()
-  @IsBlogExist()
-  blogId: string;
-}
 export class BlogPostInputModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)
@@ -294,11 +273,5 @@ export class BloggerBanUserInputModel {
   @IsString()
   @IsNotEmpty()
   @IsBlogExist()
-  blogId: string;
-}
-export class FindBannedUsersByBlogIdInputModel {
-  // @IsString()
-  // @IsNotEmpty()
-  // @IsBlogExist()
   blogId: string;
 }

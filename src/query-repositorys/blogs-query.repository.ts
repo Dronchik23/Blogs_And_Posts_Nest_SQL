@@ -7,11 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ObjectId } from 'mongodb';
-import {
-  BlogDBType,
-  PaginationType,
-  PostDBType,
-} from '../types and models/types';
+import { BlogDBType, PaginationType } from '../types and models/types';
 import { BlogViewModel, SABlogViewModel } from '../types and models/models';
 import { BlogDocument } from '../types and models/schemas';
 
@@ -89,7 +85,7 @@ export class BlogsQueryRepository {
     const bannedBlogIds = await this.getBannedBlogsIds();
 
     const sortedBlogs = blogs.filter((blog) => {
-      return !bannedBlogIds.includes(blog._id);
+      return !bannedBlogIds.includes(blog._id.toString());
     });
 
     const totalCount = await this.blogsModel.countDocuments(sortedBlogs);
@@ -129,7 +125,7 @@ export class BlogsQueryRepository {
     const bannedBlogIds = await this.getBannedBlogsIds();
 
     const sortedBlogs = blogs.filter((blog) => {
-      return !bannedBlogIds.includes(blog._id);
+      return !bannedBlogIds.includes(blog._id.toString());
     });
 
     const totalCount = await this.blogsModel.countDocuments(sortedBlogs);
@@ -224,12 +220,11 @@ export class BlogsQueryRepository {
     }
   }
 
-  async getBannedBlogsIds(): Promise<ObjectId[]> {
+  async getBannedBlogsIds(): Promise<string[]> {
     const bannedBlogs: BlogDBType[] = await this.blogsModel
       .find({ 'banInfo.isBanned': true })
       .lean();
 
-    const bannedBlogIds = bannedBlogs.map((u) => u._id);
-    return bannedBlogIds;
+    return bannedBlogs.map((u) => u._id.toString()); // return banned ips
   }
 }

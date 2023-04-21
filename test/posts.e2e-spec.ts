@@ -103,6 +103,7 @@ describe('AppController (e2e)', () => {
 
         post = responseForPost.body;
         expect(post).toBeDefined();
+        console.log('post', post);
       });
       it('should get all posts', async () => {
         await request(server)
@@ -134,6 +135,7 @@ describe('AppController (e2e)', () => {
           .auth('admin', 'qwerty');
 
         const { items } = responseForBlog2.body;
+        console.log('items', items);
 
         const bannedBlog = items.find((item) => item.banInfo.isBanned);
 
@@ -143,7 +145,7 @@ describe('AppController (e2e)', () => {
           pagesCount: 1,
           page: 1,
           pageSize: 10,
-          totalCount: 1,
+          totalCount: 0,
           items: [],
         });
       });

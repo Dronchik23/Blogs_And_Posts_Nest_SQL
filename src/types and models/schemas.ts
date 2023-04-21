@@ -1,10 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 import { ObjectId } from 'mongodb';
 import {
   AccountDataType,
-  BanBlogInfoType,
-  BanInfoType,
+  BlogBanInfoType,
   BlogOwnerInfoType,
   CommentatorInfoType,
   EmailConfirmationType,
@@ -12,6 +11,7 @@ import {
   LikesInfoType,
   LikeStatus,
   PasswordRecoveryType,
+  UserBanInfoType,
 } from './types';
 
 export type LikeDocument = Like & Document;
@@ -125,7 +125,7 @@ export class Blog {
   blogOwnerInfo: BlogOwnerInfoType;
 
   @Prop()
-  banInfo: BanBlogInfoType;
+  banInfo: BlogBanInfoType;
 }
 export const BlogSchema = SchemaFactory.createForClass(Blog);
 
@@ -164,7 +164,7 @@ export class User {
   @Prop()
   passwordRecovery: PasswordRecoveryType;
   @Prop()
-  banInfo: BanInfoType;
+  banInfo: UserBanInfoType;
 
   @Prop()
   passwordSalt?: string;
