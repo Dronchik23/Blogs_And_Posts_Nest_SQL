@@ -49,7 +49,7 @@ export class PostsController {
   @Get(':id/comments')
   async getCommentByPostId(
     @Param('id') id: string,
-    @Query() paginationInPutQueryDTO: CommentPaginationQueryModel,
+    @Query() query: CommentPaginationQueryModel,
     @CurrentUserIdFromToken() CurrentUserId,
   ) {
     const post = await this.postsQueryRepository.findPostByPostId(id);
@@ -59,10 +59,10 @@ export class PostsController {
 
     return await this.commentsQueryRepository.findCommentsByPostId(
       post.id,
-      paginationInPutQueryDTO.pageNumber,
-      paginationInPutQueryDTO.pageSize,
-      paginationInPutQueryDTO.sortBy,
-      paginationInPutQueryDTO.sortDirection,
+      query.pageNumber,
+      query.pageSize,
+      query.sortBy,
+      query.sortDirection,
       CurrentUserId,
     );
   }

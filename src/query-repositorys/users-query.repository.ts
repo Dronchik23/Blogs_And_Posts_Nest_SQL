@@ -41,6 +41,19 @@ export class UsersQueryRepository {
       },
     }));
   }
+  private fromUserDBTypeToUserViewModelWithPaginationForBlogger(
+    users: UserDBType[],
+  ) {
+    return users.map((user) => ({
+      id: user._id.toString(),
+      login: user.accountData.login,
+      banInfo: {
+        isBanned: user.banInfo.isBanned,
+        banDate: user.banInfo.banDate,
+        banReason: user.banInfo.banReason,
+      },
+    }));
+  }
 
   private searchLoginAndEmailTermFilter(
     searchLoginTerm?: string,
@@ -180,7 +193,8 @@ export class UsersQueryRepository {
       .limit(pageSize)
       .lean();
 
-    const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
+    const mappedUsers =
+      this.fromUserDBTypeToUserViewModelWithPaginationForBlogger(users);
 
     const totalCount = await this.usersModel.countDocuments(filter);
 

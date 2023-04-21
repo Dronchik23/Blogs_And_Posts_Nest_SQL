@@ -76,7 +76,7 @@ export class BloggerBlogsController {
     @CurrentUserId() currentUserId,
   ) {
     return await this.commentsQueryRepository.findAllCommentsForBlogOwner(
-      query.searchNameTerm,
+      query.searchLoginTerm,
       +query.pageSize,
       query.sortBy,
       query.sortDirection,

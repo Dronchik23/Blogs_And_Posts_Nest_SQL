@@ -62,7 +62,7 @@ export class BlogPaginationQueryModel extends DefaultPaginationData {
 export class CommentPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
-  searchNameTerm: string | null = null;
+  searchLoginTerm: string | null = null;
 }
 export class PostPaginationQueryModel extends DefaultPaginationData {}
 
@@ -116,6 +116,11 @@ export class UserViewModel {
   login: string;
   email: string;
   createdAt: string;
+  banInfo: UserBanInfoType;
+}
+export class BloggerUserViewModel {
+  id: string;
+  login: string;
   banInfo: UserBanInfoType;
 }
 export class CommentInputModel {
