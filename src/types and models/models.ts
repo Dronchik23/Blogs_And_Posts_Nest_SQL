@@ -3,6 +3,7 @@ import {
   BlogOwnerInfoType,
   ExtendedLikesInfoType,
   LikeStatus,
+  PostInfoType,
   UserBanInfoType,
 } from './types';
 import {
@@ -137,6 +138,7 @@ export class CommentViewModel {
     userId: string;
     userLogin: string;
   };
+  postInfo: PostInfoType;
   createdAt: string;
   likesInfo: {
     likesCount: number;
