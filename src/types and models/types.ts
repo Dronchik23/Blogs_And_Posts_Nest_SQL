@@ -105,6 +105,15 @@ export class CommentDBType {
     public createdAt: string,
     public postId: string,
     public likesInfo: LikesInfoType,
+    public postInfo: PostInfoType,
+  ) {}
+}
+export class PostInfoType {
+  constructor(
+    public id: string,
+    public title: string,
+    public blogId: string,
+    public blogName: string,
   ) {}
 }
 export class LikeDBType {

@@ -61,7 +61,14 @@ export class CreateCommentService
       new Date().toISOString(),
       command.postId,
       new LikesInfoType(),
+      {
+        id: post.id,
+        title: post.title,
+        blogId: post.blogId,
+        blogName: post.blogName,
+      },
     );
+
     return await this.commentsRepository.createComment(newComment);
   }
 }

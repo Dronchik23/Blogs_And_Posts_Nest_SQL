@@ -133,7 +133,7 @@ export const queryRepos = [
     }),
     ThrottlerModule.forRoot({
       ttl: 1000000,
-      limit: 5000000,
+      limit: 500000,
     }),
     MongooseModule.forFeature([
       { name: 'User', schema: UserSchema },

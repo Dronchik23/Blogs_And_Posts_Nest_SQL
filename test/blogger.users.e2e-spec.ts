@@ -159,7 +159,7 @@ describe('blogger tests (e2e)', () => {
           })
           .expect(401);
       });
-      it('should ban user with correct data', async () => {
+      it('should ban and unban user with correct data', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -189,8 +189,7 @@ describe('blogger tests (e2e)', () => {
             _id: new ObjectId(user2.id),
           });
         expect(bannedUser.banInfo.isBanned).toBeTruthy();
-      });
-      it('should unban user with correct data', async () => {
+
         await request(server)
           .put(url + `/${user2.id}/ban`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -199,15 +198,12 @@ describe('blogger tests (e2e)', () => {
             banReason: 'valid string more than 20 letters ',
             blogId: blog.id,
           })
-          .expect(204); // unban user2
-        console.log('user2', user2);
+          .expect(204); // ban user2
 
         const unBannedUser: UserDBType =
           await usersQueryRepository.usersModel.findOne({
             _id: new ObjectId(user2.id),
           });
-        console.log('unBannedUser', unBannedUser);
-
         expect(unBannedUser.banInfo.isBanned).toBeFalsy();
       });
     });
@@ -293,9 +289,45 @@ describe('blogger tests (e2e)', () => {
             expect(res.body.totalCount).toBe(1);
             expect(user.id).toBeDefined();
             expect(user.login).toBe(user2.login);
-            expect(user.email).toBeDefined();
-            expect(user.createdAt).toBeDefined();
             expect(user.banInfo).toBeDefined();
+            expect(res.body.items.length).toBe(1);
+          });
+
+        await request(server)
+          .put(url + `/${user2.id}/ban`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            isBanned: false,
+            banReason: 'valid string more than 20 letters ',
+            blogId: blog.id,
+          })
+          .expect(204); // unban user2
+
+        const unBannedUser: UserDBType =
+          await usersQueryRepository.usersModel.findOne({
+            _id: new ObjectId(user2.id),
+          });
+        expect(unBannedUser.banInfo.isBanned).toBeFalsy();
+        expect(unBannedUser._id.toString()).toEqual(user2.id);
+
+        const a = await request(server)
+          .get(url + `/blog/${blog.id}`)
+          .set('Authorization', `Bearer ${accessToken}`);
+        console.log(a.body.items);
+
+        await request(server)
+          .get(url + `/blog/${blog.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200)
+          .expect((res) => {
+            const user = res.body.items[0];
+            expect(res.body.pagesCount).toBe(1);
+            expect(res.body.page).toBe(1);
+            expect(res.body.pageSize).toBe(10);
+            expect(res.body.totalCount).toBe(0);
+            expect(user).toBeUndefined();
+            expect(user).toBeUndefined();
+            expect(res.body.items.length).toBe(0);
           });
       });
       it('should not get all banned users by blogId with incorrect authorization data', async () => {

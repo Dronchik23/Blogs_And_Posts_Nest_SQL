@@ -128,6 +128,7 @@ export class UsersRepository {
     if (!isBanned) {
       banReason = null;
       banDate = null;
+      blogId = null;
     } // if user unbanned - clear banReason and banDate
     const result = await this.usersModel.updateOne(
       { _id: new mongoose.Types.ObjectId(userId) },
