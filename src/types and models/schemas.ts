@@ -11,6 +11,7 @@ import {
   LikesInfoType,
   LikeStatus,
   PasswordRecoveryType,
+  PostInfoType,
   UserBanInfoType,
 } from './types';
 
@@ -57,6 +58,9 @@ export class Comment {
 
   @Prop()
   likesInfo: LikesInfoType;
+
+  @Prop()
+  postInfo: PostInfoType;
 }
 export const CommentSchema = SchemaFactory.createForClass(Comment);
 

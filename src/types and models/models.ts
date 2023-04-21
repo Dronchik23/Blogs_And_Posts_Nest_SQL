@@ -131,7 +131,7 @@ export class CommentInputModel {
   @IsNotEmpty()
   content: string;
 }
-export class CommentViewModel {
+export class BloggerCommentViewModel {
   id: string;
   content: string;
   commentatorInfo: {
@@ -139,6 +139,20 @@ export class CommentViewModel {
     userLogin: string;
   };
   postInfo: PostInfoType;
+  createdAt: string;
+  likesInfo: {
+    likesCount: number;
+    dislikesCount: number;
+    myStatus: LikeStatus;
+  };
+}
+export class CommentViewModel {
+  id: string;
+  content: string;
+  commentatorInfo: {
+    userId: string;
+    userLogin: string;
+  };
   createdAt: string;
   likesInfo: {
     likesCount: number;

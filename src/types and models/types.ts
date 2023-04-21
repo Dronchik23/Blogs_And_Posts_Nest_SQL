@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import {
+  BloggerCommentViewModel,
   BloggerUserViewModel,
   BlogViewModel,
   CommentViewModel,
@@ -18,6 +19,7 @@ export type PaginationType = {
     | PostViewModel[]
     | UserViewModel[]
     | CommentViewModel[]
+    | BloggerCommentViewModel[]
     | DeviceDBType[]
     | BloggerUserViewModel[];
 };

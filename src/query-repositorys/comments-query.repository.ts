@@ -10,7 +10,10 @@ import {
   PostDBType,
   UserDBType,
 } from '../types and models/types';
-import { CommentViewModel } from '../types and models/models';
+import {
+  BloggerCommentViewModel,
+  CommentViewModel,
+} from '../types and models/models';
 import {
   BlogDocument,
   CommentDocument,
@@ -47,10 +50,26 @@ export class CommentsQueryRepository {
       },
       createdAt: comment.createdAt.toString(),
       likesInfo: comment.likesInfo,
-      postInfo: comment.postInfo,
     };
   };
-  private fromCommentDBTypeToCommentViewModelWithPagination = (
+
+  private fromCommentDBTypeToBloggerCommentViewModelWithPagination = (
+    comment: CommentDBType[],
+  ): BloggerCommentViewModel[] => {
+    return comment.map((comment) => ({
+      id: comment._id.toString(),
+      content: comment.content,
+      commentatorInfo: {
+        userId: comment.commentatorInfo.userId.toString(),
+        userLogin: comment.commentatorInfo.userLogin,
+      },
+      createdAt: comment.createdAt.toString(),
+      likesInfo: comment.likesInfo,
+      postInfo: comment.postInfo,
+    }));
+  };
+
+  private fromCommentDBTypeCommentViewModelWithPagination = (
     comment: CommentDBType[],
   ): CommentViewModel[] => {
     return comment.map((comment) => ({
@@ -62,7 +81,6 @@ export class CommentsQueryRepository {
       },
       createdAt: comment.createdAt.toString(),
       likesInfo: comment.likesInfo,
-      postInfo: comment.postInfo,
     }));
   };
 
@@ -86,10 +104,9 @@ export class CommentsQueryRepository {
       }),
     );
 
-    const mappedComments =
-      this.fromCommentDBTypeToCommentViewModelWithPagination(
-        commentsWithLikesInfo,
-      );
+    const mappedComments = this.fromCommentDBTypeCommentViewModelWithPagination(
+      commentsWithLikesInfo,
+    );
 
     const totalCount = await this.commentsModel.countDocuments({
       postId: postId,
@@ -215,7 +232,7 @@ export class CommentsQueryRepository {
     );
 
     const mappedComments =
-      this.fromCommentDBTypeToCommentViewModelWithPagination(
+      this.fromCommentDBTypeToBloggerCommentViewModelWithPagination(
         commentsWithLikesInfo,
       );
 
