@@ -61,6 +61,7 @@ export class CommentsQueryRepository {
       },
       createdAt: comment.createdAt.toString(),
       likesInfo: comment.likesInfo,
+      postInfo: comment.postInfo,
     }));
   };
 
