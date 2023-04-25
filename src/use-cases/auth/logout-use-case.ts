@@ -19,13 +19,13 @@ export class LogoutService implements ICommandHandler<LogoutCommand> {
   ) {}
 
   async execute(command: LogoutCommand): Promise<DeviceDBType> {
-    const device =
+    const device: any =
       await this.devicesQueryRepository.findDeviceByDeviceIdUserIdAndDate(
         command.deviceId,
         command.userId,
         command.lastActiveDate,
       );
-    if (!device) return null;
+    //if (!device) return null;
 
     const foundDevice =
       this.devicesRepository.findAndDeleteDeviceByDeviceIdUserIdAndDate(

@@ -39,18 +39,8 @@ export class UsersController {
 
   @UseGuards(BasicAuthGuard)
   @Get()
-  async getAllUsers(
-    @Query() query: UserPaginationQueryModel,
-  ): Promise<PaginationType> {
-    return this.usersQueryRepository.getAllUsers(
-      query.searchLoginTerm,
-      query.searchEmailTerm,
-      +query.pageSize,
-      query.sortBy,
-      query.sortDirection,
-      +query.pageNumber,
-      query.banStatus,
-    );
+  async getAllUsers(@Query() query: UserPaginationQueryModel): Promise<any> {
+    return this.usersQueryRepository.getAllUsers();
   }
 
   @UseGuards(BasicAuthGuard)

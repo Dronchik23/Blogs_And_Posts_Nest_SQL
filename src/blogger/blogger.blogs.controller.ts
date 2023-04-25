@@ -113,10 +113,11 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
-      blogId,
-      currentUserId,
-    ); // find owner of the blog
+    const owner: any =
+      await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+        blogId,
+        currentUserId,
+      ); // find owner of the blog
     if (!owner) {
       throw new ForbiddenException();
     }
@@ -202,13 +203,14 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const blogOwner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
-      blogId,
-      currentUserId,
-    ); // find blogOwner of the blog
-    if (!blogOwner) {
-      throw new ForbiddenException();
-    }
+    const blogOwner: any =
+      await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+        blogId,
+        currentUserId,
+      ); // find blogOwner of the blog
+    // if (!blogOwner) {
+    //   throw new ForbiddenException();
+    // }
 
     const post = await this.postsQueryRepository.findPostByPostId(postId);
 
@@ -240,10 +242,11 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const owner = await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
-      blogId,
-      currentUserId,
-    ); // find owner of the blog
+    const owner: any =
+      await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
+        blogId,
+        currentUserId,
+      ); // find owner of the blog
     if (!owner) {
       throw new ForbiddenException();
     }

@@ -1,62 +1,73 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import {
-  LikeDBType,
+  LikeSQLDBType,
   LikeStatus,
-  NewestLikesType,
   PaginationType,
-  PostDBType,
+  PostSQLDBType,
+  UserSQLDBType,
 } from '../types and models/types';
-import { PostViewModel } from '../types and models/models';
-import { LikeDocument, PostDocument } from '../types and models/schemas';
-import { ObjectId } from 'mongodb';
+import { PostViewModel, UserViewModel } from '../types and models/models';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
 import { BlogsQueryRepository } from './blogs-query.repository';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectModel('Post') private readonly postsModel: Model<PostDocument>,
-    @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
+    @InjectDataSource() protected dataSource: DataSource,
     private readonly usersQueryRepo: UsersQueryRepository,
     private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
-  private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
+  private fromPostDBTypePostViewModel = (
+    post: PostSQLDBType,
+  ): PostViewModel => {
     return {
-      id: post._id.toString(),
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId.toString(),
-      blogName: post.blogName,
-      createdAt: post.createdAt.toString(),
-      extendedLikesInfo: {
-        likesCount: post.extendedLikesInfo.likesCount,
-        dislikesCount: post.extendedLikesInfo.dislikesCount,
-        myStatus: post.extendedLikesInfo.myStatus,
-        newestLikes: post.extendedLikesInfo.newestLikes,
-      },
-    };
-  };
-
-  private fromPostDBTypeToPostViewModelWithPagination = (
-    posts: PostDBType[],
-  ): PostViewModel[] => {
-    return posts.map((post) => ({
-      id: post._id.toString(),
+      id: post.id,
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
       blogId: post.blogId,
       blogName: post.blogName,
-      createdAt: post.createdAt.toString(),
+      createdAt: post.createdAt,
       extendedLikesInfo: {
-        likesCount: post.extendedLikesInfo.likesCount,
-        dislikesCount: post.extendedLikesInfo.dislikesCount,
-        myStatus: post.extendedLikesInfo.myStatus,
-        newestLikes: post.extendedLikesInfo.newestLikes,
+        likesCount: post.likesCount,
+        dislikesCount: post.dislikesCount,
+        myStatus: post.myStatus,
+        newestLikes: [
+          {
+            addedAt: post.newestLikesAddedAt,
+            userId: post.newestLikesUserId,
+            login: post.newestLikesLogin,
+          },
+        ],
+      },
+    };
+  };
+
+  private fromPostDBTypeToPostViewModelWithPagination = (
+    posts: PostSQLDBType[],
+  ): PostViewModel[] => {
+    return posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      shortDescription: post.shortDescription,
+      content: post.content,
+      blogId: post.blogId,
+      blogName: post.blogName,
+      createdAt: post.createdAt,
+      extendedLikesInfo: {
+        likesCount: post.likesCount,
+        dislikesCount: post.dislikesCount,
+        myStatus: post.myStatus,
+        newestLikes: [
+          {
+            addedAt: post.newestLikesAddedAt,
+            userId: post.newestLikesUserId,
+            login: post.newestLikesLogin,
+          },
+        ],
       },
     }));
   };
@@ -71,13 +82,13 @@ export class PostsQueryRepository {
     const bannedBlogIds: string[] =
       await this.blogsQueryRepository.getBannedBlogsIds();
 
-    const filter = { blogId: { $nin: bannedBlogIds } };
-    const posts: PostDBType[] = await this.postsModel
-      .find(filter)
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
+    const posts: PostSQLDBType[] = await this.dataSource.query(`
+  SELECT * 
+  FROM posts 
+  WHERE blogId NOT IN (${bannedBlogIds.map((id) => `'${id}'`).join(',')})
+  ORDER BY ${sortBy} ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+  LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
+`);
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
@@ -88,10 +99,9 @@ export class PostsQueryRepository {
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
-    // exclude 0
 
     return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
+      pagesCount: pagesCount === 0 ? 1 : pagesCount,
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
@@ -104,11 +114,9 @@ export class PostsQueryRepository {
     userId?: string,
   ): Promise<PostViewModel | null> {
     try {
-      const post: PostDBType = await this.postsModel
-        .findOne({
-          _id: new ObjectId(postId),
-        })
-        .lean();
+      const post: PostSQLDBType = await this.dataSource.query(
+        `SELECT * FROM posts WHERE id = ${postId};`,
+      );
 
       const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
 
@@ -132,12 +140,13 @@ export class PostsQueryRepository {
     sortDirection: string,
     userId?: string,
   ) {
-    const posts: PostDBType[] = await this.postsModel
-      .find({ blogId: blogId })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
+    const posts: PostSQLDBType[] = await this.dataSource.query(`
+  SELECT * 
+  FROM posts 
+  WHERE blogId = '${blogId}'
+  ORDER BY ${sortBy} ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+  LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
+`);
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
@@ -155,61 +164,60 @@ export class PostsQueryRepository {
     };
   }
 
-  private mapNewestLikes(likes: LikeDBType[]): NewestLikesType[] {
-    return likes.map((like) => ({
-      addedAt: like.addedAt,
-      userId: like.userId.toString(),
-      login: like.userLogin,
-    }));
-  }
-
-  private async getLikesInfoForPost(post: PostDBType, userId?: string) {
+  private async getLikesInfoForPost(post: PostSQLDBType, userId?: string) {
     const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-      (u) => u._id,
-    );
-    post.extendedLikesInfo.likesCount = await this.likesModel.countDocuments({
-      parentId: post._id,
-      status: LikeStatus.Like,
-      userId: { $nin: bannedUserIds }, // exclude banned users
-    });
-    post.extendedLikesInfo.dislikesCount = await this.likesModel.countDocuments(
-      {
-        parentId: post._id,
-        status: LikeStatus.Dislike,
-        userId: { $nin: bannedUserIds }, // exclude banned users
-      },
+      (u) => u.id,
     );
 
-    const newestLikes: LikeDBType[] = await this.likesModel
-      .find({
-        parentId: post._id,
-        status: LikeStatus.Like,
-        userId: { $nin: bannedUserIds },
-      })
-      .sort({ addedAt: -1 })
-      .limit(3)
-      .lean();
+    post.likesCount = await this.dataSource.query(`
+    SELECT COUNT(*) AS likesCount 
+    FROM likes 
+    WHERE parentId = '${
+      post.id
+    }' AND status = 'Like' AND user_id NOT IN (${bannedUserIds.join(', ')})
+  `);
 
-    post.extendedLikesInfo.newestLikes = this.mapNewestLikes(newestLikes);
+    post.dislikesCount = await this.dataSource.query(`
+    SELECT COUNT(*) AS dislikesCount 
+    FROM likes 
+    WHERE parentId = '${
+      post.id
+    }' AND status = 'Dislike' AND user_id NOT IN (${bannedUserIds.join(', ')})
+  `);
+
+    const newestLikes: LikeSQLDBType[] = await this.dataSource.query(`
+    SELECT * 
+    FROM likes 
+    WHERE parentId = '${
+      post.id
+    }' AND status = 'Like' AND userId NOT IN (${bannedUserIds.join(', ')})
+    ORDER BY added_at DESC
+    LIMIT 3
+  `);
+
+    // post.newestLikesAddedAt = newestLikes.map((like) => like.addedAt);
+    // post.newestLikesUserId = newestLikes.map((like) => like.userId);
+    // post.newestLikesLogin = newestLikes.map((like) => like.login);
 
     if (userId) {
-      const user = await this.usersQueryRepo.findUserByUserId(userId);
+      const user: UserSQLDBType =
+        await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
-      if (user.banInfo.isBanned === true) {
-        post.extendedLikesInfo.myStatus = LikeStatus.None;
+      if (user.isBanned === true) {
+        post.myStatus = LikeStatus.None;
       } else {
-        const status: LikeDBType = await this.likesModel
-          .findOne({
-            parentId: new ObjectId(post._id),
-            userId: new ObjectId(userId),
-          })
-          .exec();
+        const myLike: LikeSQLDBType = await this.dataSource.query(`
+        SELECT status 
+        FROM likes 
+        WHERE parentId = '${post.id}' AND userId = '${userId}'
+      `);
 
-        if (status) {
-          post.extendedLikesInfo.myStatus = status.status;
+        if (myLike) {
+          post.myStatus = myLike.status;
         }
       }
     }
+
     return post;
   }
 }

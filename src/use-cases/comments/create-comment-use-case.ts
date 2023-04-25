@@ -1,15 +1,12 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   CommentatorInfoType,
   CommentDBType,
   LikesInfoType,
-  UserDBType,
+  PostInfoType,
 } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
 import { CommentViewModel, PostViewModel } from '../../types and models/models';
-import { ObjectId } from 'mongodb';
 import { PostsQueryRepository } from '../../query-repositorys/posts-query.repository';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { ForbiddenException } from '@nestjs/common';
@@ -27,7 +24,6 @@ export class CreateCommentService
   implements ICommandHandler<CreateCommentCommand>
 {
   constructor(
-    @InjectModel('Comment') private readonly postsModel: Model<CommentDBType>,
     private readonly commentsRepository: CommentsRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly usersQueryRepository: UsersQueryRepository,
@@ -43,32 +39,26 @@ export class CreateCommentService
       return null;
     }
 
-    const user: UserDBType = await this.usersQueryRepository.findUserWithDBType(
-      command.user.id,
-    );
+    const user: any =
+      await this.usersQueryRepository.findUserByUserIdWithDBType(
+        command.user.id,
+      );
 
     if (user.banInfo.blogId === post.blogId) {
       throw new ForbiddenException();
     }
 
-    const newComment = new CommentDBType(
-      new ObjectId(),
-      command.content,
-      new CommentatorInfoType(
-        new ObjectId(command.user.id),
-        command.user.login,
-      ),
-      new Date().toISOString(),
-      command.postId,
-      new LikesInfoType(),
-      {
-        id: post.id,
-        title: post.title,
-        blogId: post.blogId,
-        blogName: post.blogName,
-      },
-    );
+    const createdAt = new Date().toISOString();
 
-    return await this.commentsRepository.createComment(newComment);
+    return await this.commentsRepository.createComment(
+      command.content,
+      command.user.id,
+      command.user.login,
+      createdAt,
+      post.id,
+      post.title,
+      post.blogId,
+      post.blogName,
+    );
   }
 }

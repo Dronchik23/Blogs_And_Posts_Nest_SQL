@@ -34,17 +34,15 @@ export class CreatePostService implements ICommandHandler<CreatePostCommand> {
       return null;
     }
 
-    const newPost = new PostDBType(
-      new ObjectId(),
+    const createdAt = new Date().toISOString();
+
+    return await this.postsRepository.createPost(
       command.title,
       command.shortDescription,
       command.content,
       command.blogId,
       blog.name,
-      new Date().toISOString(),
-      new ExtendedLikesInfoType(0, 0, LikeStatus.None, []),
+      createdAt,
     );
-
-    return await this.postsRepository.createPost(newPost);
   }
 }

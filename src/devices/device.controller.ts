@@ -12,7 +12,6 @@ import {
 import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
 import { CurrentUserId, JwtPayload } from '../auth/decorators';
-import { Device } from '../types and models/schemas';
 import { SkipThrottle } from '@nestjs/throttler';
 import { DevicesQueryRepository } from '../query-repositorys/devices-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
@@ -56,7 +55,7 @@ export class DevicesController {
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
   ) {
-    const device: Device =
+    const device: any =
       await this.devicesQueryService.findDeviceByDeviceIdAndDate(deviceId);
     if (!device) {
       throw new NotFoundException();

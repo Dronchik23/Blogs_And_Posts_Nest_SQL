@@ -1,37 +1,73 @@
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
-import { PostDBType } from '../types and models/types';
+import { PostSQLDBType } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
-import { Post, PostDocument } from '../types and models/schemas';
 import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class PostsRepository {
-  constructor(
-    @InjectModel('Post') private readonly postsModel: Model<PostDocument>,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    return;
+  }
 
-  private fromPostDBTypePostViewModel = (post: Post): PostViewModel => {
+  private fromPostDBTypePostViewModel = (
+    post: PostSQLDBType,
+  ): PostViewModel => {
     return {
-      id: post._id.toString(),
+      id: post.id,
       title: post.title,
       shortDescription: post.shortDescription,
       content: post.content,
-      blogId: post.blogId.toString(),
+      blogId: post.blogId,
       blogName: post.blogName,
-      createdAt: post.createdAt.toString(),
+      createdAt: post.createdAt,
       extendedLikesInfo: {
-        likesCount: post.extendedLikesInfo.likesCount,
-        dislikesCount: post.extendedLikesInfo.dislikesCount,
-        myStatus: post.extendedLikesInfo.myStatus,
-        newestLikes: post.extendedLikesInfo.newestLikes,
+        likesCount: post.likesCount,
+        dislikesCount: post.dislikesCount,
+        myStatus: post.myStatus,
+        newestLikes: [
+          {
+            addedAt: post.newestLikesAddedAt,
+            userId: post.newestLikesUserId,
+            login: post.newestLikesLogin,
+          },
+        ],
       },
     };
   };
 
-  async createPost(postForSave: PostDBType): Promise<PostViewModel> {
-    const newPost = await this.postsModel.create(postForSave);
-    return this.fromPostDBTypePostViewModel(newPost);
+  async createPost(
+    title: string,
+    shortDescription: string,
+    content: string,
+    blogId: string,
+    name: string,
+    createdAt: string,
+  ): Promise<PostViewModel> {
+    const query = `
+   INSERT INTO public.posts(
+  title,
+  "shortDescription",
+  content,
+  "blogId",
+  name,
+  "createdAt",
+) 
+VALUES (
+  $1,
+  $2,
+  $3,
+  $4,
+  $5,
+  $6,
+) 
+RETURNING *
+  `;
+    const values = [title, shortDescription, content, blogId, name, createdAt];
+
+    const post = await this.dataSource.query(query, values);
+
+    return this.fromPostDBTypePostViewModel(post[0]); // mapping post
   }
 
   async updatePostByPostIdAndBlogId(
@@ -41,43 +77,22 @@ export class PostsRepository {
     content: string,
     blogId: string,
   ): Promise<boolean> {
-    const result = await this.postsModel.updateOne(
-      {
-        _id: new mongoose.Types.ObjectId(postId),
-        blogId: blogId,
-      },
-      {
-        $set: {
-          title,
-          shortDescription,
-          content,
-        },
-      },
+    const result = await this.dataSource.query(
+      `UPDATE posts SET title = ${title}, shortDescription = ${shortDescription}, content = ${content}, WHERE postId = ${postId}, blogId = ${blogId} ;`,
     );
-
-    return result.matchedCount === 1;
+    return result.affectedRows > 0;
   }
 
   async deletePostByPostIdAndBlogId(
     blogId: string,
     postId: string,
   ): Promise<boolean> {
-    try {
-      const result = await this.postsModel.deleteOne({
-        _id: new mongoose.Types.ObjectId(postId),
-        blogId: blogId,
-      });
-      if (result.deletedCount === 1) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
+    return await this.dataSource.query(
+      `DELETE FROM posts WHERE blogId = ${blogId}, postId = ${postId};`,
+    );
   }
 
   async deleteAllPosts(): Promise<any> {
-    return this.postsModel.deleteMany({});
+    return await this.dataSource.query(`DELETE FROM posts;`);
   }
 }

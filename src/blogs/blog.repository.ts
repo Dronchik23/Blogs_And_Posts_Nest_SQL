@@ -1,19 +1,18 @@
-import mongoose, { Model } from 'mongoose';
 import { Injectable, Scope } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { BlogDBType } from '../types and models/types';
+import { BlogSQLDBType } from '../types and models/types';
 import { BlogViewModel, UserViewModel } from '../types and models/models';
-import { BlogDocument } from '../types and models/schemas';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class BlogsRepository {
-  constructor(
-    @InjectModel('Blog') private readonly blogsModel: Model<BlogDocument>,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    return;
+  }
 
-  private fromBlogDBTypeBlogViewModel(blog: BlogDBType): BlogViewModel {
+  private fromBlogDBTypeBlogViewModel(blog: BlogSQLDBType): BlogViewModel {
     return {
-      id: blog._id.toString(),
+      id: blog.id,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,
@@ -22,72 +21,72 @@ export class BlogsRepository {
     };
   }
 
-  async createBlog(blogForSave: BlogDBType): Promise<BlogViewModel> {
-    const newBlog = await this.blogsModel.create(blogForSave);
-    return this.fromBlogDBTypeBlogViewModel(newBlog);
+  async createBlog(
+    name: string,
+    description: string,
+    websiteUrl: string,
+    createdAt: string,
+    blogOwnerId: string,
+    blogOwnerLogin: string,
+  ): Promise<BlogViewModel> {
+    const query = `
+   INSERT INTO public.blogs(
+  name,
+  description,
+  "websiteUrl",
+  "createdAt",
+  "isMembership",
+  "blogOwnerId",
+  "blogOwnerLogin"
+) 
+VALUES (
+  $1,
+  $2,
+  $3,
+  $4,
+  $5,
+  $6,
+  $7,
+) 
+RETURNING *
+  `;
+    const values = [
+      name,
+      description,
+      websiteUrl,
+      createdAt,
+      blogOwnerId,
+      blogOwnerLogin,
+    ];
+
+    const blog = await this.dataSource.query(query, values);
+
+    return this.fromBlogDBTypeBlogViewModel(blog[0]); // mapping blog
   }
 
   async updateBlogByBlogId(
-    id: string,
+    blogId: string,
     name: string,
     websiteUrl: string,
   ): Promise<boolean> {
-    const result = await this.blogsModel.updateOne(
-      {
-        _id: new mongoose.Types.ObjectId(id),
-      },
-      {
-        $set: {
-          name,
-          websiteUrl,
-        },
-      },
+    const result = await this.dataSource.query(
+      `UPDATE blogs SET name = ${name}, websiteUrl = ${websiteUrl}, WHERE id = ${blogId};`,
     );
-
-    return result.matchedCount === 1;
+    return result.affectedRows > 0;
   }
 
-  async deleteBlogByBlogId(id: string): Promise<boolean> {
-    try {
-      const result = await this.blogsModel.deleteOne({
-        _id: new mongoose.Types.ObjectId(id),
-      });
-      return result.deletedCount === 1;
-    } catch (e) {
-      return false;
-    }
+  async deleteBlogByBlogId(blogId: string): Promise<boolean> {
+    return await this.dataSource.query(
+      `DELETE FROM blogs WHERE id = ${blogId};`,
+    );
   }
 
   async deleteAllBlogs() {
-    await this.blogsModel.deleteMany({});
+    return await this.dataSource.query(`DELETE FROM blogs;`);
   }
 
   async bindBlogToUser(blogId: string, user: UserViewModel): Promise<boolean> {
-    debugger;
-    const isBind: BlogDBType = await this.blogsModel
-      .findOne({
-        _id: new mongoose.Types.ObjectId(blogId),
-        'blogOwnerInfo.userId': user.id,
-      })
-      .lean();
-    if (!isBind) {
-      return;
-    }
-    const result = await this.blogsModel.updateOne(
-      {
-        _id: new mongoose.Types.ObjectId(blogId),
-      },
-      {
-        $set: {
-          blogsOwnerInfo: {
-            userId: user.id,
-            userLogin: user.login,
-          },
-        },
-      },
-    );
-
-    return result.matchedCount === 1;
+    return;
   }
 
   async changeBanStatusForBlog(
@@ -98,15 +97,9 @@ export class BlogsRepository {
     if (isBanned === false) {
       banDate = null;
     } // if user unbanned - clear banDate
-    const result = await this.blogsModel.updateOne(
-      { _id: new mongoose.Types.ObjectId(blogId) },
-      {
-        $set: {
-          'banInfo.isBanned': isBanned,
-          'banInfo.banDate': banDate,
-        },
-      },
+    const result = await this.dataSource.query(
+      `UPDATE blogs SET isBanned = ${isBanned}, banDate = ${banDate} WHERE id = ${blogId};`,
     );
-    return result.matchedCount === 1;
+    return result.affectedRows > 0;
   }
 }

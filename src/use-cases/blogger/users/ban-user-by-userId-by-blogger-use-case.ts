@@ -25,7 +25,7 @@ export class BanUserByUserIdByBloggerService
     private readonly blogsQueryRepo: BlogsQueryRepository,
   ) {}
 
-  async execute(command: BanUserByUserIdByBloggerCommand): Promise<boolean> {
+  async execute(command: BanUserByUserIdByBloggerCommand): Promise<any> {
     const user = await this.userQueryRepo.findUserByUserId(command.userId);
     if (user.banInfo.isBanned === command.isBanned) return null;
     const blog: BlogDBType =
@@ -34,12 +34,13 @@ export class BanUserByUserIdByBloggerService
       throw new ForbiddenException();
     }
     const banDate = new Date().toISOString();
-    return await this.userRepo.changeBanStatusForUserByBlogger(
+    const a: any = await this.userRepo.changeBanStatusForUserByBlogger(
       command.userId,
       command.isBanned,
       command.banReason,
       banDate,
       command.blogId,
     );
+    return a;
   }
 }

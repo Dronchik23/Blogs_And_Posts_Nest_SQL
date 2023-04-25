@@ -57,6 +57,20 @@ export class BlogDBType {
     public banInfo: BlogBanInfoType,
   ) {}
 }
+export class BlogSQLDBType {
+  constructor(
+    public id: string,
+    public name: string,
+    public description: string,
+    public websiteUrl: string,
+    public createdAt: string,
+    public isMembership: boolean,
+    public blogOwnerId: string,
+    public blogOwnerLogin: string,
+    public isBanned: boolean,
+    public banDate: string | null,
+  ) {}
+}
 export class PostDBType {
   constructor(
     public _id: ObjectId,
@@ -69,23 +83,97 @@ export class PostDBType {
     public extendedLikesInfo: ExtendedLikesInfoType,
   ) {}
 }
-export class UserDBType {
+export class PostSQLDBType {
+  constructor(
+    public id: string,
+    public title: string,
+    public shortDescription: string,
+    public content: string,
+    public blogId: string,
+    public blogName: string,
+    public createdAt: string,
+    public likesCount: number = 0,
+    public dislikesCount: number = 0,
+    public myStatus: LikeStatus = LikeStatus.None,
+    public newestLikesAddedAt: string,
+    public newestLikesUserId: string,
+    public newestLikesLogin: string,
+  ) {}
+}
+export class CommentDBType {
   constructor(
     public _id: ObjectId,
+    public content: string,
+    public commentatorInfo: CommentatorInfoType,
+    public createdAt: string,
+    public postId: string,
+    public likesInfo: LikesInfoType,
+    public postInfo: PostInfoType,
+  ) {}
+}
+export class CommentSQLDBType {
+  constructor(
+    public id: string,
+    public content: string,
+    public commentatorId: string,
+    public commentatorLogin: string,
+    public createdAt: string,
+    public likesCount: number = 0,
+    public dislikesCount: number = 0,
+    public myStatus: LikeStatus = LikeStatus.None,
+    public postId: string,
+    public postTitle: string,
+    public blogId: string,
+    public blogName: string,
+  ) {}
+}
+export class UserDBType {
+  constructor(
+    public id: string,
     public accountData: AccountDataType,
     public emailConfirmation: EmailConfirmationType,
     public passwordRecovery: PasswordRecoveryType,
     public banInfo: UserBanInfoType,
-    public passwordSalt?: string,
   ) {}
 }
-export class BlogBanInfoType {
-  isBanned: boolean;
-  banDate: string | null;
-  constructor(isBanned = false, banDate = null) {
-    this.isBanned = isBanned;
-    this.banDate = banDate;
-  }
+export class UserSQLDBType {
+  constructor(
+    public id: string,
+    public login: string,
+    public email: string,
+    public passwordHash: string,
+    public createdAt: string,
+    public confirmationCode: string,
+    public expirationDate: Date,
+    public isEmailConfirmed: boolean,
+    public recoveryCode: string | null,
+    public isRecoveryConfirmed: boolean,
+    public isBanned: boolean,
+    public banDate: string,
+    public banReason: string,
+    public blogId?: string,
+  ) {}
+}
+export class AccountDataType {
+  constructor(
+    public login: string,
+    public email: string,
+    public passwordHash: string,
+    public createdAt: string,
+  ) {}
+}
+export class EmailConfirmationType {
+  constructor(
+    public confirmationCode: string,
+    public expirationDate: Date,
+    public isConfirmed: boolean,
+  ) {}
+}
+export class PasswordRecoveryType {
+  constructor(
+    public recoveryCode: string | null,
+    public isConfirmed: boolean,
+  ) {}
 }
 export class UserBanInfoType {
   isBanned: boolean;
@@ -99,16 +187,13 @@ export class UserBanInfoType {
     this.banReason = banReason;
   }
 }
-export class CommentDBType {
-  constructor(
-    public _id: ObjectId,
-    public content: string,
-    public commentatorInfo: CommentatorInfoType,
-    public createdAt: string,
-    public postId: string,
-    public likesInfo: LikesInfoType,
-    public postInfo: PostInfoType,
-  ) {}
+export class BlogBanInfoType {
+  isBanned: boolean;
+  banDate: string | null;
+  constructor(isBanned = false, banDate = null) {
+    this.isBanned = isBanned;
+    this.banDate = banDate;
+  }
 }
 export class PostInfoType {
   constructor(
@@ -127,19 +212,14 @@ export class LikeDBType {
     public addedAt: string,
   ) {}
 }
-export class AccountDataType {
+export class LikeSQLDBType {
   constructor(
+    public id: string,
+    public parentId: string,
+    public userId: string,
     public login: string,
-    public email: string,
-    public passwordHash: string,
-    public createdAt: string,
-  ) {}
-}
-export class EmailConfirmationType {
-  constructor(
-    public confirmationCode: string,
-    public expirationDate: Date,
-    public isConfirmed: boolean,
+    public status: LikeStatus = LikeStatus.None,
+    public addedAt: string,
   ) {}
 }
 export class LikesInfoType {
@@ -164,13 +244,16 @@ export class ExtendedLikesInfoType {
     public newestLikes: NewestLikesType[],
   ) {}
 }
-export class PasswordRecoveryType {
+export class DeviceDBType {
   constructor(
-    public recoveryCode: string | null,
-    public isConfirmed: boolean,
+    public ip: string,
+    public title: string,
+    public lastActiveDate: string,
+    public deviceId: string,
+    public userId: string,
   ) {}
 }
-export class DeviceDBType {
+export class DeviceSQLDBType {
   constructor(
     public ip: string,
     public title: string,

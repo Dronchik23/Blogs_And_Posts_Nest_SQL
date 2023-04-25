@@ -1,30 +1,28 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { LikeDBType } from '../types and models/types';
-import { DeleteResult } from 'mongodb';
-import { LikeDocument } from '../types and models/schemas';
+import { LikeStatus, LikeSQLDBType } from '../types and models/types';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class LikesRepository {
-  constructor(
-    @InjectModel('Like') private readonly likeModel: Model<LikeDocument>,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    return;
+  }
 
-  async updateLikeStatus(newLike: LikeDBType): Promise<LikeDBType> {
-    const filter = {
-      userId: newLike.userId,
-      parentId: newLike.parentId,
-    };
-    const options = { upsert: true, new: true, setDefaultsOnInsert: true };
-    await this.likeModel
-      .findOneAndUpdate(filter, { ...newLike }, options)
-      .lean()
-      .exec();
+  async updateLikeStatus(
+    parentId: string,
+    userId: string,
+    login: string,
+    likeStatus: LikeStatus,
+    addedAt: string,
+  ): Promise<LikeSQLDBType> {
+    const newLike = await this.dataSource.query(
+      `UPDATE likes SET status = ${likeStatus}, addedAt = ${addedAt} WHERE userId = ${userId}, parentId = ${parentId}, login = ${login};`,
+    );
     return newLike;
   }
 
   async deleteAllLikes() {
-    await this.likeModel.deleteMany();
+    return await this.dataSource.query(`DELETE FROM likes;`);
   }
 }

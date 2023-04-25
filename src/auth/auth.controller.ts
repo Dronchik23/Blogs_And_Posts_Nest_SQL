@@ -116,9 +116,10 @@ export class AuthController {
 
   @Post('new-password')
   async newPassword(@Body() newPasswordInputModelDto: NewPasswordInputModel) {
-    const user = await this.usersQueryRepository.findUserByPasswordRecoveryCode(
-      newPasswordInputModelDto.recoveryCode,
-    );
+    const user: any =
+      await this.usersQueryRepository.findUserByPasswordRecoveryCode(
+        newPasswordInputModelDto.recoveryCode,
+      );
     if (!user) {
       return HttpStatus.NO_CONTENT;
     }

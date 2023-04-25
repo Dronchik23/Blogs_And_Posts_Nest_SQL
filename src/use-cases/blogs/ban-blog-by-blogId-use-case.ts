@@ -21,10 +21,11 @@ export class BanBlogByBlogIdService
       await this.blogsQueryRepo.findBlogByBlogIdWithBlogDBType(command.blogId);
     if (blog.banInfo.isBanned === command.isBanned) return null;
     const banDate = new Date().toISOString();
-    return await this.blogsRepo.changeBanStatusForBlog(
+    const a: any = await this.blogsRepo.changeBanStatusForBlog(
       command.blogId,
       command.isBanned,
       banDate,
     );
+    return a;
   }
 }

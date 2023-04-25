@@ -1,74 +1,101 @@
-import { ObjectId } from 'mongodb';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
-import { CommentDBType } from '../types and models/types';
+import { CommentSQLDBType } from '../types and models/types';
 import { CommentViewModel } from '../types and models/models';
-import {
-  CommentDocument,
-  Like,
-  LikeDocument,
-} from '../types and models/schemas';
-import { Comment } from '../types and models/schemas';
 import { Injectable } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(
-    @InjectModel('Comment')
-    private readonly commentsModel: Model<CommentDocument>,
-    @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
-  ) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    return;
+  }
 
   private fromCommentDBTypeToCommentViewModel = (
-    comment: Comment,
+    comment: CommentSQLDBType,
   ): CommentViewModel => {
     return {
-      id: comment._id.toString(),
+      id: comment.id,
       content: comment.content,
       commentatorInfo: {
-        userId: comment.commentatorInfo.userId.toString(),
-        userLogin: comment.commentatorInfo.userLogin,
+        userId: comment.commentatorId,
+        userLogin: comment.commentatorLogin,
       },
       createdAt: comment.createdAt.toString(),
-      likesInfo: comment.likesInfo,
+      likesInfo: {
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: comment.myStatus,
+      },
     };
   };
 
   async createComment(
-    commentForSave: CommentDBType,
+    content: string,
+    userId: string,
+    login: string,
+    createdAt: string,
+    postId: string,
+    title: string,
+    blogId: string,
+    blogName: string,
   ): Promise<CommentViewModel> {
-    const newComment = await this.commentsModel.create(commentForSave);
-    return this.fromCommentDBTypeToCommentViewModel(newComment);
+    const query = `
+   INSERT INTO public.comments(
+  content,
+  "commentOwnerId",
+  "commentOwnerLogin",
+  "createdAt",
+  "postId",
+  "postTitle",
+  "blogId",
+  "blogName"
+) 
+VALUES (
+  $1,
+  $2,
+  $3,
+  $4,
+  $5,
+  $6,
+  $7,
+  $8
+) 
+RETURNING *
+  `;
+    const values = [
+      content,
+      userId,
+      login,
+      createdAt,
+      postId,
+      title,
+      blogId,
+      blogName,
+    ];
+
+    const comment = await this.dataSource.query(query, values);
+
+    return this.fromCommentDBTypeToCommentViewModel(comment[0]); // mapping comment
   }
 
-  async updateComment(commentId: string, content: string, userId: string) {
-    const result = await this.commentsModel.updateOne(
-      {
-        _id: new ObjectId(commentId),
-        'commentatorInfo.userId': new ObjectId(userId),
-      },
-      {
-        $set: {
-          content: content,
-        },
-      },
+  async updateCommentByCommentIdAndUserId(
+    commentId: string,
+    content: string,
+    userId: string,
+  ) {
+    const result = await this.dataSource.query(
+      `UPDATE comments SET content = ${content}, WHERE id = ${commentId}, commentOwnerId = ${userId};`,
     );
-    return result.modifiedCount === 1;
+    return result.affectedRows > 0;
   }
 
-  async deleteCommentByCommentId(commentId: string, userId: string) {
-    try {
-      const result = await this.commentsModel.deleteOne({
-        _id: new mongoose.Types.ObjectId(commentId),
-        'commentatorInfo.userId': new ObjectId(userId),
-      });
-      return result.deletedCount === 1 ? true : false;
-    } catch {
-      return false;
-    }
+  async deleteCommentByCommentIdAndUserId(commentId: string, userId: string) {
+    return await this.dataSource.query(
+      `DELETE FROM comments WHERE id = ${commentId}, commentOwnerId = ${userId} ;`,
+    );
   }
 
   async deleteAllComments() {
-    await this.commentsModel.deleteMany({});
+    return await this.dataSource.query(`DELETE FROM comments;`);
   }
 }

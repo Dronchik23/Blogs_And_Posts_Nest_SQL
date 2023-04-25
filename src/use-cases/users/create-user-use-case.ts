@@ -35,8 +35,7 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
     const code = uuidv4();
     const createdAt = new Date().toISOString();
     const expirationDate = add(new Date(), { hours: 2, minutes: 3 });
-    const user = new UserDBType(
-      new ObjectId(),
+    const result: any = await this.usersRepository.createUser(
       new AccountDataType(
         command.login,
         command.email,
@@ -45,12 +44,10 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
       ),
       new EmailConfirmationType(code, expirationDate, false),
       new PasswordRecoveryType(null, true),
-      new UserBanInfoType(),
     );
-    const result = await this.usersRepository.createUser(user);
 
     try {
-      await this.emailService.sendEmailRegistrationMessage(user);
+      await this.emailService.sendEmailRegistrationMessage(command.email, code);
     } catch (err) {
       console.error(err);
     }

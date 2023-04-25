@@ -1,31 +1,23 @@
-import { Model } from 'mongoose';
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
   Scope,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { ObjectId } from 'mongodb';
-import { BlogDBType, PaginationType } from '../types and models/types';
+import { BlogSQLDBType, PaginationType } from '../types and models/types';
 import { BlogViewModel, SABlogViewModel } from '../types and models/models';
-import { BlogDocument } from '../types and models/schemas';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class BlogsQueryRepository {
-  constructor(
-    @InjectModel('Blog') private readonly blogsModel: Model<BlogDocument>,
-  ) {}
-
-  private searchNameTermFilter(searchNameTerm: string | undefined | null): any {
-    return {
-      name: { $regex: searchNameTerm ?? '', $options: 'i' },
-    };
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    return;
   }
 
-  private fromBlogDBTypeBlogViewModel(blog: BlogDBType): BlogViewModel {
+  private fromBlogDBTypeBlogViewModel(blog: BlogSQLDBType): BlogViewModel {
     return {
-      id: blog._id.toString(),
+      id: blog.id,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,
@@ -35,10 +27,10 @@ export class BlogsQueryRepository {
   }
 
   private fromBlogDBTypeBlogViewModelWithPagination(
-    blogs: BlogDBType[],
+    blogs: BlogSQLDBType[],
   ): BlogViewModel[] {
     return blogs.map((blog) => ({
-      id: blog._id.toString(),
+      id: blog.id,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,
@@ -48,17 +40,20 @@ export class BlogsQueryRepository {
   }
 
   private fromBlogDBTypeBlogViewModelWithPaginationForSa(
-    blogs: BlogDBType[],
+    blogs: BlogSQLDBType[],
   ): SABlogViewModel[] {
     return blogs.map((blog) => ({
-      id: blog._id.toString(),
+      id: blog.id,
       name: blog.name,
       description: blog.description,
       websiteUrl: blog.websiteUrl,
       createdAt: blog.createdAt,
       isMembership: blog.isMembership,
-      blogOwnerInfo: blog.blogOwnerInfo,
-      banInfo: blog.banInfo,
+      blogOwnerInfo: {
+        userId: blog.blogOwnerId,
+        userLogin: blog.blogOwnerLogin,
+      },
+      banInfo: { isBanned: blog.isBanned, banDate: blog.banDate },
     }));
   }
 
@@ -70,25 +65,21 @@ export class BlogsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    const filter = {
-      ...this.searchNameTermFilter(searchNameTerm),
-      'blogOwnerInfo.userId': userId,
-    };
-
-    const blogs: BlogDBType[] = await this.blogsModel
-      .find(filter)
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
+    const blogs: BlogSQLDBType[] = await this.dataSource.query(`
+  SELECT * FROM blogs
+  WHERE name ILIKE '%${searchNameTerm ?? ''}%', blogOwnerId = ${userId}
+  ORDER BY ${sortBy} ${sortDirection}
+  LIMIT ${pageSize}
+  OFFSET ${(pageNumber - 1) * pageSize};
+`);
 
     const bannedBlogIds = await this.getBannedBlogsIds();
 
     const sortedBlogs = blogs.filter((blog) => {
-      return !bannedBlogIds.includes(blog._id.toString());
+      return !bannedBlogIds.includes(blog.id);
     });
 
-    const totalCount = await this.blogsModel.countDocuments(sortedBlogs);
+    const totalCount = sortedBlogs.length;
 
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
@@ -111,55 +102,23 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    const filter = {
-      ...this.searchNameTermFilter(searchNameTerm),
-    };
-
-    const blogs: BlogDBType[] = await this.blogsModel
-      .find(filter)
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
-
-    const bannedBlogIds = await this.getBannedBlogsIds();
-
-    const sortedBlogs = blogs.filter((blog) => {
-      return !bannedBlogIds.includes(blog._id.toString());
-    });
-
-    const totalCount = await this.blogsModel.countDocuments(sortedBlogs);
-
-    const mappedBlogs =
-      this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
-
-    const pagesCount = Math.ceil(totalCount / pageSize);
-
-    return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount,
-      page: +pageNumber,
-      pageSize: +pageSize,
-      totalCount: totalCount,
-      items: mappedBlogs,
-    };
+    return await this.dataSource.query(`
+  SELECT * FROM blogs
+  WHERE name ILIKE '%${searchNameTerm ?? ''}%'
+  ORDER BY ${sortBy} ${sortDirection}
+  LIMIT ${pageSize}
+  OFFSET ${(pageNumber - 1) * pageSize};
+`);
   }
 
-  async findBlogByBlogId(id: string): Promise<BlogViewModel | null> {
+  async findBlogByBlogId(blogId: string): Promise<BlogViewModel | null> {
     try {
       const bannedBlogIds: string[] = await this.getBannedBlogsIds();
-      const bannedBlogObjectIds: ObjectId[] = bannedBlogIds.map(
-        (id) => new ObjectId(id),
-      );
-
-      const blog = await this.blogsModel
-        .findOne({
-          $and: [
-            { _id: new ObjectId(id) },
-            { _id: { $nin: bannedBlogObjectIds } },
-          ],
-        })
-        .exec();
-
+      const query = `SELECT * FROM blogs WHERE id = '${blogId}' AND id NOT IN (${bannedBlogIds
+        .map((id) => `'${id}'`)
+        .join(', ')});`;
+      const result = await this.dataSource.query(query);
+      const blog = result.rows[0];
       return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
     } catch (error) {
       throw new NotFoundException();
@@ -168,12 +127,12 @@ export class BlogsQueryRepository {
 
   async findBlogByBlogIdAndUserId(blogId: string, userId: string) {
     try {
-      return await this.blogsModel
-        .findOne({
-          _id: new ObjectId(blogId),
-          'blogOwnerInfo.userId': userId,
-        })
-        .lean();
+      const bannedBlogIds: string[] = await this.getBannedBlogsIds();
+      const bannedBlogIdsStr: string = bannedBlogIds.join(',');
+      const blog: BlogSQLDBType = await this.dataSource.query(
+        `SELECT * FROM blogs WHERE id = '${blogId}' AND ownerId = '${userId}' AND id NOT IN (${bannedBlogIdsStr}) LIMIT 1;`,
+      );
+      return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
     } catch (error) {
       throw new ForbiddenException();
     }
@@ -186,19 +145,14 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    const filter = this.searchNameTermFilter(searchNameTerm);
-
-    const blogs: BlogDBType[] = await this.blogsModel
-      .find(filter)
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
+    const blogs: BlogSQLDBType[] = await this.dataSource.query(
+      `SELECT * FROM blogs;`,
+    );
 
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
 
-    const totalCount = await this.getBlogsCount(searchNameTerm);
+    const totalCount = blogs.length;
 
     const pagesCount = Math.ceil(+totalCount / +pageSize);
 
@@ -211,28 +165,20 @@ export class BlogsQueryRepository {
     };
   }
 
-  async getBlogsCount(searchNameTerm?: string | null | undefined) {
-    const filter = this.searchNameTermFilter(searchNameTerm);
-    return this.blogsModel.countDocuments(filter);
-  }
-
-  async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
+  async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogSQLDBType> {
     try {
-      return this.blogsModel
-        .findOne({
-          _id: new ObjectId(blogId),
-        })
-        .lean();
+      return await this.dataSource.query(
+        `SELECT * FROM blogs WHERE id = ${blogId};`,
+      );
     } catch (error) {
       throw new NotFoundException();
     }
   }
 
   async getBannedBlogsIds(): Promise<string[]> {
-    const bannedBlogs: BlogDBType[] = await this.blogsModel
-      .find({ 'banInfo.isBanned': true })
-      .lean();
-
-    return bannedBlogs.map((u) => u._id.toString()); // return banned ips
+    const bannedBlogs: BlogSQLDBType[] = await this.dataSource.query(
+      `SELECT * FROM blogs WHERE isBanned = true ;`,
+    );
+    return bannedBlogs.map((u) => u.id); // return banned ips
   }
 }

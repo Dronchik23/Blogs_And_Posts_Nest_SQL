@@ -20,9 +20,6 @@ import {
   PostViewModel,
   UserViewModel,
 } from '../types and models/models';
-import { PostsService } from './post.service';
-import { CommentsService } from '../comments/comment.service';
-import { LikesService } from '../likes/like.service';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { CurrentUser, CurrentUserIdFromToken } from '../auth/decorators';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
@@ -37,9 +34,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 @Controller({ path: 'posts', scope: Scope.REQUEST })
 export class PostsController {
   constructor(
-    private readonly postsService: PostsService,
-    private readonly commentsService: CommentsService,
-    private readonly likesService: LikesService,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly usersQueryRepository: UsersQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,

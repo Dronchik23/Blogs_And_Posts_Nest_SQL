@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../sa/users/users-repository';
 import * as bcrypt from 'bcrypt';
-import { ObjectId } from 'mongodb';
 
 export class NewPasswordCommand {
   constructor(public password: string, public userId: string) {}
@@ -14,10 +13,7 @@ export class NewPasswordService implements ICommandHandler<NewPasswordCommand> {
   async execute(command: NewPasswordCommand) {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(command.password, passwordSalt);
-    await this.usersRepository.updatePassword(
-      passwordHash,
-      new ObjectId(command.userId),
-    );
+    await this.usersRepository.updatePassword(passwordHash, command.userId);
     return;
   }
 }

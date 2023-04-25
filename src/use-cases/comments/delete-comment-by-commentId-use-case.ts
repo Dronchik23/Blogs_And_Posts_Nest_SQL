@@ -1,5 +1,3 @@
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentDBType, PostDBType } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
@@ -12,15 +10,14 @@ export class DeleteCommentCommand {
 export class DeleteCommentService
   implements ICommandHandler<DeleteCommentCommand>
 {
-  constructor(
-    @InjectModel('Comment') private readonly postsModel: Model<CommentDBType>,
-    private readonly commentsRepository: CommentsRepository,
-  ) {}
+  constructor(private readonly commentsRepository: CommentsRepository) {}
 
   async execute(command: DeleteCommentCommand): Promise<boolean> {
-    return await this.commentsRepository.deleteCommentByCommentId(
-      command.commentId,
-      command.userId,
-    );
+    const a: any =
+      await this.commentsRepository.deleteCommentByCommentIdAndUserId(
+        command.commentId,
+        command.userId,
+      );
+    return a;
   }
 }

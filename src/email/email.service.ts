@@ -6,10 +6,9 @@ import { Injectable, Scope } from '@nestjs/common';
 export class EmailService {
   constructor(private readonly emailAdapter: EmailAdapter) {}
 
-  async sendEmailRegistrationMessage(user: UserDBType) {
-    const code = user.emailConfirmation.confirmationCode;
+  async sendEmailRegistrationMessage(email: string, code: string) {
     await this.emailAdapter.sendEmail(
-      user.accountData.email,
+      email,
       'Confirm your email',
       `<h1>Registration</h1>
                       <p>To finish registratiom please follow the link below:

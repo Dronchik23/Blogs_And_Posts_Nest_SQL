@@ -36,21 +36,21 @@ export class LoginService implements ICommandHandler<LoginCommand> {
     );
     if (!user) return null;
     if (user.banInfo.isBanned === true) return null;
-    const userId = user._id.toString();
+    const userId = user.id;
     const deviceId = randomUUID().toString();
     const { accessToken, refreshToken } = this.jwtService.createJWT(
       userId,
       deviceId,
     );
     const lastActiveDate = this.jwtService.getLastActiveDate(refreshToken);
-    const newDevice = new DeviceDBType(
+
+    await this.devicesRepository.createDevice(
       command.ip,
       command.title,
       lastActiveDate,
       deviceId,
       userId,
-    );
-    await this.devicesRepository.createDevice(newDevice);
+    ); // create device
 
     return { accessToken, refreshToken };
   }

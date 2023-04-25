@@ -1,86 +1,88 @@
-import { ObjectId } from 'mongodb';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import {
-  BlogDBType,
-  CommentDBType,
+  BlogSQLDBType,
+  CommentSQLDBType,
   LikeDBType,
   LikeStatus,
   PaginationType,
-  PostDBType,
-  UserDBType,
+  PostSQLDBType,
+  UserSQLDBType,
 } from '../types and models/types';
 import {
   BloggerCommentViewModel,
   CommentViewModel,
 } from '../types and models/models';
-import {
-  BlogDocument,
-  CommentDocument,
-  LikeDocument,
-  PostDocument,
-} from '../types and models/schemas';
 import { UsersQueryRepository } from './users-query.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectModel('Comment')
-    private readonly commentsModel: Model<CommentDocument>,
-
-    @InjectModel('Like') private readonly likesModel: Model<LikeDocument>,
-
+    @InjectDataSource() protected dataSource: DataSource,
     private readonly usersQueryRepo: UsersQueryRepository,
-
-    @InjectModel('Blog') private readonly blogsModel: Model<BlogDocument>,
-
-    @InjectModel('Post') private readonly postsModel: Model<PostDocument>,
   ) {}
 
   private fromCommentDBTypeToCommentViewModel = (
-    comment: CommentDBType,
+    comment: CommentSQLDBType,
   ): CommentViewModel => {
     return {
-      id: comment._id.toString(),
+      id: comment.id,
       content: comment.content,
       commentatorInfo: {
-        userId: comment.commentatorInfo.userId.toString(),
-        userLogin: comment.commentatorInfo.userLogin,
+        userId: comment.commentatorId,
+        userLogin: comment.commentatorLogin,
       },
-      createdAt: comment.createdAt.toString(),
-      likesInfo: comment.likesInfo,
+      createdAt: comment.createdAt,
+      likesInfo: {
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: comment.myStatus,
+      },
     };
   };
 
   private fromCommentDBTypeToBloggerCommentViewModelWithPagination = (
-    comment: CommentDBType[],
+    comment: CommentSQLDBType[],
   ): BloggerCommentViewModel[] => {
     return comment.map((comment) => ({
-      id: comment._id.toString(),
+      id: comment.id,
       content: comment.content,
       commentatorInfo: {
-        userId: comment.commentatorInfo.userId.toString(),
-        userLogin: comment.commentatorInfo.userLogin,
+        userId: comment.commentatorId,
+        userLogin: comment.commentatorLogin,
       },
-      createdAt: comment.createdAt.toString(),
-      likesInfo: comment.likesInfo,
-      postInfo: comment.postInfo,
+      createdAt: comment.createdAt,
+      likesInfo: {
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: comment.myStatus,
+      },
+      postInfo: {
+        id: comment.postId,
+        title: comment.postTitle,
+        blogId: comment.blogId,
+        blogName: comment.blogName,
+      },
     }));
   };
 
   private fromCommentDBTypeCommentViewModelWithPagination = (
-    comment: CommentDBType[],
+    comment: CommentSQLDBType[],
   ): CommentViewModel[] => {
     return comment.map((comment) => ({
-      id: comment._id.toString(),
+      id: comment.id,
       content: comment.content,
       commentatorInfo: {
-        userId: comment.commentatorInfo.userId.toString(),
-        userLogin: comment.commentatorInfo.userLogin,
+        userId: comment.commentatorId,
+        userLogin: comment.commentatorLogin,
       },
-      createdAt: comment.createdAt.toString(),
-      likesInfo: comment.likesInfo,
+      createdAt: comment.createdAt,
+      likesInfo: {
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: comment.myStatus,
+      },
     }));
   };
 
@@ -92,12 +94,14 @@ export class CommentsQueryRepository {
     sortDirection: string,
     userId?: string,
   ): Promise<PaginationType> {
-    const comments: CommentDBType[] = await this.commentsModel
-      .find({ postId: postId })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
+    const comments: CommentSQLDBType[] = await await this.dataSource.query(`
+  SELECT *
+FROM blogs
+ORDER BY ${sortBy} ${sortDirection}
+LIMIT ${pageSize}
+OFFSET ${(pageNumber - 1) * pageSize};
+  `);
+
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {
         return this.getLikesInfoForComment(comment, userId);
@@ -108,9 +112,7 @@ export class CommentsQueryRepository {
       commentsWithLikesInfo,
     );
 
-    const totalCount = await this.commentsModel.countDocuments({
-      postId: postId,
-    });
+    const totalCount = mappedComments.length;
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 
@@ -129,14 +131,13 @@ export class CommentsQueryRepository {
   ): Promise<CommentViewModel> {
     try {
       const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-        (user: UserDBType) => user._id,
+        (user: UserSQLDBType) => user.id,
       );
-      const comment: CommentDBType = await this.commentsModel
-        .findOne({
-          _id: new ObjectId(commentId),
-          'commentatorInfo.userId': { $nin: bannedUserIds },
-        })
-        .lean();
+      const comment: CommentSQLDBType = await this.dataSource.query(
+        `SELECT * FROM comments WHERE id = '${commentId}', commentatorId = '${userId}'  AND commentatorId NOT IN (${bannedUserIds
+          .map((id) => `${id}`)
+          .join(',')}) ;`,
+      );
 
       const commentWithLikesInfo = await this.getLikesInfoForComment(
         comment,
@@ -149,35 +150,39 @@ export class CommentsQueryRepository {
   }
 
   private async getLikesInfoForComment(
-    comment: CommentDBType,
+    comment: CommentSQLDBType,
     userId?: string,
   ) {
     const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-      (user: UserDBType) => user._id,
-    ); // take userIds of banned Users
-    comment.likesInfo.likesCount = await this.likesModel.countDocuments({
-      parentId: comment._id,
-      status: LikeStatus.Like,
-      userId: { $nin: bannedUserIds }, // exclude banned users
-    });
-    comment.likesInfo.dislikesCount = await this.likesModel.countDocuments({
-      parentId: comment._id,
-      status: LikeStatus.Dislike,
-      userId: { $nin: bannedUserIds }, // exclude banned users
-    });
+      (u) => u.id,
+    );
+
+    comment.likesCount = await this.dataSource.query(`
+        SELECT COUNT(*) FROM likes
+    INNER JOIN comments ON likes.parentId = comments.id
+    WHERE likes.status = 'like'
+    AND likes.userId NOT IN (SELECT id FROM users WHERE isBanned = true)
+    AND comments.id = '${comment.id}';`);
+
+    comment.dislikesCount = await this.dataSource.query(`
+        SELECT COUNT(*) FROM likes
+    INNER JOIN comments ON likes.parentId = comments.id
+    WHERE likes.status = 'Dislike'
+    AND likes.userId NOT IN (SELECT id FROM users WHERE isBanned = true)
+    AND comments.id = '${comment.id}';`);
+
     if (userId) {
       const user = await this.usersQueryRepo.findUserByUserId(userId);
       if (user.banInfo.isBanned === true) {
-        comment.likesInfo.myStatus = LikeStatus.None;
+        comment.myStatus = LikeStatus.None;
       } else {
-        const status: LikeDBType = await this.likesModel
-          .findOne({
-            parentId: comment._id,
-            userId: new ObjectId(userId),
-          })
-          .lean();
+        const status: LikeDBType = await this.dataSource.query(`
+SELECT * FROM likes
+WHERE parentId = '<comment.parentId>' AND userId = '<userId>'
+LIMIT 1;
+`);
         if (status) {
-          comment.likesInfo.myStatus = status.status;
+          comment.myStatus = status.status;
         }
       }
     }
@@ -192,38 +197,37 @@ export class CommentsQueryRepository {
     pageNumber: number,
     userId: string,
   ): Promise<PaginationType> {
-    debugger;
     const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-      (user: UserDBType) => user._id,
+      (user: UserSQLDBType) => user.id,
     );
 
-    const filter = {
-      'blogOwnerInfo.userId': userId,
-    };
+    const blogs: BlogSQLDBType[] = await await this.dataSource.query(`
+  SELECT * FROM blogs
+  WHERE name ILIKE '%${searchNameTerm ?? ''}%', blogOwnerId = ${userId}
+  ORDER BY ${sortBy} ${sortDirection}
+  LIMIT ${pageSize}
+  OFFSET ${(pageNumber - 1) * pageSize};
+`);
 
-    const blogs: BlogDBType[] = await this.blogsModel.find(filter);
+    const blogIds: string[] = blogs.map((blog: BlogSQLDBType) => blog.id); // find all blogIds of current user
 
-    const blogIds: string[] = blogs.map((blog: BlogDBType) =>
-      blog._id.toString(),
-    ); // find all blogIds of current user
+    const posts: PostSQLDBType[] = await this.dataSource.query(
+      `SELECT * FROM posts WHERE blogId IN ('${blogIds.join("','")}') ;
+ ;`,
+    );
 
-    const posts: PostDBType[] = await this.postsModel.find({
-      blogId: { $in: blogIds },
-    });
+    const postIds: string[] = posts.map((post: PostSQLDBType) => post.id); // find all postId of current user blogs
 
-    const postIds: string[] = posts.map((post: PostDBType) =>
-      post._id.toString(),
-    ); // find all postId of current user blogs
-
-    const comments: CommentDBType[] = await this.commentsModel // find all comments for all posts of current user
-      .find({
-        postId: { $in: postIds },
-        'commentatorInfo.userId': { $nin: bannedUserIds },
-      })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .sort({ [sortBy]: sortDirection === 'asc' ? 1 : -1 })
-      .lean();
+    const comments: CommentSQLDBType[] = await this.dataSource.query(`
+        SELECT * FROM comments
+    WHERE postId IN (${postIds.map((id) => `'${id}'`).join(', ')}) 
+    AND commentatorUserId NOT IN (${bannedUserIds
+      .map((id) => `'${id}'`)
+      .join(', ')})
+    ORDER BY ${sortBy} ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+    OFFSET ${(pageNumber - 1) * pageSize}
+    LIMIT ${pageSize};
+`);
 
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {
@@ -236,11 +240,7 @@ export class CommentsQueryRepository {
         commentsWithLikesInfo,
       );
 
-    const totalCount = await this.commentsModel.countDocuments({
-      postId: { $in: postIds },
-      'commentatorInfo.userId': { $nin: bannedUserIds },
-      'blogOwnerInfo.userId': userId,
-    });
+    const totalCount = mappedComments.length;
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 

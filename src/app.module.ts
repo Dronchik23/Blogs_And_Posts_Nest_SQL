@@ -1,39 +1,22 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './sa/users/users.controller';
 import { UsersRepository } from './sa/users/users-repository';
-import { UsersService } from './sa/users/users.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { EmailService } from './email/email.service';
 import { BlogsController } from './blogs/blog.controller';
 import { BlogsRepository } from './blogs/blog.repository';
-import { BlogsService } from './blogs/blog.service';
-import { PostsService } from './posts/post.service';
 import { PostsRepository } from './posts/post.repository';
 import { PostsController } from './posts/post.controller';
-import { CommentsService } from './comments/comment.service';
 import { CommentsRepository } from './comments/comment.repository';
 import { CommentsController } from './comments/comment.controller';
 import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
-import { DevicesService } from './devices/device.service';
 import { DevicesRepository } from './devices/device.repository';
 import { DevicesController } from './devices/device.controller';
-import { LikesService } from './likes/like.service';
 import { LikesRepository } from './likes/like.repository';
 import { TokensRepository } from './tokens/tokens.repository';
 import { CustomJwtService } from './jwt/jwt.service';
-import {
-  BlogSchema,
-  CommentSchema,
-  DeviceSchema,
-  LikeSchema,
-  PostSchema,
-  TokenBlackListSchema,
-  UserSchema,
-} from './types and models/schemas';
 import { TestingController } from './testing/testing.controller';
 import { EmailAdapter } from './email/email.adapter';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import {
   IsEmailAlreadyConfirmedConstraint,
   IsEmailAlreadyExistConstraint,
@@ -52,11 +35,6 @@ import { BloggerBlogsController } from './blogger/blogger.blogs.controller';
 import { SABlogsController } from './sa/blogs/sa.blogs.controller';
 import { CreateBlogService } from './use-cases/blogs/create-blog-use-case';
 import { CqrsModule } from '@nestjs/cqrs';
-import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
-import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
-import { UsersQueryRepository } from './query-repositorys/users-query.repository';
-import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';
-import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
 import { DeleteBlogService } from './use-cases/blogs/delete-blog-by-blogId-use-case';
 import { UpdateBlogService } from './use-cases/blogs/update-blog-by-blogId-use-case';
 import { CreatePostService } from './use-cases/posts/create-post-use-case';
@@ -86,7 +64,12 @@ import { FindBannedUsersByBlogIdService } from './use-cases/blogger/users/find-b
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { MongooseConfigService } from './connect-config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
+import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';
+import { UsersQueryRepository } from './query-repositorys/users-query.repository';
+import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
+import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
 
 export const useCases = [
   CreateBlogService,
@@ -122,29 +105,43 @@ export const queryRepos = [
   CommentsQueryRepository,
   DevicesQueryRepository,
 ];
+export const repositories = [
+  LikesRepository,
+  TokensRepository,
+  UsersRepository,
+  DevicesRepository,
+  BlogsRepository,
+  CommentsRepository,
+  PostsRepository,
+];
+export const services = [CustomJwtService, AppService, EmailService];
+export const constraints = [
+  IsEmailAlreadyExistConstraint,
+  IsLoginAlreadyExistConstraint,
+  IsEmailAlreadyConfirmedConstraint,
+  isCodeAlreadyConfirmedConstraint,
+  isBlogExistConstraint,
+  isCommentExistConstraint,
+];
+//export const strategies = [BasicAuthStrategy, JwtStrategy];
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useClass: MongooseConfigService,
-      inject: [ConfigService],
-    }),
     ThrottlerModule.forRoot({
       ttl: 1000000,
       limit: 500000,
     }),
-    MongooseModule.forFeature([
-      { name: 'User', schema: UserSchema },
-      { name: 'Blog', schema: BlogSchema },
-      { name: 'Post', schema: PostSchema },
-      { name: 'Comment', schema: CommentSchema },
-      { name: 'Device', schema: DeviceSchema },
-      { name: 'Like', schema: LikeSchema },
-      { name: 'TokenBlackList', schema: TokenBlackListSchema },
-    ]),
-
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      port: 5432,
+      username: 'nodeJS',
+      password: 'nodeJS',
+      database: 'mybd',
+      autoLoadEntities: false,
+      synchronize: false,
+    }),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',
@@ -175,34 +172,14 @@ export const queryRepos = [
     SABlogsController,
   ],
   providers: [
-    AppService,
-    UsersService,
-    UsersRepository,
-    EmailService,
     EmailAdapter,
-    BlogsService,
-    BlogsRepository,
-    PostsService,
-    PostsRepository,
-    CommentsService,
-    CommentsRepository,
-    AuthService,
-    DevicesService,
-    DevicesRepository,
-    LikesService,
-    LikesRepository,
-    TokensRepository,
-    CustomJwtService,
-    IsEmailAlreadyExistConstraint,
-    IsLoginAlreadyExistConstraint,
-    IsEmailAlreadyConfirmedConstraint,
-    isCodeAlreadyConfirmedConstraint,
-    isBlogExistConstraint,
-    isCommentExistConstraint,
     BasicAuthStrategy,
     JwtStrategy,
+    ...constraints,
+    ...services,
     ...useCases,
     ...queryRepos,
+    ...repositories,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

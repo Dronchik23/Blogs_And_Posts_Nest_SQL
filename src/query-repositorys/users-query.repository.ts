@@ -1,89 +1,59 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { FilterQuery, Model } from 'mongoose';
 import {
   BanStatus,
   PaginationType,
   UserDBType,
+  UserSQLDBType,
 } from '../types and models/types';
 import { UserViewModel } from '../types and models/models';
-import { UserDocument } from '../types and models/schemas';
-import { ObjectId } from 'mongodb';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersQueryRepository {
-  constructor(@InjectModel('User') public usersModel: Model<UserDocument>) {}
+  constructor(@InjectDataSource() protected dataSource: DataSource) {
+    return;
+  }
 
-  private fromUserDBTypeToUserViewModel(user: UserDBType): UserViewModel {
+  private fromUserDBTypeToUserViewModel(user: UserSQLDBType): UserViewModel {
     return {
-      id: user._id.toString(),
-      login: user.accountData.login,
-      email: user.accountData.email,
-      createdAt: user.accountData.createdAt,
+      id: user.id,
+      login: user.login,
+      email: user.email,
+      createdAt: user.createdAt,
       banInfo: {
-        isBanned: user.banInfo.isBanned,
-        banDate: user.banInfo.banDate,
-        banReason: user.banInfo.banReason,
+        isBanned: user.isBanned,
+        banDate: user.banDate,
+        banReason: user.banReason,
       },
     };
   }
 
-  private fromUserDBTypeToUserViewModelWithPagination(users: UserDBType[]) {
+  private fromUserDBTypeToUserViewModelWithPagination(users: UserSQLDBType[]) {
     return users.map((user) => ({
-      id: user._id.toString(),
-      login: user.accountData.login,
-      email: user.accountData.email,
-      createdAt: user.accountData.createdAt,
+      id: user.id,
+      login: user.login,
+      email: user.email,
+      createdAt: user.createdAt,
       banInfo: {
-        isBanned: user.banInfo.isBanned,
-        banDate: user.banInfo.banDate,
-        banReason: user.banInfo.banReason,
+        isBanned: user.isBanned,
+        banDate: user.banDate,
+        banReason: user.banReason,
       },
     }));
   }
   private fromUserDBTypeToUserViewModelWithPaginationForBlogger(
-    users: UserDBType[],
+    users: UserSQLDBType[],
   ) {
     return users.map((user) => ({
-      id: user._id.toString(),
-      login: user.accountData.login,
+      id: user.id,
+      login: user.login,
       banInfo: {
-        isBanned: user.banInfo.isBanned,
-        banDate: user.banInfo.banDate,
-        banReason: user.banInfo.banReason,
+        isBanned: user.isBanned,
+        banDate: user.banDate,
+        banReason: user.banReason,
       },
     }));
-  }
-
-  private searchLoginAndEmailTermFilter(
-    searchLoginTerm?: string,
-    searchEmailTerm?: string,
-    banStatus?: BanStatus,
-  ): FilterQuery<UserDBType> {
-    const filter: FilterQuery<UserDBType> = {
-      $or: [
-        {
-          'accountData.email': {
-            $regex: searchEmailTerm || '',
-            $options: 'i',
-          },
-        },
-        {
-          'accountData.login': {
-            $regex: searchLoginTerm || '',
-            $options: 'i',
-          },
-        },
-      ],
-    };
-
-    if (banStatus === BanStatus.banned) {
-      filter['banInfo.isBanned'] = true;
-    } else if (banStatus === BanStatus.notBanned) {
-      filter['banInfo.isBanned'] = false;
-    }
-
-    return filter;
   }
 
   async getAllUsers(
@@ -95,22 +65,20 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: BanStatus,
   ): Promise<PaginationType> {
-    const filter = this.searchLoginAndEmailTermFilter(
-      searchLoginTerm,
-      searchEmailTerm,
-      banStatus,
-    );
-
-    const users: UserDBType[] = await this.usersModel
-      .find(filter)
-      .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .lean();
+    const users: UserSQLDBType[] = await this.dataSource.query(`
+  SELECT *
+FROM blogs
+WHERE name ILIKE '%${searchLoginTerm ?? ''}%'
+  AND email ILIKE '%${searchEmailTerm ?? ''}%'
+  AND isBanned = '${banStatus}'
+ORDER BY ${sortBy} ${sortDirection}
+LIMIT ${pageSize}
+OFFSET ${(pageNumber - 1) * pageSize};
+  `);
 
     const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
 
-    const totalCount = await this.usersModel.countDocuments(filter);
+    const totalCount = users.length;
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -123,11 +91,11 @@ export class UsersQueryRepository {
     };
   }
 
-  async findUserByUserId(id: string): Promise<UserViewModel | null> {
+  async findUserByUserId(userId: string): Promise<UserViewModel | null> {
     try {
-      const user = await this.usersModel.findOne({
-        _id: new mongoose.Types.ObjectId(id),
-      });
+      const user = await this.dataSource.query(
+        `SELECT * FROM users WHERE id = '${userId}';`,
+      );
       return this.fromUserDBTypeToUserViewModel(user);
     } catch (e) {
       throw new NotFoundException();
@@ -136,41 +104,40 @@ export class UsersQueryRepository {
 
   async findUserByLoginOrEmail(
     loginOrEmail: string,
-  ): Promise<UserDBType | null> {
-    return this.usersModel
-      .findOne({
-        $or: [
-          { 'accountData.email': loginOrEmail },
-          { 'accountData.login': loginOrEmail },
-        ],
-      })
-      .exec();
+  ): Promise<UserSQLDBType | null> {
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE login = '${loginOrEmail}' OR email = '${loginOrEmail}';`,
+    );
   }
 
   async findUserByEmail(email: string): Promise<any> {
-    return this.usersModel.findOne({
-      'accountData.email': email,
-    });
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE email = '${email}';`,
+    );
   }
 
   async findUserByLogin(login: string): Promise<any> {
-    return this.usersModel.findOne({
-      'accountData.login': login,
-    });
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE login = '${login}';`,
+    );
   }
 
-  async findUserByPasswordRecoveryCode(code: string) {
-    return this.usersModel.findOne({ 'passwordRecovery.recoveryCode': code });
+  async findUserByPasswordRecoveryCode(recoveryCode: string) {
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE recoveryCode = '${recoveryCode}';`,
+    );
   }
 
-  async findUserByConfirmationCode(code: string): Promise<any> {
-    return this.usersModel.findOne({
-      'emailConfirmation.confirmationCode': code,
-    });
+  async findUserByConfirmationCode(confirmationCode: string): Promise<any> {
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE confirmationCode = '${confirmationCode}';`,
+    );
   }
 
-  async findBannedUsers(): Promise<UserDBType[]> {
-    return this.usersModel.find({ 'banInfo.isBanned': true }).lean();
+  async findBannedUsers(): Promise<UserSQLDBType[]> {
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE isBanned = true;`,
+    );
   }
 
   async findBannedUsersByBlogId(
@@ -181,22 +148,18 @@ export class UsersQueryRepository {
     sortDirection: string,
     searchLoginTerm: string,
   ) {
-    const filter = {
-      ...this.searchLoginAndEmailTermFilter(searchLoginTerm),
-      'banInfo.blogId': blogId,
-    };
-
-    const users: UserDBType[] = await this.usersModel
-      .find(filter)
-      .sort({ [`accountData.${sortBy}`]: sortDirection === 'asc' ? 1 : -1 })
-      .skip((pageNumber - 1) * pageSize)
-      .limit(pageSize)
-      .lean();
+    const users: UserSQLDBType[] = await this.dataSource.query(`
+  SELECT * FROM blogs
+  WHERE name ILIKE '%${searchLoginTerm ?? ''}%', blogId = ${blogId}
+  ORDER BY ${sortBy} ${sortDirection}
+  LIMIT ${pageSize}
+  OFFSET ${(pageNumber - 1) * pageSize};
+`);
 
     const mappedUsers =
       this.fromUserDBTypeToUserViewModelWithPaginationForBlogger(users);
 
-    const totalCount = await this.usersModel.countDocuments(filter);
+    const totalCount = users.length;
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -209,7 +172,9 @@ export class UsersQueryRepository {
     };
   }
 
-  async findUserWithDBType(userId: string) {
-    return this.usersModel.findOne({ _id: new ObjectId(userId) }).lean();
+  async findUserByUserIdWithDBType(userId: string) {
+    return await this.dataSource.query(
+      `SELECT * FROM users WHERE id = '${userId}';`,
+    );
   }
 }

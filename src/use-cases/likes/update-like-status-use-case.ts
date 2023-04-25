@@ -7,8 +7,8 @@ export class UpdateLikeStatusCommand {
   constructor(
     public parentId: string,
     public userId: string,
-    public userLogin: string,
-    public newLikeStatus: LikeStatus,
+    public login: string,
+    public likeStatus: LikeStatus,
   ) {}
 }
 
@@ -19,13 +19,14 @@ export class UpdateLikeStatusService
   constructor(private readonly likesRepository: LikesRepository) {}
 
   async execute(command: UpdateLikeStatusCommand): Promise<any> {
-    const newLike = new LikeDBType(
-      new ObjectId(command.parentId),
-      new ObjectId(command.userId),
-      command.userLogin,
-      command.newLikeStatus,
-      new Date().toISOString(),
+    const addedAt = new Date().toISOString();
+
+    return await this.likesRepository.updateLikeStatus(
+      command.parentId,
+      command.userId,
+      command.login,
+      command.likeStatus,
+      addedAt,
     );
-    return await this.likesRepository.updateLikeStatus(newLike);
   }
 }

@@ -50,12 +50,12 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Query() query: PostPaginationQueryModel,
     @CurrentUserIdFromToken() currentUserId: string | null,
-  ): Promise<PaginationType> {
-    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+  ): Promise<any> {
+    const blog: any = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
     }
-    return await this.postsQueryRepository.findPostsByBlogId(
+    const a: any = await this.postsQueryRepository.findPostsByBlogId(
       blogId,
       query.pageNumber,
       query.pageSize,
@@ -63,6 +63,7 @@ export class BlogsController {
       query.sortDirection,
       currentUserId,
     );
+    return a;
   }
 
   @Get(':id')

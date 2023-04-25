@@ -24,7 +24,7 @@ export class RefreshTokenService
     const lastActiveDate = new Date(
       command.jwtPayload.iat * 1000,
     ).toISOString();
-    const device =
+    const device: any =
       await this.devicesQueryService.findDeviceByDeviceIdUserIdAndDate(
         command.jwtPayload.deviceId.toString(),
         command.jwtPayload.userId.toString(),
