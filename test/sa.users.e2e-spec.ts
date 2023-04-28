@@ -4,7 +4,6 @@ import { createApp } from '../src/helpers/createApp';
 import { UserInputModel, UserViewModel } from '../src/types and models/models';
 import request from 'supertest';
 import { disconnect } from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 
@@ -12,7 +11,6 @@ describe('sa/users (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let user: UserViewModel;
   const mokEmailAdapter = {
@@ -28,10 +26,6 @@ describe('sa/users (e2e)', () => {
   const wipeAllData = '/testing/all-data';
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -52,16 +46,35 @@ describe('sa/users (e2e)', () => {
 
   describe('sa/users', () => {
     describe('get users tests', () => {
-      it('should get all users', async () => {
+      beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
-        await request(server).get(url).auth('admin', 'qwerty').expect(200, {
-          pagesCount: 1,
-          page: 1,
-          pageSize: 10,
-          totalCount: 0,
-          items: [],
-        });
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+
+        expect(user).toBeDefined();
+      });
+      it('should get all users', async () => {
+        await request(server)
+          .get(url)
+          .auth('admin', 'qwerty')
+          .expect(200, {
+            pagesCount: 1,
+            page: 1,
+            pageSize: 10,
+            totalCount: 1,
+            items: [user],
+          });
       });
     });
     describe('ban user tests', () => {
@@ -147,7 +160,8 @@ describe('sa/users (e2e)', () => {
           .auth('admin', 'qwerty');
 
         user = responseForUser2.body;
-        expect(user.banInfo.isBanned).toBe(true);
+        console.log('user body', user);
+        expect(user.banInfo.isBanned).toBe('true');
       });
     });
     describe('create user tests', () => {

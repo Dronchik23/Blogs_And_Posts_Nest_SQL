@@ -55,8 +55,7 @@ export class IsEmailAlreadyConfirmedConstraint
       email,
     );
     debugger;
-    const isEmailNotConfirmed =
-      user && user.emailConfirmation.isConfirmed === true;
+    const isEmailNotConfirmed = user && user.isEmailConfirmed === true;
     return !isEmailNotConfirmed;
   }
 

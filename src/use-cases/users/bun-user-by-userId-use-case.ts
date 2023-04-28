@@ -23,12 +23,11 @@ export class BanUserByUserIdService
     const user = await this.userQueryRepo.findUserByUserId(command.userId);
     if (user.banInfo.isBanned === command.isBanned) return null;
     const banDate = new Date().toISOString();
-    const a: any = await this.userRepo.changeBanStatusForUserBySA(
+    return await this.userRepo.changeBanStatusForUserBySA(
       command.userId,
       command.isBanned,
       command.banReason,
       banDate,
     );
-    return a;
   }
 }

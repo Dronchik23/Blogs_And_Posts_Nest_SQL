@@ -1,10 +1,5 @@
 import { Injectable, Scope } from '@nestjs/common';
-import {
-  AccountDataType,
-  EmailConfirmationType,
-  PasswordRecoveryType,
-  UserSQLDBType,
-} from '../../types and models/types';
+import { UserDBType } from '../../types and models/types';
 import { UserViewModel } from '../../types and models/models';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -13,7 +8,7 @@ import { DataSource } from 'typeorm';
 export class UsersRepository {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  private fromUserDBTypeToUserViewModel(user: UserSQLDBType): UserViewModel {
+  private fromUserDBTypeToUserViewModel(user: UserDBType): UserViewModel {
     return {
       id: user.id,
       login: user.login,
@@ -27,17 +22,18 @@ export class UsersRepository {
     };
   }
 
-  async updateConfirmation(userId: any) {
+  async updateConfirmation(userId: string) {
     const result = await this.dataSource.query(
-      `UPDATE users SET isEmailConfirmed = true WHERE id = ${userId};`,
+      `UPDATE users SET isEmailConfirmed = true WHERE id = $1;`,
+      [userId],
     );
     return result.affectedRows > 0;
   }
 
   async deleteUserByUserId(userId: string) {
-    return await this.dataSource.query(
-      `DELETE FROM users WHERE id = ${userId};`,
-    );
+    return await this.dataSource.query(`DELETE FROM users WHERE id = $1;`, [
+      userId,
+    ]);
   }
 
   async deleteAllUsers() {
@@ -45,11 +41,12 @@ export class UsersRepository {
   }
 
   async updateConfirmationCodeByUserId(
-    userId: any,
+    userId: string,
     newConfirmationCode: string,
   ) {
     const result = await this.dataSource.query(
-      `UPDATE users SET confirmationCode = ${newConfirmationCode} WHERE id = ${userId};`,
+      `UPDATE users SET "confirmationCode" = ${newConfirmationCode} WHERE id = $1`,
+      [newConfirmationCode, userId],
     );
     return result.affectedRows > 0;
   }
@@ -59,14 +56,16 @@ export class UsersRepository {
     newConfirmationCode: string,
   ) {
     const result = await this.dataSource.query(
-      `UPDATE users SET confirmationCode = ${newConfirmationCode} WHERE email = ${email};`,
+      `UPDATE users SET "confirmationCode" = ${newConfirmationCode} WHERE email = ${email};`,
+      [newConfirmationCode, email],
     );
     return result.affectedRows > 0;
   }
 
   async updatePassword(passwordHash: string, userId: string) {
     const result = await this.dataSource.query(
-      `UPDATE users SET passwordHash = ${passwordHash} WHERE id = ${userId};`,
+      `UPDATE users SET "passwordHash" = $1 WHERE id = $2;`,
+      [passwordHash, userId],
     );
     return result.affectedRows > 0;
   }
@@ -77,13 +76,16 @@ export class UsersRepository {
     banReason: string,
     banDate: string,
   ) {
+    debugger;
     if (isBanned === false) {
       banReason = null;
       banDate = null;
     } // if user unbanned - clear banReason and banDate
     const result = await this.dataSource.query(
-      `UPDATE users SET isBanned = ${isBanned}, banReason = ${banReason}, banDate = ${banDate} WHERE id = ${userId};`,
+      `UPDATE users SET "isBanned" = $1, "banReason" = $2, "banDate" = $3 WHERE id = $4;`,
+      [isBanned, banReason, banDate, userId],
     );
+    console.log('result', result);
     return result.affectedRows > 0;
   }
 
@@ -100,55 +102,51 @@ export class UsersRepository {
       blogId = null;
     } // if user unbanned - clear banReason and banDate
     const result = await this.dataSource.query(
-      `UPDATE users SET isBanned = ${isBanned}, banReason = ${banReason}, banDate = ${banDate}, blogId = ${blogId}  WHERE id = ${userId};`,
+      `UPDATE users SET "isBanned" = $1, "banReason" = $2, "banDate" = $3, "blogId" = $4  WHERE id = $5;`,
+      [isBanned, banReason, banDate, blogId, userId],
     );
     return result.affectedRows > 0;
   }
 
   async createUser(
-    accountData: AccountDataType,
-    emailConfirmation: EmailConfirmationType,
-    passwordRecovery: PasswordRecoveryType,
+    login,
+    email,
+    passwordHash,
+    createdAt,
+    confirmationCode,
+    confirmationExpirationDate,
+    isEmailConfirmed,
+    recoveryCode,
+    isRecoveryConfirmed,
   ) {
-    const query = `
-   INSERT INTO public.users(
-  login,
-  email,
-  "passwordHash",
-  "createdAt",
-  "confirmationCode",
-  "confirmationExpirationDate",
-  "isEmailConfirmed",
-  "recoveryCode",
-  "isRecoveryConfirmed"
-) 
-VALUES (
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-  $6,
-  $7,
-  $8,
-  $9
-) 
-RETURNING *
-  `;
-    const values = [
-      accountData.login,
-      accountData.email,
-      accountData.passwordHash,
-      accountData.createdAt,
-      emailConfirmation.confirmationCode,
-      emailConfirmation.expirationDate,
-      emailConfirmation.isConfirmed,
-      passwordRecovery.recoveryCode,
-      passwordRecovery.isConfirmed,
-    ];
-
-    const user = await this.dataSource.query(query, values);
-
+    const user = await this.dataSource.query(
+      `
+    INSERT INTO public.users (
+      login,
+      email,
+      "passwordHash",
+      "createdAt",
+      "confirmationCode",
+      "confirmationExpirationDate",
+      "isEmailConfirmed",
+      "recoveryCode",
+      "isRecoveryConfirmed"
+    )
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    RETURNING *
+    `,
+      [
+        login,
+        email,
+        passwordHash,
+        createdAt,
+        confirmationCode,
+        confirmationExpirationDate,
+        isEmailConfirmed,
+        recoveryCode,
+        isRecoveryConfirmed,
+      ],
+    );
     return this.fromUserDBTypeToUserViewModel(user[0]); // mapping user
   }
 }

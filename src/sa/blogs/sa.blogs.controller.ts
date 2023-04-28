@@ -16,8 +16,6 @@ import {
   BlogPaginationQueryModel,
 } from '../../types and models/models';
 import { SkipThrottle } from '@nestjs/throttler';
-import { BlogsService } from '../../blogs/blog.service';
-import { UsersService } from '../users/users.service';
 import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
@@ -29,8 +27,6 @@ import { BanBlogByBlogIdCommand } from '../../use-cases/blogs/ban-blog-by-blogId
 @Controller({ path: 'sa/blogs', scope: Scope.REQUEST })
 export class SABlogsController {
   constructor(
-    private readonly blogsService: BlogsService,
-    private readonly usersService: UsersService,
     private readonly commandBus: CommandBus,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly usersQueryRepository: UsersQueryRepository,

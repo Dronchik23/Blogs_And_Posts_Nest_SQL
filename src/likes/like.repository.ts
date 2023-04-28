@@ -1,5 +1,5 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { LikeStatus, LikeSQLDBType } from '../types and models/types';
+import { LikeStatus, LikeDBType } from '../types and models/types';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -15,9 +15,10 @@ export class LikesRepository {
     login: string,
     likeStatus: LikeStatus,
     addedAt: string,
-  ): Promise<LikeSQLDBType> {
+  ): Promise<LikeDBType> {
     const newLike = await this.dataSource.query(
-      `UPDATE likes SET status = ${likeStatus}, addedAt = ${addedAt} WHERE userId = ${userId}, parentId = ${parentId}, login = ${login};`,
+      `UPDATE likes SET status = $1, addedAt = $2 WHERE "userId" = $3, "parentId" = $4, login = $5;`,
+      [likeStatus, addedAt, userId, parentId, login],
     );
     return newLike;
   }

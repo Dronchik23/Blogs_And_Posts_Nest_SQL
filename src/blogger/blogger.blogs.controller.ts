@@ -24,9 +24,7 @@ import {
   PostViewModel,
   UserViewModel,
 } from '../types and models/models';
-import { PostsService } from '../posts/post.service';
 import { SkipThrottle } from '@nestjs/throttler';
-import { BlogsService } from '../blogs/blog.service';
 import { CreateBlogCommand } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
@@ -44,8 +42,6 @@ import { CommentsQueryRepository } from '../query-repositorys/comments-query.rep
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
 export class BloggerBlogsController {
   constructor(
-    private readonly blogsService: BlogsService,
-    private readonly postsService: PostsService,
     private readonly commandBus: CommandBus,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
@@ -150,7 +146,7 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    if (blog.blogOwnerInfo.userId !== currentUserid) {
+    if (blog.blogOwnerId !== currentUserid) {
       throw new ForbiddenException();
     }
     const isUpdated = await this.commandBus.execute(
@@ -178,7 +174,7 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    if (blog.blogOwnerInfo.userId !== currentUserid) {
+    if (blog.blogOwnerId !== currentUserid) {
       throw new ForbiddenException();
     }
     const isDeleted = await this.commandBus.execute(
@@ -203,7 +199,7 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const blogOwner: any =
+    const blogOwner: BlogViewModel =
       await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
         blogId,
         currentUserId,

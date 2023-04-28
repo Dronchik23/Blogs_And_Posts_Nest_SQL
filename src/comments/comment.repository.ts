@@ -1,4 +1,4 @@
-import { CommentSQLDBType } from '../types and models/types';
+import { CommentDBType } from '../types and models/types';
 import { CommentViewModel } from '../types and models/models';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -11,7 +11,7 @@ export class CommentsRepository {
   }
 
   private fromCommentDBTypeToCommentViewModel = (
-    comment: CommentSQLDBType,
+    comment: CommentDBType,
   ): CommentViewModel => {
     return {
       id: comment.id,
@@ -39,18 +39,8 @@ export class CommentsRepository {
     blogId: string,
     blogName: string,
   ): Promise<CommentViewModel> {
-    const query = `
-   INSERT INTO public.comments(
-  content,
-  "commentOwnerId",
-  "commentOwnerLogin",
-  "createdAt",
-  "postId",
-  "postTitle",
-  "blogId",
-  "blogName"
-) 
-VALUES (
+    const comment = await this.dataSource.query(
+      `   INSERT INTO public.comments(
   $1,
   $2,
   $3,
@@ -58,22 +48,21 @@ VALUES (
   $5,
   $6,
   $7,
-  $8
-) 
-RETURNING *
-  `;
-    const values = [
-      content,
-      userId,
-      login,
-      createdAt,
-      postId,
-      title,
-      blogId,
-      blogName,
-    ];
-
-    const comment = await this.dataSource.query(query, values);
+  $8,
+  $9
+)`,
+      [
+        content,
+        userId,
+        login,
+        createdAt,
+        postId,
+        title,
+        title,
+        blogId,
+        blogName,
+      ],
+    );
 
     return this.fromCommentDBTypeToCommentViewModel(comment[0]); // mapping comment
   }
@@ -84,14 +73,16 @@ RETURNING *
     userId: string,
   ) {
     const result = await this.dataSource.query(
-      `UPDATE comments SET content = ${content}, WHERE id = ${commentId}, commentOwnerId = ${userId};`,
+      `UPDATE comments SET content = $1, WHERE id = $2, "commentOwnerId" = $3;`,
+      [content, commentId, userId],
     );
     return result.affectedRows > 0;
   }
 
   async deleteCommentByCommentIdAndUserId(commentId: string, userId: string) {
     return await this.dataSource.query(
-      `DELETE FROM comments WHERE id = ${commentId}, commentOwnerId = ${userId} ;`,
+      `DELETE FROM comments WHERE id = $1, "commentOwnerId" = $2 ;`,
+      [commentId, userId],
     );
   }
 

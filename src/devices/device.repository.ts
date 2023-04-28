@@ -15,38 +15,30 @@ export class DevicesRepository {
     deviceId: string,
     userId: string,
   ) {
-    const query = `
-   INSERT INTO public.devices(
-  ip,
-  title,
-  "lastActiveDate",
-  "deviceId",
-  "userId",
-) 
-VALUES (
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-) 
-RETURNING *
-  `;
-    const values = [ip, title, lastActiveDate, deviceId, userId];
-
-    return await this.dataSource.query(query, values);
+    return await this.dataSource.query(
+      `INSERT INTO devices(
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+    )`,
+      [ip, title, lastActiveDate, deviceId, userId],
+    );
   }
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {
     const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE userId = ${userId}, deviceId = ${deviceId};`,
+      `DELETE FROM devices WHERE "userId" = $1, "deviceId" = $2;`,
+      [userId, deviceId],
     );
     return result.acknowledged;
   }
 
   async deleteDeviceByDeviceId(deviceId: string) {
     const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE deviceId = ${deviceId};`,
+      `DELETE FROM devices WHERE "deviceId" = $1;`,
+      [deviceId],
     );
     return result.affectedRows > 0;
   }
@@ -57,7 +49,8 @@ RETURNING *
     newLastActiveDate: string,
   ): Promise<any> {
     const result = await this.dataSource.query(
-      `UPDATE devices SET lastActiveDate = ${newLastActiveDate}, WHERE deviceId = ${deviceId}, userId = ${userId};`,
+      `UPDATE devices SET "lastActiveDate" = $1, WHERE "deviceId" = $2, "userId" = $3;`,
+      [newLastActiveDate, deviceId, userId],
     );
     return result.affectedRows > 0;
   }
@@ -68,7 +61,8 @@ RETURNING *
     lastActiveDate: string,
   ): Promise<any> {
     const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE deviceId = ${deviceId}, userId = ${userId}, lastActiveDate = ${lastActiveDate} ;`,
+      `DELETE FROM devices WHERE "deviceId" = ${deviceId}, "userId" = ${userId}, "lastActiveDate" = ${lastActiveDate} ;`,
+      [deviceId, userId, lastActiveDate],
     );
     return result.affectedRows > 0;
   }

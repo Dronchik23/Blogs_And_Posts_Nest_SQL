@@ -6,27 +6,22 @@ import {
   Query,
   Scope,
 } from '@nestjs/common';
-import { BlogsService } from './blog.service';
 import {
   BlogPaginationQueryModel,
   BlogViewModel,
   PostPaginationQueryModel,
 } from '../types and models/models';
-import { PostsService } from '../posts/post.service';
 import { CurrentUserIdFromToken } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CreateBlogService } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
-import { PaginationType } from '../types and models/types';
 
 @SkipThrottle()
 @Controller({ path: 'blogs', scope: Scope.REQUEST })
 export class BlogsController {
   constructor(
-    private readonly blogsService: BlogsService,
-    private readonly postsService: PostsService,
     private readonly createBlogsService: CreateBlogService,
     private readonly commandBus: CommandBus,
     private readonly blogsQueryRepository: BlogsQueryRepository,

@@ -22,14 +22,8 @@ export class RegistrationEmailResendingService
     const user = await this.usersQueryRepository.findUserByEmail(command.email);
     if (!user) return false;
     const newCode = randomUUID();
-    await this.usersRepository.updateConfirmationCodeByUserId(
-      user._id,
-      newCode,
-    );
-    await this.emailService.resendingEmailMessage(
-      user.accountData.email,
-      newCode,
-    );
+    await this.usersRepository.updateConfirmationCodeByUserId(user.id, newCode);
+    await this.emailService.resendingEmailMessage(user.email, newCode);
     return true;
   }
 }

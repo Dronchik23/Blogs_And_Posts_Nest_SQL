@@ -30,7 +30,7 @@ export class BanUserByUserIdByBloggerService
     if (user.banInfo.isBanned === command.isBanned) return null;
     const blog: BlogDBType =
       await this.blogsQueryRepo.findBlogByBlogIdWithBlogDBType(command.blogId);
-    if (blog.blogOwnerInfo.userId !== command.currentUserId) {
+    if (blog.blogOwnerId !== command.currentUserId) {
       throw new ForbiddenException();
     }
     const banDate = new Date().toISOString();

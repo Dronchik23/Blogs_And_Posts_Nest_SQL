@@ -32,22 +32,32 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
   async execute(command: CreateUserCommand): Promise<UserViewModel> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(command.password, passwordSalt);
-    const code = uuidv4();
+    const confirmationCode = uuidv4();
     const createdAt = new Date().toISOString();
-    const expirationDate = add(new Date(), { hours: 2, minutes: 3 });
-    const result: any = await this.usersRepository.createUser(
-      new AccountDataType(
-        command.login,
-        command.email,
-        passwordHash,
-        createdAt,
-      ),
-      new EmailConfirmationType(code, expirationDate, false),
-      new PasswordRecoveryType(null, true),
+    const confirmationExpirationDate = add(new Date(), {
+      hours: 2,
+      minutes: 3,
+    });
+    const isEmailConfirmed = false;
+    const recoveryCode = null;
+    const isRecoveryConfirmed = true;
+    const result: UserViewModel = await this.usersRepository.createUser(
+      command.login,
+      command.email,
+      passwordHash,
+      createdAt,
+      confirmationCode,
+      confirmationExpirationDate,
+      isEmailConfirmed,
+      recoveryCode,
+      isRecoveryConfirmed,
     );
 
     try {
-      await this.emailService.sendEmailRegistrationMessage(command.email, code);
+      await this.emailService.sendEmailRegistrationMessage(
+        command.email,
+        confirmationCode,
+      );
     } catch (err) {
       console.error(err);
     }

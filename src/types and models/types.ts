@@ -47,18 +47,6 @@ export enum BanStatus {
 // classes
 export class BlogDBType {
   constructor(
-    public _id: ObjectId,
-    public name: string,
-    public description: string,
-    public websiteUrl: string,
-    public createdAt: string,
-    public isMembership: boolean,
-    public blogOwnerInfo: BlogOwnerInfoType,
-    public banInfo: BlogBanInfoType,
-  ) {}
-}
-export class BlogSQLDBType {
-  constructor(
     public id: string,
     public name: string,
     public description: string,
@@ -73,18 +61,6 @@ export class BlogSQLDBType {
 }
 export class PostDBType {
   constructor(
-    public _id: ObjectId,
-    public title: string,
-    public shortDescription: string,
-    public content: string,
-    public blogId: string,
-    public blogName: string,
-    public createdAt: string,
-    public extendedLikesInfo: ExtendedLikesInfoType,
-  ) {}
-}
-export class PostSQLDBType {
-  constructor(
     public id: string,
     public title: string,
     public shortDescription: string,
@@ -95,23 +71,10 @@ export class PostSQLDBType {
     public likesCount: number = 0,
     public dislikesCount: number = 0,
     public myStatus: LikeStatus = LikeStatus.None,
-    public newestLikesAddedAt: string,
-    public newestLikesUserId: string,
-    public newestLikesLogin: string,
+    public newestLikes: NewestLikesType[],
   ) {}
 }
 export class CommentDBType {
-  constructor(
-    public _id: ObjectId,
-    public content: string,
-    public commentatorInfo: CommentatorInfoType,
-    public createdAt: string,
-    public postId: string,
-    public likesInfo: LikesInfoType,
-    public postInfo: PostInfoType,
-  ) {}
-}
-export class CommentSQLDBType {
   constructor(
     public id: string,
     public content: string,
@@ -128,15 +91,6 @@ export class CommentSQLDBType {
   ) {}
 }
 export class UserDBType {
-  constructor(
-    public id: string,
-    public accountData: AccountDataType,
-    public emailConfirmation: EmailConfirmationType,
-    public passwordRecovery: PasswordRecoveryType,
-    public banInfo: UserBanInfoType,
-  ) {}
-}
-export class UserSQLDBType {
   constructor(
     public id: string,
     public login: string,
@@ -205,15 +159,6 @@ export class PostInfoType {
 }
 export class LikeDBType {
   constructor(
-    public parentId: ObjectId,
-    public userId: ObjectId,
-    public userLogin: string,
-    public status: LikeStatus,
-    public addedAt: string,
-  ) {}
-}
-export class LikeSQLDBType {
-  constructor(
     public id: string,
     public parentId: string,
     public userId: string,
@@ -245,15 +190,6 @@ export class ExtendedLikesInfoType {
   ) {}
 }
 export class DeviceDBType {
-  constructor(
-    public ip: string,
-    public title: string,
-    public lastActiveDate: string,
-    public deviceId: string,
-    public userId: string,
-  ) {}
-}
-export class DeviceSQLDBType {
   constructor(
     public ip: string,
     public title: string,

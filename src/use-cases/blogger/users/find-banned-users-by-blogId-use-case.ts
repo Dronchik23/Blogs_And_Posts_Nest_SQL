@@ -31,7 +31,7 @@ export class FindBannedUsersByBlogIdService
     if (!blog) {
       throw new NotFoundException();
     }
-    if (blog.blogOwnerInfo.userId !== command.currentUserId) {
+    if (blog.blogOwnerId !== command.currentUserId) {
       throw new ForbiddenException();
     }
     const bannedUsers: any = await this.usersQueryRepo.findBannedUsersByBlogId(

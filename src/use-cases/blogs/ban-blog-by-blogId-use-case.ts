@@ -19,7 +19,7 @@ export class BanBlogByBlogIdService
   async execute(command: BanBlogByBlogIdCommand): Promise<boolean> {
     const blog: BlogDBType =
       await this.blogsQueryRepo.findBlogByBlogIdWithBlogDBType(command.blogId);
-    if (blog.banInfo.isBanned === command.isBanned) return null;
+    if (blog.isBanned === command.isBanned) return null;
     const banDate = new Date().toISOString();
     const a: any = await this.blogsRepo.changeBanStatusForBlog(
       command.blogId,

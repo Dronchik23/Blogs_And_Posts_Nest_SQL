@@ -1,11 +1,12 @@
 import {
-  LikeSQLDBType,
+  LikeDBType,
   LikeStatus,
+  NewestLikesType,
   PaginationType,
-  PostSQLDBType,
-  UserSQLDBType,
+  PostDBType,
+  UserDBType,
 } from '../types and models/types';
-import { PostViewModel, UserViewModel } from '../types and models/models';
+import { PostViewModel } from '../types and models/models';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
 import { BlogsQueryRepository } from './blogs-query.repository';
@@ -20,9 +21,7 @@ export class PostsQueryRepository {
     private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
-  private fromPostDBTypePostViewModel = (
-    post: PostSQLDBType,
-  ): PostViewModel => {
+  private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
     return {
       id: post.id,
       title: post.title,
@@ -35,19 +34,13 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: [
-          {
-            addedAt: post.newestLikesAddedAt,
-            userId: post.newestLikesUserId,
-            login: post.newestLikesLogin,
-          },
-        ],
+        newestLikes: post.newestLikes,
       },
     };
   };
 
   private fromPostDBTypeToPostViewModelWithPagination = (
-    posts: PostSQLDBType[],
+    posts: PostDBType[],
   ): PostViewModel[] => {
     return posts.map((post) => ({
       id: post.id,
@@ -61,13 +54,7 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: [
-          {
-            addedAt: post.newestLikesAddedAt,
-            userId: post.newestLikesUserId,
-            login: post.newestLikesLogin,
-          },
-        ],
+        newestLikes: post.newestLikes,
       },
     }));
   };
@@ -79,16 +66,17 @@ export class PostsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    const bannedBlogIds: string[] =
-      await this.blogsQueryRepository.getBannedBlogsIds();
-
-    const posts: PostSQLDBType[] = await this.dataSource.query(`
+    const posts: PostDBType[] = await this.dataSource.query(
+      `
   SELECT * 
   FROM posts 
-  WHERE blogId NOT IN (${bannedBlogIds.map((id) => `'${id}'`).join(',')})
-  ORDER BY ${sortBy} ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-  LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
-`);
+  WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)
+  ORDER BY "${sortBy}" ${sortDirection}
+  LIMIT $1
+  OFFSET $2;
+`,
+      [pageSize, (pageNumber - 1) * pageSize],
+    );
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
@@ -114,8 +102,9 @@ export class PostsQueryRepository {
     userId?: string,
   ): Promise<PostViewModel | null> {
     try {
-      const post: PostSQLDBType = await this.dataSource.query(
-        `SELECT * FROM posts WHERE id = ${postId};`,
+      const post: PostDBType = await this.dataSource.query(
+        `SELECT * FROM posts WHERE id = $1 ;`,
+        [postId],
       );
 
       const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
@@ -140,13 +129,17 @@ export class PostsQueryRepository {
     sortDirection: string,
     userId?: string,
   ) {
-    const posts: PostSQLDBType[] = await this.dataSource.query(`
+    const posts: PostDBType[] = await this.dataSource.query(
+      `
   SELECT * 
   FROM posts 
-  WHERE blogId = '${blogId}'
-  ORDER BY ${sortBy} ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-  LIMIT ${pageSize} OFFSET ${(pageNumber - 1) * pageSize};
-`);
+  WHERE "blogId" = $1
+  ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+  LIMIT $2
+  OFFSET $3;
+`,
+      [blogId, pageSize, (pageNumber - 1) * pageSize],
+    );
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
@@ -164,49 +157,50 @@ export class PostsQueryRepository {
     };
   }
 
-  private async getLikesInfoForPost(post: PostSQLDBType, userId?: string) {
+  private async getLikesInfoForPost(post: PostDBType, userId?: string) {
     const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
       (u) => u.id,
     );
 
-    post.likesCount = await this.dataSource.query(`
+    post.likesCount = await this.dataSource.query(
+      `
     SELECT COUNT(*) AS likesCount 
     FROM likes 
-    WHERE parentId = '${
-      post.id
-    }' AND status = 'Like' AND user_id NOT IN (${bannedUserIds.join(', ')})
-  `);
+    WHERE "parentId" = $1
+     AND status = 'Like' AND "userId" NOT IN ($2: csv)
+  `,
+      [post.id, bannedUserIds],
+    );
 
-    post.dislikesCount = await this.dataSource.query(`
-    SELECT COUNT(*) AS dislikesCount 
+    post.dislikesCount = await this.dataSource.query(
+      `
+    SELECT COUNT(*) AS "dislikesCount" 
     FROM likes 
-    WHERE parentId = '${
-      post.id
-    }' AND status = 'Dislike' AND user_id NOT IN (${bannedUserIds.join(', ')})
-  `);
+    WHERE parentId = $1
+     AND status = 'Dislike' AND "userId" NOT IN ($2: scv)
+  `,
+      [post.id, bannedUserIds],
+    );
 
-    const newestLikes: LikeSQLDBType[] = await this.dataSource.query(`
+    const newestLikes: NewestLikesType[] = await this.dataSource.query(
+      `
     SELECT * 
     FROM likes 
-    WHERE parentId = '${
-      post.id
-    }' AND status = 'Like' AND userId NOT IN (${bannedUserIds.join(', ')})
-    ORDER BY added_at DESC
-    LIMIT 3
-  `);
+    WHERE "parentId" = $1
+    AND status = 'Like' AND userId NOT IN ($2: csv)`,
+      [post.id, bannedUserIds],
+    );
 
-    // post.newestLikesAddedAt = newestLikes.map((like) => like.addedAt);
-    // post.newestLikesUserId = newestLikes.map((like) => like.userId);
-    // post.newestLikesLogin = newestLikes.map((like) => like.login);
+    post.newestLikes = newestLikes;
 
     if (userId) {
-      const user: UserSQLDBType =
+      const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
       if (user.isBanned === true) {
         post.myStatus = LikeStatus.None;
       } else {
-        const myLike: LikeSQLDBType = await this.dataSource.query(`
+        const myLike: LikeDBType = await this.dataSource.query(`
         SELECT status 
         FROM likes 
         WHERE parentId = '${post.id}' AND userId = '${userId}'

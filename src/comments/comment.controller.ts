@@ -12,8 +12,6 @@ import {
   Scope,
   UseGuards,
 } from '@nestjs/common';
-import { CommentsService } from './comment.service';
-import { LikesService } from '../likes/like.service';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import {
   CommentUpdateModel,
@@ -37,8 +35,6 @@ import { SkipThrottle } from '@nestjs/throttler';
 @Controller({ path: 'comments', scope: Scope.REQUEST })
 export class CommentsController {
   constructor(
-    private readonly commentsService: CommentsService,
-    private readonly likesService: LikesService,
     private readonly commentsQueryRepository: CommentsQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}

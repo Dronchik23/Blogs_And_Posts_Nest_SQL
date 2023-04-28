@@ -9,7 +9,6 @@ import {
   Scope,
   UseGuards,
 } from '@nestjs/common';
-import { DevicesService } from './device.service';
 import { RefreshTokenGuard } from '../auth/guards/refresh-token.guard';
 import { CurrentUserId, JwtPayload } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -22,7 +21,6 @@ import { DeleteDeviceByDeviceIdCommand } from '../use-cases/devices/delete-devic
 @Controller({ path: 'security/devices', scope: Scope.REQUEST })
 export class DevicesController {
   constructor(
-    private readonly devicesService: DevicesService,
     private readonly devicesQueryService: DevicesQueryRepository,
     private readonly commandBus: CommandBus,
   ) {}

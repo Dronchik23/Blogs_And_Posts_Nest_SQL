@@ -1,5 +1,5 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { BlogSQLDBType } from '../types and models/types';
+import { BlogDBType } from '../types and models/types';
 import { BlogViewModel, UserViewModel } from '../types and models/models';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -10,7 +10,7 @@ export class BlogsRepository {
     return;
   }
 
-  private fromBlogDBTypeBlogViewModel(blog: BlogSQLDBType): BlogViewModel {
+  private fromBlogDBTypeBlogViewModel(blog: BlogDBType): BlogViewModel {
     return {
       id: blog.id,
       name: blog.name,
@@ -29,17 +29,8 @@ export class BlogsRepository {
     blogOwnerId: string,
     blogOwnerLogin: string,
   ): Promise<BlogViewModel> {
-    const query = `
-   INSERT INTO public.blogs(
-  name,
-  description,
-  "websiteUrl",
-  "createdAt",
-  "isMembership",
-  "blogOwnerId",
-  "blogOwnerLogin"
-) 
-VALUES (
+    const blog = await this.dataSource.query(
+      `INSERT INTO blogs(
   $1,
   $2,
   $3,
@@ -47,19 +38,9 @@ VALUES (
   $5,
   $6,
   $7,
-) 
-RETURNING *
-  `;
-    const values = [
-      name,
-      description,
-      websiteUrl,
-      createdAt,
-      blogOwnerId,
-      blogOwnerLogin,
-    ];
-
-    const blog = await this.dataSource.query(query, values);
+)`,
+      [name, description, websiteUrl, createdAt, blogOwnerId, blogOwnerLogin],
+    );
 
     return this.fromBlogDBTypeBlogViewModel(blog[0]); // mapping blog
   }
@@ -70,15 +51,16 @@ RETURNING *
     websiteUrl: string,
   ): Promise<boolean> {
     const result = await this.dataSource.query(
-      `UPDATE blogs SET name = ${name}, websiteUrl = ${websiteUrl}, WHERE id = ${blogId};`,
+      `UPDATE blogs SET name = $1, websiteUrl = $2, WHERE id = $3;`,
+      [name, websiteUrl, blogId],
     );
     return result.affectedRows > 0;
   }
 
   async deleteBlogByBlogId(blogId: string): Promise<boolean> {
-    return await this.dataSource.query(
-      `DELETE FROM blogs WHERE id = ${blogId};`,
-    );
+    return await this.dataSource.query(`DELETE FROM blogs WHERE id = $1;`, [
+      blogId,
+    ]);
   }
 
   async deleteAllBlogs() {
@@ -98,7 +80,8 @@ RETURNING *
       banDate = null;
     } // if user unbanned - clear banDate
     const result = await this.dataSource.query(
-      `UPDATE blogs SET isBanned = ${isBanned}, banDate = ${banDate} WHERE id = ${blogId};`,
+      `UPDATE blogs SET isBanned = $1, "banDate" = $2 WHERE id = $3;`,
+      [isBanned, banDate, blogId],
     );
     return result.affectedRows > 0;
   }

@@ -13,9 +13,7 @@ import {
   BloggerBanUserInputModel,
   UserPaginationQueryModel,
 } from '../types and models/models';
-import { PostsService } from '../posts/post.service';
 import { SkipThrottle } from '@nestjs/throttler';
-import { BlogsService } from '../blogs/blog.service';
 import { CommandBus } from '@nestjs/cqrs';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { BanUserByUserIdByBloggerCommand } from '../use-cases/blogger/users/ban-user-by-userId-by-blogger-use-case';
@@ -26,11 +24,7 @@ import { CurrentUserId } from '../auth/decorators';
 @SkipThrottle()
 @Controller({ path: 'blogger/users', scope: Scope.REQUEST })
 export class BloggerUsersController {
-  constructor(
-    private readonly blogsService: BlogsService,
-    private readonly postsService: PostsService,
-    private readonly commandBus: CommandBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
   @UseGuards(BearerAuthGuard)
   @Put(':userId/ban')

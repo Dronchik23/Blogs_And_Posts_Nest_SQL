@@ -1,11 +1,11 @@
 import {
-  BlogSQLDBType,
-  CommentSQLDBType,
+  BlogDBType,
+  CommentDBType,
   LikeDBType,
   LikeStatus,
   PaginationType,
-  PostSQLDBType,
-  UserSQLDBType,
+  PostDBType,
+  UserDBType,
 } from '../types and models/types';
 import {
   BloggerCommentViewModel,
@@ -24,7 +24,7 @@ export class CommentsQueryRepository {
   ) {}
 
   private fromCommentDBTypeToCommentViewModel = (
-    comment: CommentSQLDBType,
+    comment: CommentDBType,
   ): CommentViewModel => {
     return {
       id: comment.id,
@@ -43,7 +43,7 @@ export class CommentsQueryRepository {
   };
 
   private fromCommentDBTypeToBloggerCommentViewModelWithPagination = (
-    comment: CommentSQLDBType[],
+    comment: CommentDBType[],
   ): BloggerCommentViewModel[] => {
     return comment.map((comment) => ({
       id: comment.id,
@@ -68,7 +68,7 @@ export class CommentsQueryRepository {
   };
 
   private fromCommentDBTypeCommentViewModelWithPagination = (
-    comment: CommentSQLDBType[],
+    comment: CommentDBType[],
   ): CommentViewModel[] => {
     return comment.map((comment) => ({
       id: comment.id,
@@ -94,13 +94,17 @@ export class CommentsQueryRepository {
     sortDirection: string,
     userId?: string,
   ): Promise<PaginationType> {
-    const comments: CommentSQLDBType[] = await await this.dataSource.query(`
+    const comments: CommentDBType[] = await this.dataSource.query(
+      `
   SELECT *
-FROM blogs
-ORDER BY ${sortBy} ${sortDirection}
-LIMIT ${pageSize}
-OFFSET ${(pageNumber - 1) * pageSize};
-  `);
+FROM comments
+WHERE "postId" = $1
+ORDER BY "${sortBy}" ${sortDirection}
+LIMIT $2
+OFFSET $3;
+  `,
+      [postId, pageSize, (pageNumber - 1) * pageSize],
+    );
 
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {
@@ -131,12 +135,11 @@ OFFSET ${(pageNumber - 1) * pageSize};
   ): Promise<CommentViewModel> {
     try {
       const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-        (user: UserSQLDBType) => user.id,
+        (user: UserDBType) => user.id,
       );
-      const comment: CommentSQLDBType = await this.dataSource.query(
-        `SELECT * FROM comments WHERE id = '${commentId}', commentatorId = '${userId}'  AND commentatorId NOT IN (${bannedUserIds
-          .map((id) => `${id}`)
-          .join(',')}) ;`,
+      const comment: CommentDBType = await this.dataSource.query(
+        `SELECT * FROM comments WHERE id = $1, "commentatorId" = $2  AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);`,
+        [commentId, userId, bannedUserIds],
       );
 
       const commentWithLikesInfo = await this.getLikesInfoForComment(
@@ -150,37 +153,45 @@ OFFSET ${(pageNumber - 1) * pageSize};
   }
 
   private async getLikesInfoForComment(
-    comment: CommentSQLDBType,
+    comment: CommentDBType,
     userId?: string,
   ) {
     const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
       (u) => u.id,
     );
 
-    comment.likesCount = await this.dataSource.query(`
+    comment.likesCount = await this.dataSource.query(
+      `
         SELECT COUNT(*) FROM likes
-    INNER JOIN comments ON likes.parentId = comments.id
+    INNER JOIN comments ON likes."parentId" = comments.id
     WHERE likes.status = 'like'
-    AND likes.userId NOT IN (SELECT id FROM users WHERE isBanned = true)
-    AND comments.id = '${comment.id}';`);
+    AND likes."userId" NOT IN ($1:scv)
+    AND comments.id = $2`,
+      [bannedUserIds, comment.id],
+    );
 
-    comment.dislikesCount = await this.dataSource.query(`
+    comment.dislikesCount = await this.dataSource.query(
+      `
         SELECT COUNT(*) FROM likes
-    INNER JOIN comments ON likes.parentId = comments.id
+    INNER JOIN comments ON likes."parentId" = comments.id
     WHERE likes.status = 'Dislike'
-    AND likes.userId NOT IN (SELECT id FROM users WHERE isBanned = true)
-    AND comments.id = '${comment.id}';`);
+    AND likes."userId" NOT IN ($1:scv)
+    AND comments.id = $2`,
+      [bannedUserIds, comment.id],
+    );
 
     if (userId) {
       const user = await this.usersQueryRepo.findUserByUserId(userId);
       if (user.banInfo.isBanned === true) {
         comment.myStatus = LikeStatus.None;
       } else {
-        const status: LikeDBType = await this.dataSource.query(`
+        const status: LikeDBType = await this.dataSource.query(
+          `
 SELECT * FROM likes
-WHERE parentId = '<comment.parentId>' AND userId = '<userId>'
-LIMIT 1;
-`);
+WHERE "parentId" = $1 AND userId = $2
+`,
+          [comment.id, userId],
+        );
         if (status) {
           comment.myStatus = status.status;
         }
@@ -197,37 +208,39 @@ LIMIT 1;
     pageNumber: number,
     userId: string,
   ): Promise<PaginationType> {
-    const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-      (user: UserSQLDBType) => user.id,
-    );
-
-    const blogs: BlogSQLDBType[] = await await this.dataSource.query(`
+    const blogs: BlogDBType[] = await this.dataSource.query(
+      `
   SELECT * FROM blogs
-  WHERE name ILIKE '%${searchNameTerm ?? ''}%', blogOwnerId = ${userId}
-  ORDER BY ${sortBy} ${sortDirection}
-  LIMIT ${pageSize}
-  OFFSET ${(pageNumber - 1) * pageSize};
-`);
-
-    const blogIds: string[] = blogs.map((blog: BlogSQLDBType) => blog.id); // find all blogIds of current user
-
-    const posts: PostSQLDBType[] = await this.dataSource.query(
-      `SELECT * FROM posts WHERE blogId IN ('${blogIds.join("','")}') ;
- ;`,
+  WHERE name ILIKE $1, blogOwnerId = $2
+  ORDER BY "${sortBy}" ${sortDirection}
+  LIMIT $3
+  OFFSET $4;
+`,
+      [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
     );
 
-    const postIds: string[] = posts.map((post: PostSQLDBType) => post.id); // find all postId of current user blogs
+    const blogIds: string[] = blogs.map((blog: BlogDBType) => blog.id); // find all blogIds of current user
 
-    const comments: CommentSQLDBType[] = await this.dataSource.query(`
+    const posts: PostDBType[] = await this.dataSource.query(
+      `SELECT * FROM posts WHERE blogId IN ($1: scv) ;
+ ;`,
+      [blogIds],
+    );
+
+    const postIds: string[] = posts.map((post: PostDBType) => post.id); // find all postId of current user blogs
+
+    const comments: CommentDBType[] = await this.dataSource.query(
+      `
         SELECT * FROM comments
-    WHERE postId IN (${postIds.map((id) => `'${id}'`).join(', ')}) 
-    AND commentatorUserId NOT IN (${bannedUserIds
-      .map((id) => `'${id}'`)
-      .join(', ')})
-    ORDER BY ${sortBy} ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
-    OFFSET ${(pageNumber - 1) * pageSize}
-    LIMIT ${pageSize};
-`);
+    WHERE postId IN $1
+    AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+    ORDER BY "${sortBy}" ${sortDirection}
+   LIMIT $2
+    OFFSET $3
+   
+`,
+      [postIds, pageSize, (pageNumber - 1) * pageSize],
+    );
 
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {

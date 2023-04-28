@@ -1,4 +1,4 @@
-import { PostSQLDBType } from '../types and models/types';
+import { PostDBType } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -10,9 +10,7 @@ export class PostsRepository {
     return;
   }
 
-  private fromPostDBTypePostViewModel = (
-    post: PostSQLDBType,
-  ): PostViewModel => {
+  private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
     return {
       id: post.id,
       title: post.title,
@@ -25,13 +23,7 @@ export class PostsRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: [
-          {
-            addedAt: post.newestLikesAddedAt,
-            userId: post.newestLikesUserId,
-            login: post.newestLikesLogin,
-          },
-        ],
+        newestLikes: post.newestLikes,
       },
     };
   };
@@ -44,28 +36,20 @@ export class PostsRepository {
     name: string,
     createdAt: string,
   ): Promise<PostViewModel> {
-    const query = `
-   INSERT INTO public.posts(
-  title,
-  "shortDescription",
-  content,
-  "blogId",
-  name,
-  "createdAt",
-) 
-VALUES (
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-  $6,
-) 
-RETURNING *
-  `;
-    const values = [title, shortDescription, content, blogId, name, createdAt];
+    const post = await this.dataSource.query(
+      `
+INSERT INTO public.posts(
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+    )
 
-    const post = await this.dataSource.query(query, values);
+  `,
+      [title, shortDescription, content, blogId, name, createdAt],
+    );
 
     return this.fromPostDBTypePostViewModel(post[0]); // mapping post
   }
@@ -78,7 +62,9 @@ RETURNING *
     blogId: string,
   ): Promise<boolean> {
     const result = await this.dataSource.query(
-      `UPDATE posts SET title = ${title}, shortDescription = ${shortDescription}, content = ${content}, WHERE postId = ${postId}, blogId = ${blogId} ;`,
+      `UPDATE posts SET title = ${title}, 
+shortDescription = $1, content = $2, WHERE postId = $3, blogId = $4;`,
+      [title, content, postId, blogId],
     );
     return result.affectedRows > 0;
   }
@@ -88,7 +74,8 @@ RETURNING *
     postId: string,
   ): Promise<boolean> {
     return await this.dataSource.query(
-      `DELETE FROM posts WHERE blogId = ${blogId}, postId = ${postId};`,
+      `DELETE FROM posts WHERE "blogId" = $1, postId = $2;`,
+      [blogId, postId],
     );
   }
 

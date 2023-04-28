@@ -4,7 +4,7 @@ import {
   NotFoundException,
   Scope,
 } from '@nestjs/common';
-import { BlogSQLDBType, PaginationType } from '../types and models/types';
+import { BlogDBType, PaginationType } from '../types and models/types';
 import { BlogViewModel, SABlogViewModel } from '../types and models/models';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -15,7 +15,7 @@ export class BlogsQueryRepository {
     return;
   }
 
-  private fromBlogDBTypeBlogViewModel(blog: BlogSQLDBType): BlogViewModel {
+  private fromBlogDBTypeBlogViewModel(blog: BlogDBType): BlogViewModel {
     return {
       id: blog.id,
       name: blog.name,
@@ -27,7 +27,7 @@ export class BlogsQueryRepository {
   }
 
   private fromBlogDBTypeBlogViewModelWithPagination(
-    blogs: BlogSQLDBType[],
+    blogs: BlogDBType[],
   ): BlogViewModel[] {
     return blogs.map((blog) => ({
       id: blog.id,
@@ -40,7 +40,7 @@ export class BlogsQueryRepository {
   }
 
   private fromBlogDBTypeBlogViewModelWithPaginationForSa(
-    blogs: BlogSQLDBType[],
+    blogs: BlogDBType[],
   ): SABlogViewModel[] {
     return blogs.map((blog) => ({
       id: blog.id,
@@ -65,24 +65,20 @@ export class BlogsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    const blogs: BlogSQLDBType[] = await this.dataSource.query(`
+    const blogs: BlogDBType[] = await this.dataSource.query(
+      `
   SELECT * FROM blogs
-  WHERE name ILIKE '%${searchNameTerm ?? ''}%', blogOwnerId = ${userId}
-  ORDER BY ${sortBy} ${sortDirection}
-  LIMIT ${pageSize}
-  OFFSET ${(pageNumber - 1) * pageSize};
-`);
+  WHERE name ILIKE $1, blogOwnerId = $2 AND "blogOwnerId" NOT IN ((SELECT id FROM users WHERE "isBanned" = true))
+  ORDER BY "${sortBy}" ${sortDirection}
+  LIMIT $3
+  OFFSET $4;
+`,
+      [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
+    );
 
-    const bannedBlogIds = await this.getBannedBlogsIds();
+    const totalCount = blogs.length;
 
-    const sortedBlogs = blogs.filter((blog) => {
-      return !bannedBlogIds.includes(blog.id);
-    });
-
-    const totalCount = sortedBlogs.length;
-
-    const mappedBlogs =
-      this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
+    const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -102,24 +98,26 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    return await this.dataSource.query(`
+    return await this.dataSource.query(
+      `
   SELECT * FROM blogs
-  WHERE name ILIKE '%${searchNameTerm ?? ''}%'
-  ORDER BY ${sortBy} ${sortDirection}
-  LIMIT ${pageSize}
-  OFFSET ${(pageNumber - 1) * pageSize};
-`);
+  WHERE name $1
+  ORDER BY "${sortBy}" ${sortDirection}
+  LIMIT $2
+  OFFSET $3;
+`,
+      [searchNameTerm, pageSize, (pageNumber - 1) * pageSize],
+    );
   }
 
   async findBlogByBlogId(blogId: string): Promise<BlogViewModel | null> {
     try {
-      const bannedBlogIds: string[] = await this.getBannedBlogsIds();
-      const query = `SELECT * FROM blogs WHERE id = '${blogId}' AND id NOT IN (${bannedBlogIds
-        .map((id) => `'${id}'`)
-        .join(', ')});`;
-      const result = await this.dataSource.query(query);
+      const result = await this.dataSource.query(
+        `SELECT * FROM public.blogs WHERE id = $1 AND "blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+        [blogId],
+      );
       const blog = result.rows[0];
-      return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
+      return blog ? this.fromBlogDBTypeBlogViewModel(blog[0]) : null;
     } catch (error) {
       throw new NotFoundException();
     }
@@ -127,12 +125,11 @@ export class BlogsQueryRepository {
 
   async findBlogByBlogIdAndUserId(blogId: string, userId: string) {
     try {
-      const bannedBlogIds: string[] = await this.getBannedBlogsIds();
-      const bannedBlogIdsStr: string = bannedBlogIds.join(',');
-      const blog: BlogSQLDBType = await this.dataSource.query(
-        `SELECT * FROM blogs WHERE id = '${blogId}' AND ownerId = '${userId}' AND id NOT IN (${bannedBlogIdsStr}) LIMIT 1;`,
+      const blog: BlogDBType = await this.dataSource.query(
+        `SELECT * FROM blogs WHERE id = $1 AND "blogOwnerId" = $2 AND id NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+        [blogId, userId],
       );
-      return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
+      return blog ? this.fromBlogDBTypeBlogViewModel(blog[0]) : null;
     } catch (error) {
       throw new ForbiddenException();
     }
@@ -145,7 +142,7 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    const blogs: BlogSQLDBType[] = await this.dataSource.query(
+    const blogs: BlogDBType[] = await this.dataSource.query(
       `SELECT * FROM blogs;`,
     );
 
@@ -165,19 +162,19 @@ export class BlogsQueryRepository {
     };
   }
 
-  async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogSQLDBType> {
+  async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
     try {
-      return await this.dataSource.query(
-        `SELECT * FROM blogs WHERE id = ${blogId};`,
-      );
+      return await this.dataSource.query(`SELECT * FROM blogs WHERE id = $1`, [
+        blogId,
+      ]);
     } catch (error) {
       throw new NotFoundException();
     }
   }
 
   async getBannedBlogsIds(): Promise<string[]> {
-    const bannedBlogs: BlogSQLDBType[] = await this.dataSource.query(
-      `SELECT * FROM blogs WHERE isBanned = true ;`,
+    const bannedBlogs: BlogDBType[] = await this.dataSource.query(
+      `SELECT * FROM blogs WHERE "isBanned" = true ;`,
     );
     return bannedBlogs.map((u) => u.id); // return banned ips
   }

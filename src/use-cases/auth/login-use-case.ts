@@ -3,11 +3,7 @@ import { UsersRepository } from '../../sa/users/users-repository';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
-import {
-  DeviceDBType,
-  TokenType,
-  UserDBType,
-} from '../../types and models/types';
+import { TokenType, UserDBType } from '../../types and models/types';
 import { CustomJwtService } from '../../jwt/jwt.service';
 import { DevicesRepository } from '../../devices/device.repository';
 
@@ -35,7 +31,7 @@ export class LoginService implements ICommandHandler<LoginCommand> {
       command.password,
     );
     if (!user) return null;
-    if (user.banInfo.isBanned === true) return null;
+    if (user.isBanned === true) return null;
     const userId = user.id;
     const deviceId = randomUUID().toString();
     const { accessToken, refreshToken } = this.jwtService.createJWT(
@@ -63,11 +59,8 @@ export class LoginService implements ICommandHandler<LoginCommand> {
       loginOrEmail,
     );
     if (!user) return null;
-    if (!user.passwordRecovery.isConfirmed) return null;
-    const isHashIsEquals = await bcrypt.compare(
-      password,
-      user.accountData.passwordHash,
-    ); // check hash and password
+    if (!user.isRecoveryConfirmed) return null;
+    const isHashIsEquals = await bcrypt.compare(password, user.passwordHash); // check hash and password
     if (isHashIsEquals) {
       return user;
     } else {

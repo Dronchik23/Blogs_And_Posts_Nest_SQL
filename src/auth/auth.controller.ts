@@ -12,10 +12,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { UsersService } from '../sa/users/users.service';
 import { TokenType, UserDBType } from '../types and models/types';
 import { CustomJwtService } from '../jwt/jwt.service';
-import { DevicesService } from '../devices/device.service';
 import {
   CodeInputModel,
   LoginInputModel,
@@ -41,9 +39,7 @@ import { RegistrationEmailResendingCommand } from '../use-cases/auth/registratio
 @Controller({ path: 'auth', scope: Scope.REQUEST })
 export class AuthController {
   constructor(
-    private usersService: UsersService,
     private jwtService: CustomJwtService,
-    private devicesService: DevicesService,
     private usersQueryRepository: UsersQueryRepository,
     private commandBus: CommandBus,
   ) {}
@@ -106,9 +102,7 @@ export class AuthController {
     const user: UserDBType =
       await this.usersQueryRepository.findUserByLoginOrEmail(email);
     if (user) {
-      await this.commandBus.execute(
-        new PasswordRecoveryCommand(user.accountData.email),
-      );
+      await this.commandBus.execute(new PasswordRecoveryCommand(user.email));
       return HttpStatus.NO_CONTENT;
     }
     return HttpStatus.NO_CONTENT;

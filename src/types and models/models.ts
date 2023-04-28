@@ -1,5 +1,4 @@
 import {
-  BanStatus,
   BlogOwnerInfoType,
   ExtendedLikesInfoType,
   LikeStatus,
@@ -42,7 +41,6 @@ export class DefaultPaginationData {
   @Type(() => Number)
   pageNumber: number | null = 1;
 }
-
 export class UserPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
@@ -52,8 +50,10 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
   searchEmailTerm: string | null = null;
   @IsOptional()
   @IsString()
-  @IsEnum(BanStatus)
-  banStatus: BanStatus;
+  @Transform(({ value }) => (value === 'banned' ? 'true' : value))
+  @Transform(({ value }) => (value === 'notBanned' ? 'false' : value))
+  @Transform(({ value }) => (value === 'all' ? null : value))
+  banStatus: string = null;
 }
 export class BlogPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
