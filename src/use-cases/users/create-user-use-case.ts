@@ -2,14 +2,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import * as bcrypt from 'bcrypt';
 import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  AccountDataType,
-  EmailConfirmationType,
-  PasswordRecoveryType,
-  UserBanInfoType,
-  UserDBType,
-} from '../../types and models/types';
-import { ObjectId } from 'mongodb';
 import { UsersRepository } from '../../sa/users/users-repository';
 import { UserViewModel } from '../../types and models/models';
 import { EmailService } from '../../email/email.service';

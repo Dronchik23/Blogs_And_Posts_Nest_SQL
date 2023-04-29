@@ -28,20 +28,32 @@ export class BlogsRepository {
     createdAt: string,
     blogOwnerId: string,
     blogOwnerLogin: string,
+    isMembership: boolean,
   ): Promise<BlogViewModel> {
     const blog = await this.dataSource.query(
-      `INSERT INTO blogs(
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-  $6,
-  $7,
-)`,
-      [name, description, websiteUrl, createdAt, blogOwnerId, blogOwnerLogin],
+      `
+INSERT INTO blogs (
+name,
+description,
+"websiteUrl",
+"createdAt",
+"blogOwnerId",
+"blogOwnerLogin",
+"isMembership"
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING *
+`,
+      [
+        name,
+        description,
+        websiteUrl,
+        createdAt,
+        blogOwnerId,
+        blogOwnerLogin,
+        isMembership,
+      ],
     );
-
     return this.fromBlogDBTypeBlogViewModel(blog[0]); // mapping blog
   }
 
@@ -80,7 +92,7 @@ export class BlogsRepository {
       banDate = null;
     } // if user unbanned - clear banDate
     const result = await this.dataSource.query(
-      `UPDATE blogs SET isBanned = $1, "banDate" = $2 WHERE id = $3;`,
+      `UPDATE blogs SET "isBanned" = $1, "banDate" = $2 WHERE id = $3;`,
       [isBanned, banDate, blogId],
     );
     return result.affectedRows > 0;

@@ -98,16 +98,37 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    return await this.dataSource.query(
+    const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE name $1
+  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL)
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
 `,
       [searchNameTerm, pageSize, (pageNumber - 1) * pageSize],
     );
+
+    const bannedBlogIds = await this.getBannedBlogsIds();
+
+    const sortedBlogs = blogs.filter((blog) => {
+      return !bannedBlogIds.includes(blog.id);
+    });
+
+    const totalCount = sortedBlogs.length;
+
+    const mappedBlogs =
+      this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);
+
+    const pagesCount = Math.ceil(totalCount / pageSize);
+
+    return {
+      pagesCount: pagesCount === 0 ? 1 : pagesCount,
+      page: +pageNumber,
+      pageSize: +pageSize,
+      totalCount: totalCount,
+      items: mappedBlogs,
+    };
   }
 
   async findBlogByBlogId(blogId: string): Promise<BlogViewModel | null> {
@@ -142,8 +163,15 @@ export class BlogsQueryRepository {
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    const blogs: BlogDBType[] = await this.dataSource.query(
-      `SELECT * FROM blogs;`,
+    const blogs = await this.dataSource.query(
+      `
+  SELECT * FROM blogs
+  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL)
+  ORDER BY "${sortBy}" ${sortDirection}
+  LIMIT $2
+  OFFSET $3;
+`,
+      [searchNameTerm, pageSize, (pageNumber - 1) * pageSize],
     );
 
     const mappedBlogs =

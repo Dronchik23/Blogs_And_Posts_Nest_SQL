@@ -14,7 +14,7 @@ export class EmailAdapter {
     const user = this.configService.get<string>('EMAIL_USER');
     const pass = this.configService.get<string>('EMAIL_PASSWORD');
 
-    this.mailerService.sendMail({
+    await this.mailerService.sendMail({
       to: email,
       subject: subject,
       html: message,

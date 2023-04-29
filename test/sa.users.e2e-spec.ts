@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel, UserViewModel } from '../src/types and models/models';
 import request from 'supertest';
-import { disconnect } from 'mongoose';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 
@@ -41,7 +40,6 @@ describe('sa/users (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('sa/users', () => {

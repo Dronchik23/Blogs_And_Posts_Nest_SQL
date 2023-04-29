@@ -18,6 +18,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
 
   async execute(command: CreateBlogCommand): Promise<BlogViewModel> {
     const createdAt = new Date().toISOString();
+    const isMembership = false;
 
     return await this.blogsRepository.createBlog(
       command.name,
@@ -26,6 +27,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
       createdAt,
       command.userId,
       command.login,
+      isMembership,
     );
   }
 }

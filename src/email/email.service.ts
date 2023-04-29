@@ -1,4 +1,3 @@
-import { UserDBType } from '../types and models/types';
 import { EmailAdapter } from './email.adapter';
 import { Injectable, Scope } from '@nestjs/common';
 

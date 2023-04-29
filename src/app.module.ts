@@ -147,7 +147,7 @@ export const constraints = [
         service: 'gmail',
         auth: {
           user: 'bonjorim@gmail.com',
-          pass: 'nronmxaommldkjpc',
+          pass: 'onohnespoxxyfvbl',
         },
       },
     }),

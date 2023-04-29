@@ -79,7 +79,6 @@ export class UsersController {
   @Delete(':userId')
   @HttpCode(204)
   async deleteUserByUserId(@Param('userId') userId: string): Promise<boolean> {
-    debugger;
     const isDeleted = await this.commandBus.execute(
       new DeleteUserCommand(userId),
     );

@@ -4,14 +4,11 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { EmailAdapter } from '../src/email/email.adapter';
-import { disconnect } from 'mongoose';
 
 describe('sa/blogs tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   let blog;
@@ -29,10 +26,6 @@ describe('sa/blogs tests (e2e)', () => {
   const wipeAllDataUrl = '/testing/all-data';
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -48,7 +41,6 @@ describe('sa/blogs tests (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('sa/blogs', () => {
@@ -69,13 +61,18 @@ describe('sa/blogs tests (e2e)', () => {
 
         user = responseForUser.body;
         expect(user).toBeDefined();
+        console.log('user', user);
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set('User-Agent', 'jest user-agent')
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
+        console.log('accessToken', accessToken);
 
         const responseForBlog = await request(server)
           .post('/blogger/blogs')
@@ -88,6 +85,7 @@ describe('sa/blogs tests (e2e)', () => {
 
         blog = responseForBlog.body;
         expect(blog).toBeDefined();
+        console.log('blog', blog);
       });
       it('should get all blogs', async () => {
         const response = await request(server)
@@ -133,10 +131,13 @@ describe('sa/blogs tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set('User-Agent', 'jest user-agent')
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 

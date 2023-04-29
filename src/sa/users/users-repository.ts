@@ -118,10 +118,10 @@ export class UsersRepository {
     isEmailConfirmed,
     recoveryCode,
     isRecoveryConfirmed,
-  ) {
+  ): Promise<UserViewModel> {
     const user = await this.dataSource.query(
       `
-    INSERT INTO public.users (
+    INSERT INTO users (
       login,
       email,
       "passwordHash",

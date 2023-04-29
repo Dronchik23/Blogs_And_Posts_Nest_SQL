@@ -61,7 +61,6 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: string,
   ): Promise<PaginationType> {
-    debugger;
     const users: UserDBType[] = await this.dataSource.query(
       `
   SELECT *
@@ -108,7 +107,6 @@ export class UsersQueryRepository {
   }
 
   async findUserByUserId(userId: string): Promise<UserViewModel | null> {
-    debugger;
     try {
       const user = await this.dataSource.query(
         `SELECT * FROM users WHERE id = $1;`,
@@ -123,10 +121,11 @@ export class UsersQueryRepository {
   async findUserByLoginOrEmail(
     loginOrEmail: string,
   ): Promise<UserDBType | null> {
-    return await this.dataSource.query(
+    const user = await this.dataSource.query(
       `SELECT * FROM users WHERE login = $1 OR email = $1`,
       [loginOrEmail],
     );
+    return user[0];
   }
 
   async findUserByEmail(email: string): Promise<UserDBType | null> {

@@ -17,11 +17,17 @@ export class DevicesRepository {
   ) {
     return await this.dataSource.query(
       `INSERT INTO devices(
-        $1,
-        $2,
-        $3,
-        $4,
-        $5,
+      ip,
+      title,
+      "lastActiveDate",
+      "deviceId",
+      "userId"
+    ) VALUES (
+      $1,
+      $2,
+      $3,
+      $4,
+      $5
     )`,
       [ip, title, lastActiveDate, deviceId, userId],
     );
