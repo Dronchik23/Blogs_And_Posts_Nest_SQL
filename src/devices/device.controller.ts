@@ -16,6 +16,7 @@ import { DevicesQueryRepository } from '../query-repositorys/devices-query.repos
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteAllDevicesExcludeCurrentCommand } from '../use-cases/devices/delete -all-devices-exclude-current-use-case';
 import { DeleteDeviceByDeviceIdCommand } from '../use-cases/devices/delete-device-by-deviceId-use-case';
+import { DeviceDBType } from '../types and models/types';
 
 @SkipThrottle()
 @Controller({ path: 'security/devices', scope: Scope.REQUEST })
@@ -53,7 +54,8 @@ export class DevicesController {
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
   ) {
-    const device: any =
+    debugger;
+    const device: DeviceDBType =
       await this.devicesQueryService.findDeviceByDeviceIdAndDate(deviceId);
     if (!device) {
       throw new NotFoundException();

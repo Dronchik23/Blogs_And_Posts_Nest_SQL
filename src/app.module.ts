@@ -123,14 +123,14 @@ export const constraints = [
   isBlogExistConstraint,
   isCommentExistConstraint,
 ];
-//export const strategies = [BasicAuthStrategy, JwtStrategy];
+export const strategies = [BasicAuthStrategy, JwtStrategy];
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot({
-      ttl: 1000000,
-      limit: 500000,
+      ttl: 10,
+      limit: 5,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -173,8 +173,7 @@ export const constraints = [
   ],
   providers: [
     EmailAdapter,
-    BasicAuthStrategy,
-    JwtStrategy,
+    ...strategies,
     ...constraints,
     ...services,
     ...useCases,

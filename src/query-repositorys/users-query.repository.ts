@@ -152,10 +152,11 @@ export class UsersQueryRepository {
   }
 
   async findUserByConfirmationCode(confirmationCode: string): Promise<any> {
-    return await this.dataSource.query(
+    const user = await this.dataSource.query(
       `SELECT * FROM users WHERE "confirmationCode" = $1`,
       [confirmationCode],
     );
+    return user[0];
   }
 
   async findBannedUsers(): Promise<UserDBType[]> {

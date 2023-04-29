@@ -35,10 +35,10 @@ export class DevicesRepository {
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {
     const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE "userId" = $1, "deviceId" = $2;`,
+      `DELETE FROM devices WHERE "userId" = $1 AND "deviceId" = $2;`,
       [userId, deviceId],
     );
-    return result.acknowledged;
+    return result[1];
   }
 
   async deleteDeviceByDeviceId(deviceId: string) {
@@ -46,7 +46,7 @@ export class DevicesRepository {
       `DELETE FROM devices WHERE "deviceId" = $1;`,
       [deviceId],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async updateLastActiveDateByDevice(
@@ -58,7 +58,7 @@ export class DevicesRepository {
       `UPDATE devices SET "lastActiveDate" = $1, WHERE "deviceId" = $2, "userId" = $3;`,
       [newLastActiveDate, deviceId, userId],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async findAndDeleteDeviceByDeviceIdUserIdAndDate(
@@ -67,10 +67,10 @@ export class DevicesRepository {
     lastActiveDate: string,
   ): Promise<any> {
     const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE "deviceId" = ${deviceId}, "userId" = ${userId}, "lastActiveDate" = ${lastActiveDate} ;`,
+      `DELETE FROM devices WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3 ;`,
       [deviceId, userId, lastActiveDate],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async deleteAllDevices() {

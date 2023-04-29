@@ -24,10 +24,10 @@ export class UsersRepository {
 
   async updateConfirmation(userId: string) {
     const result = await this.dataSource.query(
-      `UPDATE users SET isEmailConfirmed = true WHERE id = $1;`,
+      `UPDATE users SET "isEmailConfirmed" = true WHERE id = $1;`,
       [userId],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async deleteUserByUserId(userId: string) {
@@ -45,7 +45,7 @@ export class UsersRepository {
     newConfirmationCode: string,
   ) {
     const result = await this.dataSource.query(
-      `UPDATE users SET "confirmationCode" = ${newConfirmationCode} WHERE id = $1`,
+      `UPDATE users SET "confirmationCode" = $1 WHERE id = $2`,
       [newConfirmationCode, userId],
     );
     return result.affectedRows > 0;

@@ -16,13 +16,12 @@ export class RegistrationConfirmationService
   ) {}
 
   async execute(command: RegistrationConfirmationCommand) {
-    debugger;
     const user = await this.usersQueryRepository.findUserByConfirmationCode(
       command.code,
     );
     if (!user) return false;
-    if (user.emailConfirmation.confirmationCode !== command.code) return false;
-    if (user.emailConfirmation.expirationDate < new Date()) return false;
-    return await this.usersRepository.updateConfirmation(user._id);
+    if (user.confirmationCode !== command.code) return false;
+    if (user.confirmationExpirationDate < new Date()) return false;
+    return await this.usersRepository.updateConfirmation(user.id);
   }
 }
