@@ -50,7 +50,7 @@ export class BlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const a: any = await this.postsQueryRepository.findPostsByBlogId(
+    return await this.postsQueryRepository.findPostsByBlogId(
       blogId,
       query.pageNumber,
       query.pageSize,
@@ -58,7 +58,6 @@ export class BlogsController {
       query.sortDirection,
       currentUserId,
     );
-    return a;
   }
 
   @Get(':id')

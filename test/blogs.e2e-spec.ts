@@ -3,15 +3,12 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { disconnect } from 'mongoose';
 import { AppModule } from '../src/app.module';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('blogs test (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   let user;
@@ -27,13 +24,12 @@ describe('blogs test (e2e)', () => {
     },
   };
   const url = '/blogs';
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
   const wipeAllDataUrl = '/testing/all-data';
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -49,7 +45,6 @@ describe('blogs test (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('/blogs', () => {
@@ -71,10 +66,13 @@ describe('blogs test (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -120,10 +118,13 @@ describe('blogs test (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -170,10 +171,13 @@ describe('blogs test (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -200,6 +204,7 @@ describe('blogs test (e2e)', () => {
           });
 
         post = responseForPost.body;
+        console.log('post', post);
         expect(post).toBeDefined();
       });
       it('should return 404 for not existing post', async () => {
@@ -211,12 +216,14 @@ describe('blogs test (e2e)', () => {
       it('Should get post by blogId', async () => {
         await request(server)
           .get(url + `/${blog.id}/posts`)
-          .expect({
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [post],
+          .expect((res) => {
+            const { pagesCount, page, pageSize, totalCount, items } = res.body;
+            expect(pagesCount).toBe(1);
+            expect(page).toBe(1);
+            expect(pageSize).toBe(10);
+            expect(totalCount).toBe(1);
+            expect(items).toHaveLength(1);
+            expect(items[0].id).toBe(post.id);
           });
       });
     });

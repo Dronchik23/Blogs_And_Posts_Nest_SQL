@@ -134,7 +134,7 @@ export class PostsQueryRepository {
   SELECT * 
   FROM posts 
   WHERE "blogId" = $1
-  ORDER BY "${sortBy}" ${sortDirection === 'asc' ? 'ASC' : 'DESC'}
+  ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
 `,
@@ -158,28 +158,24 @@ export class PostsQueryRepository {
   }
 
   private async getLikesInfoForPost(post: PostDBType, userId?: string) {
-    const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-      (u) => u.id,
-    );
-
     post.likesCount = await this.dataSource.query(
       `
     SELECT COUNT(*) AS likesCount 
     FROM likes 
     WHERE "parentId" = $1
-     AND status = 'Like' AND "userId" NOT IN ($2: csv)
+     AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
   `,
-      [post.id, bannedUserIds],
+      [post.id],
     );
 
     post.dislikesCount = await this.dataSource.query(
       `
     SELECT COUNT(*) AS "dislikesCount" 
     FROM likes 
-    WHERE parentId = $1
-     AND status = 'Dislike' AND "userId" NOT IN ($2: scv)
+    WHERE "parentId" = $1
+     AND status = 'Dislike' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
   `,
-      [post.id, bannedUserIds],
+      [post.id],
     );
 
     const newestLikes: NewestLikesType[] = await this.dataSource.query(
@@ -187,8 +183,8 @@ export class PostsQueryRepository {
     SELECT * 
     FROM likes 
     WHERE "parentId" = $1
-    AND status = 'Like' AND userId NOT IN ($2: csv)`,
-      [post.id, bannedUserIds],
+    AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+      [post.id],
     );
 
     post.newestLikes = newestLikes;
@@ -200,11 +196,14 @@ export class PostsQueryRepository {
       if (user.isBanned === true) {
         post.myStatus = LikeStatus.None;
       } else {
-        const myLike: LikeDBType = await this.dataSource.query(`
+        const myLike: LikeDBType = await this.dataSource.query(
+          `
         SELECT status 
         FROM likes 
-        WHERE parentId = '${post.id}' AND userId = '${userId}'
-      `);
+        WHERE "parentId" = $1 AND "userId" = $2
+      `,
+          [post.id, userId],
+        );
 
         if (myLike) {
           post.myStatus = myLike.status;

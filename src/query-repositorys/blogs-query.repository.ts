@@ -134,11 +134,10 @@ export class BlogsQueryRepository {
   async findBlogByBlogId(blogId: string): Promise<BlogViewModel | null> {
     try {
       const result = await this.dataSource.query(
-        `SELECT * FROM public.blogs WHERE id = $1 AND "blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+        `SELECT * FROM blogs WHERE id = $1 AND "blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
         [blogId],
       );
-      const blog = result.rows[0];
-      return blog ? this.fromBlogDBTypeBlogViewModel(blog[0]) : null;
+      return result[0] ? this.fromBlogDBTypeBlogViewModel(result[0]) : null;
     } catch (error) {
       throw new NotFoundException();
     }

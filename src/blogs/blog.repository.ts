@@ -30,7 +30,7 @@ export class BlogsRepository {
     blogOwnerLogin: string,
     isMembership: boolean,
   ): Promise<BlogViewModel> {
-    const blog = await this.dataSource.query(
+    const result = await this.dataSource.query(
       `
 INSERT INTO blogs (
 name,
@@ -54,7 +54,8 @@ RETURNING *
         isMembership,
       ],
     );
-    return this.fromBlogDBTypeBlogViewModel(blog[0]); // mapping blog
+
+    return this.fromBlogDBTypeBlogViewModel(result[0]); // mapping blog
   }
 
   async updateBlogByBlogId(

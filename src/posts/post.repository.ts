@@ -33,25 +33,26 @@ export class PostsRepository {
     shortDescription: string,
     content: string,
     blogId: string,
-    name: string,
+    blogName: string,
     createdAt: string,
   ): Promise<PostViewModel> {
-    const post = await this.dataSource.query(
+    const result = await this.dataSource.query(
       `
-INSERT INTO public.posts(
-        $1,
-        $2,
-        $3,
-        $4,
-        $5,
-        $6,
-    )
-
-  `,
-      [title, shortDescription, content, blogId, name, createdAt],
+INSERT INTO posts (
+title,
+"shortDescription",
+content,
+"blogId",
+"blogName",
+"createdAt"
+)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING *
+`,
+      [title, shortDescription, content, blogId, blogName, createdAt],
     );
 
-    return this.fromPostDBTypePostViewModel(post[0]); // mapping post
+    return this.fromPostDBTypePostViewModel(result[0]); // mapping post
   }
 
   async updatePostByPostIdAndBlogId(
