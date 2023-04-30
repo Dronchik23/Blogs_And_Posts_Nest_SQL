@@ -159,7 +159,7 @@ describe('sa/users (e2e)', () => {
 
         user = responseForUser2.body;
         console.log('user body', user);
-        expect(user.banInfo.isBanned).toBe('true');
+        expect(user.banInfo.isBanned).toBe(true);
       });
     });
     describe('create user tests', () => {
