@@ -171,7 +171,7 @@ describe('sa/users (e2e)', () => {
           password: 'password',
           email: `user2@gmail.com`,
         };
-
+        //
         const createResponseForUser2 = await request(server)
           .post('/sa/users')
           .auth('admin', 'qwerty')
