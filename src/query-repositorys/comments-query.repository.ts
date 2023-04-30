@@ -190,24 +190,35 @@ OFFSET $3;
     );
 
     if (userId) {
-      const user: UserViewModel = await this.usersQueryRepo.findUserByUserId(
-        userId,
-      );
-      if (user.banInfo.isBanned === true) {
+      const user: UserDBType[] =
+        await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
+
+      if (user[0].isBanned === true) {
         comment.myStatus = LikeStatus.None;
       } else {
-        const myLike: LikeDBType = await this.dataSource.query(
+        const result = await this.dataSource.query(
           `
-SELECT * FROM likes
-WHERE "parentId" = $1 AND userId = $2
-`,
+    SELECT status 
+    FROM likes 
+    WHERE "parentId" = $1 
+    AND "userId" = $2
+    `,
           [comment.id, userId],
         );
-        if (myLike) {
-          comment.myStatus = myLike.status;
+        if (result.length > 0) {
+          if (result[0].status === 'Like') {
+            comment.myStatus = LikeStatus.Like;
+          } else if (result[0].status === 'Dislike') {
+            comment.myStatus = LikeStatus.Dislike;
+          } else {
+            comment.myStatus = LikeStatus.None;
+          }
+        } else {
+          comment.myStatus = LikeStatus.None;
         }
       }
     }
+
     return comment;
   }
 
@@ -222,7 +233,7 @@ WHERE "parentId" = $1 AND userId = $2
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE name ILIKE $1, blogOwnerId = $2
+  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $3
   OFFSET $4;
@@ -230,12 +241,11 @@ WHERE "parentId" = $1 AND userId = $2
       [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
     );
 
-    const blogIds: string[] = blogs.map((blog: BlogDBType) => blog.id); // find all blogIds of current user
+    //const blogIds: string[] = blogs.map((blog: BlogDBType) => blog.id); // find all blogIds of current user
 
     const posts: PostDBType[] = await this.dataSource.query(
-      `SELECT * FROM posts WHERE blogId IN ($1: scv) ;
+      `SELECT * FROM posts WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)
  ;`,
-      [blogIds],
     );
 
     const postIds: string[] = posts.map((post: PostDBType) => post.id); // find all postId of current user blogs
@@ -243,14 +253,13 @@ WHERE "parentId" = $1 AND userId = $2
     const comments: CommentDBType[] = await this.dataSource.query(
       `
         SELECT * FROM comments
-    WHERE postId IN $1
-    AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-    ORDER BY "${sortBy}" ${sortDirection}
-   LIMIT $2
-    OFFSET $3
-   
-`,
-      [postIds, pageSize, (pageNumber - 1) * pageSize],
+        WHERE "postId" IN (${postIds.map((id) => `'${id}'`).join(', ')})
+        AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+        ORDER BY "${sortBy}" ${sortDirection}
+        LIMIT $1
+        OFFSET $2
+    `,
+      [pageSize, (pageNumber - 1) * pageSize],
     );
 
     const commentsWithLikesInfo = await Promise.all(

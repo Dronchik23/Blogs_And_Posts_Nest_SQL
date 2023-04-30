@@ -64,10 +64,10 @@ RETURNING *
     websiteUrl: string,
   ): Promise<boolean> {
     const result = await this.dataSource.query(
-      `UPDATE blogs SET name = $1, websiteUrl = $2, WHERE id = $3;`,
+      `UPDATE blogs SET name = $1, "websiteUrl" = $2 WHERE id = $3;`,
       [name, websiteUrl, blogId],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async deleteBlogByBlogId(blogId: string): Promise<boolean> {

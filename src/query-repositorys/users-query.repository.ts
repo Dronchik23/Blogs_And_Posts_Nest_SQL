@@ -173,11 +173,12 @@ export class UsersQueryRepository {
     sortDirection: string,
     searchLoginTerm: string,
   ) {
+    debugger;
     const users: UserDBType[] = await this.dataSource.query(
       `
       SELECT *
-  FROM blogs
-  WHERE login ILIKE $1
+  FROM users
+  WHERE (LOWER(login) LIKE $1 OR $1 IS NULL)
     AND "blogId" = $2
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $3
@@ -187,6 +188,7 @@ export class UsersQueryRepository {
 
     const mappedUsers =
       this.fromUserDBTypeToUserViewModelWithPaginationForBlogger(users);
+    console.log('users', users);
 
     const totalCount = users.length;
 

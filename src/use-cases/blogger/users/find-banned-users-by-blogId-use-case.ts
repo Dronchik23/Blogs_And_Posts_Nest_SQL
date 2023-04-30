@@ -34,14 +34,15 @@ export class FindBannedUsersByBlogIdService
     if (blog.blogOwnerId !== command.currentUserId) {
       throw new ForbiddenException();
     }
-    const bannedUsers: any = await this.usersQueryRepo.findBannedUsersByBlogId(
-      command.blogId,
-      command.pageNumber,
-      command.pageSize,
-      command.sortBy,
-      command.sortDirection,
-      command.searchLoginTerm,
-    );
+    const bannedUsers: PaginationType =
+      await this.usersQueryRepo.findBannedUsersByBlogId(
+        command.blogId,
+        command.pageNumber,
+        command.pageSize,
+        command.sortBy,
+        command.sortDirection,
+        command.searchLoginTerm,
+      );
 
     return bannedUsers;
   }

@@ -205,7 +205,6 @@ export class PostsQueryRepository {
     `,
           [post.id, userId],
         );
-        console.log(result);
         if (result.length > 0) {
           if (result[0].status === 'Like') {
             post.myStatus = LikeStatus.Like;

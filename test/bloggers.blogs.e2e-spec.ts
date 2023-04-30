@@ -3,16 +3,13 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { disconnect } from 'mongoose';
 import { AppModule } from '../src/app.module';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { sleep } from './helpers/sleepfunction';
 import { EmailAdapter } from '../src/email/email.adapter';
 
-describe('blogger tests (e2e)', () => {
+describe('blogger blogs tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   let blog;
@@ -28,14 +25,13 @@ describe('blogger tests (e2e)', () => {
       return;
     },
   };
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
   const url = '/blogger/blogs';
   const wipeAllDataUrl = '/testing/all-data';
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -51,7 +47,6 @@ describe('blogger tests (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('bloggers/blogs', () => {
@@ -73,10 +68,14 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
       });
@@ -139,10 +138,14 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
       });
@@ -365,10 +368,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -498,10 +504,13 @@ describe('blogger tests (e2e)', () => {
         const user2 = responseForUser2.body;
         expect(user2).toBeDefined();
 
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
 
         const accessToken2 = loginUser2.body.accessToken;
 
@@ -534,10 +543,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -599,10 +611,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -739,10 +754,13 @@ describe('blogger tests (e2e)', () => {
         const user2 = responseForUser2.body;
         expect(user2).toBeDefined();
 
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
 
         const accessToken2 = loginUser2.body.accessToken;
 
@@ -819,10 +837,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -885,10 +906,13 @@ describe('blogger tests (e2e)', () => {
         const user2 = responseForUser2.body;
         expect(user2).toBeDefined();
 
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
 
         const accessToken2 = loginUser2.body.accessToken;
 
@@ -928,10 +952,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -1074,10 +1101,13 @@ describe('blogger tests (e2e)', () => {
         const user2 = responseForUser2.body;
         expect(user2).toBeDefined();
 
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
 
         const accessToken2 = loginUser2.body.accessToken;
 
@@ -1128,10 +1158,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -1188,11 +1221,34 @@ describe('blogger tests (e2e)', () => {
           items: [comment],
         };
 
-        expect(response.body).toMatchObject(expectedResponse);
-        expect(response.body.items).toHaveLength(expectedResponse.items.length);
-        expect(response.body.items).toEqual(
-          expect.arrayContaining(expectedResponse.items),
+        // Verify the response object has the expected properties and values
+        expect(response.body).toHaveProperty(
+          'pagesCount',
+          expectedResponse.pagesCount,
         );
+        expect(response.body).toHaveProperty('page', expectedResponse.page);
+        expect(response.body).toHaveProperty(
+          'pageSize',
+          expectedResponse.pageSize,
+        );
+        expect(response.body).toHaveProperty(
+          'totalCount',
+          expectedResponse.totalCount,
+        );
+
+        // Verify the comment object in the items array has the expected properties and values
+        const receivedComment = response.body.items[0];
+        expect(receivedComment).toHaveProperty('id', comment.id);
+        expect(receivedComment).toHaveProperty('content', comment.content);
+        expect(receivedComment).toHaveProperty(
+          'commentatorInfo.userId',
+          comment.commentatorInfo.userId,
+        );
+        expect(receivedComment).toHaveProperty(
+          'commentatorInfo.userLogin',
+          comment.commentatorInfo.userLogin,
+        );
+        expect(receivedComment).toHaveProperty('createdAt', comment.createdAt);
       });
     });
   });

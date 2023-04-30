@@ -4,6 +4,7 @@ import { UsersRepository } from '../../../sa/users/users-repository';
 import { BlogsQueryRepository } from '../../../query-repositorys/blogs-query.repository';
 import { BlogDBType } from '../../../types and models/types';
 import { ForbiddenException } from '@nestjs/common';
+import { UserViewModel } from '../../../types and models/models';
 
 export class BanUserByUserIdByBloggerCommand {
   constructor(
@@ -25,8 +26,10 @@ export class BanUserByUserIdByBloggerService
     private readonly blogsQueryRepo: BlogsQueryRepository,
   ) {}
 
-  async execute(command: BanUserByUserIdByBloggerCommand): Promise<any> {
-    const user = await this.userQueryRepo.findUserByUserId(command.userId);
+  async execute(command: BanUserByUserIdByBloggerCommand): Promise<boolean> {
+    const user: UserViewModel = await this.userQueryRepo.findUserByUserId(
+      command.userId,
+    );
     if (user.banInfo.isBanned === command.isBanned) return null;
     const blog: BlogDBType =
       await this.blogsQueryRepo.findBlogByBlogIdWithBlogDBType(command.blogId);
@@ -34,13 +37,12 @@ export class BanUserByUserIdByBloggerService
       throw new ForbiddenException();
     }
     const banDate = new Date().toISOString();
-    const a: any = await this.userRepo.changeBanStatusForUserByBlogger(
+    return await this.userRepo.changeBanStatusForUserByBlogger(
       command.userId,
       command.isBanned,
       command.banReason,
       banDate,
       command.blogId,
     );
-    return a;
   }
 }

@@ -3,16 +3,13 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { disconnect } from 'mongoose';
 import { AppModule } from '../src/app.module';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { UsersQueryRepository } from '../src/query-repositorys/users-query.repository';
 
 describe('blogger tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   let blog;
@@ -30,12 +27,11 @@ describe('blogger tests (e2e)', () => {
   };
   const url = '/blogger/users';
   const wipeAllDataUrl = '/testing/all-data';
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -52,7 +48,6 @@ describe('blogger tests (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('blogger/users', () => {
@@ -74,10 +69,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -182,11 +180,11 @@ describe('blogger tests (e2e)', () => {
           })
           .expect(204); // ban user2
 
-        // const bannedUser: UserDBType =
-        //   await usersQueryRepository.usersModel.findOne({
-        //     _id: new ObjectId(user2.id),
-        //   });
-        // expect(bannedUser.isBanned).toBeTruthy();
+        const response = await request(server)
+          .get(`/sa/users/${user2.id}`)
+          .auth('admin', 'qwerty');
+        console.log('response.body', response.body);
+        expect(response.body.banInfo.isBanned).toBeTruthy();
 
         await request(server)
           .put(url + `/${user2.id}/ban`)
@@ -223,10 +221,13 @@ describe('blogger tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -267,12 +268,14 @@ describe('blogger tests (e2e)', () => {
           })
           .expect(204); // ban user2
 
-        // const bannedUser: UserDBType =
-        //   await usersQueryRepository.usersModel.findOne({
-        //     _id: new ObjectId(user2.id),
-        //   });
-        // expect(bannedUser.isBanned).toBeTruthy();
-        // expect(bannedUser.id).toEqual(user2.id);
+        const response = await request(server)
+          .get(`/sa/users/${user2.id}`)
+          .auth('admin', 'qwerty');
+
+        const bannedUser = response.body;
+
+        expect(bannedUser.banInfo.isBanned).toBeTruthy();
+        expect(bannedUser.id).toEqual(user2.id);
 
         await request(server)
           .get(url + `/blog/${blog.id}`)

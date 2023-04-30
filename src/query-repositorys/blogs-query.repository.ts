@@ -68,7 +68,7 @@ export class BlogsQueryRepository {
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE name ILIKE $1, blogOwnerId = $2 AND "blogOwnerId" NOT IN ((SELECT id FROM users WHERE "isBanned" = true))
+  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $3
   OFFSET $4;
@@ -191,9 +191,11 @@ export class BlogsQueryRepository {
 
   async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
     try {
-      return await this.dataSource.query(`SELECT * FROM blogs WHERE id = $1`, [
-        blogId,
-      ]);
+      const result = await this.dataSource.query(
+        `SELECT * FROM blogs WHERE id = $1`,
+        [blogId],
+      );
+      return result[0];
     } catch (error) {
       throw new NotFoundException();
     }

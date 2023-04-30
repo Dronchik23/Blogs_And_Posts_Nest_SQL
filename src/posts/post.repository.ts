@@ -75,11 +75,11 @@ RETURNING *
     blogId: string,
   ): Promise<boolean> {
     const result = await this.dataSource.query(
-      `UPDATE posts SET title = ${title}, 
-shortDescription = $1, content = $2, WHERE postId = $3, blogId = $4;`,
-      [title, content, postId, blogId],
+      `UPDATE posts SET title = $1, 
+"shortDescription" = $2, content = $3 WHERE id = $4 AND "blogId" = $5;`,
+      [title, shortDescription, content, postId, blogId],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async deletePostByPostIdAndBlogId(
@@ -87,7 +87,7 @@ shortDescription = $1, content = $2, WHERE postId = $3, blogId = $4;`,
     postId: string,
   ): Promise<boolean> {
     return await this.dataSource.query(
-      `DELETE FROM posts WHERE "blogId" = $1, postId = $2;`,
+      `DELETE FROM posts WHERE "blogId" = $1 AND id = $2;`,
       [blogId, postId],
     );
   }
