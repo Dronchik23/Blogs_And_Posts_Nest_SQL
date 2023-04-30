@@ -4,14 +4,11 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { createApp } from '../src/helpers/createApp';
 import { UserInputModel } from '../src/types and models/models';
-import { disconnect } from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('comments tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   let blog;
@@ -29,12 +26,11 @@ describe('comments tests (e2e)', () => {
   };
   const wipeAllDataUrl = '/testing/all-data';
   const wipeAllLikes = '/testing/all-likes';
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -50,7 +46,6 @@ describe('comments tests (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('comments', () => {
@@ -72,10 +67,13 @@ describe('comments tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -164,10 +162,13 @@ describe('comments tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -256,10 +257,13 @@ describe('comments tests (e2e)', () => {
         const user2 = responseForUser2.body;
         expect(user2).toBeDefined();
 
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
 
         const accessToken2 = loginUser2.body.accessToken;
 
@@ -302,10 +306,13 @@ describe('comments tests (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -429,10 +436,13 @@ describe('comments tests (e2e)', () => {
         const user2 = responseForUser2.body;
         expect(user2).toBeDefined();
 
-        const loginUser2 = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto2.login,
-          password: createUserDto2.password,
-        });
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
 
         const accessToken2 = loginUser2.body.accessToken;
 

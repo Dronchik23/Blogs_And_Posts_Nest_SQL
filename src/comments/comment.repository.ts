@@ -66,7 +66,8 @@ RETURNING *
     userId: string,
   ) {
     const result = await this.dataSource.query(
-      `UPDATE comments SET content = $1, WHERE id = $2, "commentOwnerId" = $3;`,
+      `UPDATE comments SET content = $1 WHERE id = $2 AND "commentatorId" = $3;
+`,
       [content, commentId, userId],
     );
     return result[1];

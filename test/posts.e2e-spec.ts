@@ -499,7 +499,6 @@ describe('AppController (e2e)', () => {
           .get(`/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
-        console.log('postFoundedById', postFoundedById.body);
 
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('None');
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
