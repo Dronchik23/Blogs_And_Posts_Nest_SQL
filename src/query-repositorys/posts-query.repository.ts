@@ -9,7 +9,6 @@ import {
 import { PostViewModel } from '../types and models/models';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
-import { BlogsQueryRepository } from './blogs-query.repository';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -18,7 +17,6 @@ export class PostsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     private readonly usersQueryRepo: UsersQueryRepository,
-    private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {}
 
   private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
@@ -102,18 +100,15 @@ export class PostsQueryRepository {
     userId?: string,
   ): Promise<PostViewModel | null> {
     try {
-      const post: PostDBType = await this.dataSource.query(
-        `SELECT * FROM posts WHERE id = $1 ;`,
+      const result: PostDBType = await this.dataSource.query(
+        `SELECT * FROM posts WHERE id = $1 AND "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);`,
         [postId],
       );
 
-      const bannedBlogIds = await this.blogsQueryRepository.getBannedBlogsIds();
-
-      if (bannedBlogIds.includes(post.blogId)) {
-        throw new NotFoundException();
-      }
-
-      const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
+      const postWithLikesInfo = await this.getLikesInfoForPost(
+        result[0],
+        userId,
+      );
 
       return this.fromPostDBTypePostViewModel(postWithLikesInfo);
     } catch (error) {
@@ -158,55 +153,69 @@ export class PostsQueryRepository {
   }
 
   private async getLikesInfoForPost(post: PostDBType, userId?: string) {
-    post.likesCount = await this.dataSource.query(
+    const likesCountResult = await this.dataSource.query(
       `
-    SELECT COUNT(*) AS likesCount 
-    FROM likes 
-    WHERE "parentId" = $1
-     AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-  `,
+      SELECT COUNT(*) AS "likesCount" 
+      FROM likes 
+      WHERE "parentId" = $1
+      AND status = 'Like' 
+      AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+    `,
       [post.id],
     );
+    post.likesCount = parseInt(likesCountResult[0].likesCount);
 
-    post.dislikesCount = await this.dataSource.query(
+    const disLikesCountResult = await this.dataSource.query(
       `
-    SELECT COUNT(*) AS "dislikesCount" 
-    FROM likes 
-    WHERE "parentId" = $1
-     AND status = 'Dislike' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-  `,
+      SELECT COUNT(*) AS "dislikesCount" 
+      FROM likes 
+      WHERE "parentId" = $1
+      AND status = 'Dislike' 
+      AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+    `,
       [post.id],
     );
+    post.dislikesCount = parseInt(disLikesCountResult[0].dislikesCount);
 
     const newestLikes: NewestLikesType[] = await this.dataSource.query(
       `
-    SELECT * 
-    FROM likes 
-    WHERE "parentId" = $1
-    AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+      SELECT * 
+      FROM likes 
+      WHERE "parentId" = $1
+      AND status = 'Like' 
+      AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+    `,
       [post.id],
     );
-
     post.newestLikes = newestLikes;
 
     if (userId) {
-      const user: UserDBType =
+      const user: UserDBType[] =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
-      if (user.isBanned === true) {
+      if (user[0].isBanned === true) {
         post.myStatus = LikeStatus.None;
       } else {
-        const myLike: LikeDBType = await this.dataSource.query(
+        const result = await this.dataSource.query(
           `
-        SELECT status 
-        FROM likes 
-        WHERE "parentId" = $1 AND "userId" = $2
-      `,
+    SELECT status 
+    FROM likes 
+    WHERE "parentId" = $1 
+    AND "userId" = $2
+    `,
           [post.id, userId],
         );
-
-        if (myLike) {
-          post.myStatus = myLike.status;
+        console.log(result);
+        if (result.length > 0) {
+          if (result[0].status === 'Like') {
+            post.myStatus = LikeStatus.Like;
+          } else if (result[0].status === 'Dislike') {
+            post.myStatus = LikeStatus.Dislike;
+          } else {
+            post.myStatus = LikeStatus.None;
+          }
+        } else {
+          post.myStatus = LikeStatus.None;
         }
       }
     }

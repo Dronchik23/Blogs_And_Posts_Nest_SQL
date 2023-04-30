@@ -2,16 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel } from '../src/types and models/models';
-import { disconnect } from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
+import { PostViewModel, UserInputModel } from '../src/types and models/models';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('AppController (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
   let app: INestApplication;
-  let mongoServer: MongoMemoryServer;
   let server: any;
   let accessToken;
   const mokEmailAdapter = {
@@ -24,17 +21,16 @@ describe('AppController (e2e)', () => {
     },
   };
   let blog;
-  let post;
+  let post: PostViewModel;
   let user;
   const postsUrl = '/posts';
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
   const wipeAllDataUrl = '/testing/all-data';
   const wipeAllComments = '/testing/all-comments';
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    process.env['MONGO_URI'] = mongoUri;
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
@@ -50,7 +46,6 @@ describe('AppController (e2e)', () => {
 
   afterAll(async () => {
     await app.close();
-    await disconnect();
   });
 
   describe('posts', () => {
@@ -72,10 +67,13 @@ describe('AppController (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -108,12 +106,14 @@ describe('AppController (e2e)', () => {
       it('should get all posts', async () => {
         await request(server)
           .get(postsUrl)
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [post],
+          .expect((res) => {
+            const { pagesCount, page, pageSize, totalCount, items } = res.body;
+            expect(pagesCount).toBe(1);
+            expect(page).toBe(1);
+            expect(pageSize).toBe(10);
+            expect(totalCount).toBe(1);
+            expect(items).toHaveLength(1);
+            expect(items[0].id).toBe(post.id);
           });
       });
       it('should return 404 for not existing post', async () => {
@@ -168,10 +168,13 @@ describe('AppController (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -198,12 +201,14 @@ describe('AppController (e2e)', () => {
           });
 
         post = responseForPost.body;
+        console.log('postik', post);
         expect(post).toBeDefined();
       });
       it('should get post by postId', async () => {
-        await request(server)
-          .get(postsUrl + `/${post.id}`)
-          .expect(200, post);
+        const response = await request(server).get(postsUrl + `/${post.id}`);
+
+        console.log('response.body', response.body);
+        expect(response.body).toEqual(post);
       });
       it('should return 404 for not existing post', async () => {
         await request(server)
@@ -252,10 +257,13 @@ describe('AppController (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -292,6 +300,7 @@ describe('AppController (e2e)', () => {
           .expect(201); // create comment with valid data
 
         const comment2 = responseForComment2.body;
+        expect(comment2).toBeDefined();
 
         const commentFoundedById = await request(server)
           .get(`/comments/${comment2.id}`)
@@ -363,10 +372,13 @@ describe('AppController (e2e)', () => {
         user = responseForUser.body;
         expect(user).toBeDefined();
 
-        const loginUser = await request(server).post('/auth/login').send({
-          loginOrEmail: createUserDto.login,
-          password: createUserDto.password,
-        });
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
 
         accessToken = loginUser.body.accessToken;
 
@@ -443,6 +455,7 @@ describe('AppController (e2e)', () => {
           .get(`/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
+        console.log('postFoundedById', postFoundedById.body);
 
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('Like');
         expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(1);
@@ -486,6 +499,7 @@ describe('AppController (e2e)', () => {
           .get(`/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
+        console.log('postFoundedById', postFoundedById.body);
 
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('None');
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);

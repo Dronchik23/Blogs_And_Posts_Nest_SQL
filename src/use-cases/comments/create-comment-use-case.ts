@@ -44,7 +44,7 @@ export class CreateCommentService
         command.user.id,
       );
 
-    if (user.banInfo.blogId === post.blogId) {
+    if (user.blogId === post.blogId) {
       throw new ForbiddenException();
     }
 

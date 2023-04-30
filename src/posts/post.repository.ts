@@ -1,4 +1,4 @@
-import { PostDBType } from '../types and models/types';
+import { LikeStatus, PostDBType } from '../types and models/types';
 import { PostViewModel } from '../types and models/models';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -52,7 +52,19 @@ RETURNING *
       [title, shortDescription, content, blogId, blogName, createdAt],
     );
 
-    return this.fromPostDBTypePostViewModel(result[0]); // mapping post
+    const mappedPost: PostViewModel = await this.fromPostDBTypePostViewModel(
+      result[0],
+    ); // mapping post
+
+    return {
+      ...mappedPost,
+      extendedLikesInfo: {
+        likesCount: 0,
+        dislikesCount: 0,
+        myStatus: LikeStatus.None,
+        newestLikes: [],
+      },
+    }; // add default newest likes
   }
 
   async updatePostByPostIdAndBlogId(

@@ -20,7 +20,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
     const createdAt = new Date().toISOString();
     const isMembership = false;
 
-    return await this.blogsRepository.createBlog(
+    const blog: BlogViewModel = await this.blogsRepository.createBlog(
       command.name,
       command.description,
       command.websiteUrl,
@@ -29,5 +29,6 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
       command.login,
       isMembership,
     );
+    return blog;
   }
 }

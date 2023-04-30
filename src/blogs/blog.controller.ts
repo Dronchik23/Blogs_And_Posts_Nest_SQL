@@ -10,6 +10,7 @@ import {
   BlogPaginationQueryModel,
   BlogViewModel,
   PostPaginationQueryModel,
+  PostViewModel,
 } from '../types and models/models';
 import { CurrentUserIdFromToken } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -17,6 +18,7 @@ import { CreateBlogService } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
+import { PaginationType } from '../types and models/types';
 
 @SkipThrottle()
 @Controller({ path: 'blogs', scope: Scope.REQUEST })
@@ -45,8 +47,9 @@ export class BlogsController {
     @Param('blogId') blogId: string,
     @Query() query: PostPaginationQueryModel,
     @CurrentUserIdFromToken() currentUserId: string | null,
-  ): Promise<any> {
-    const blog: any = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+  ): Promise<PaginationType> {
+    const blog: BlogViewModel =
+      await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
     }

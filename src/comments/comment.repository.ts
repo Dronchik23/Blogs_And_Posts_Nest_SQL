@@ -35,33 +35,26 @@ export class CommentsRepository {
     login: string,
     createdAt: string,
     postId: string,
-    title: string,
+    postTitle: string,
     blogId: string,
     blogName: string,
   ): Promise<CommentViewModel> {
     const comment = await this.dataSource.query(
-      `   INSERT INTO public.comments(
-  $1,
-  $2,
-  $3,
-  $4,
-  $5,
-  $6,
-  $7,
-  $8,
-  $9
-)`,
-      [
+      `
+INSERT INTO comments (
         content,
-        userId,
-        login,
-        createdAt,
-        postId,
-        title,
-        title,
-        blogId,
-        blogName,
-      ],
+        "commentatorId",
+        "commentatorLogin",
+        "createdAt",
+        "postId",
+        "postTitle",
+        "blogId",
+        "blogName"
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING *
+`,
+      [content, userId, login, createdAt, postId, postTitle, blogId, blogName],
     );
 
     return this.fromCommentDBTypeToCommentViewModel(comment[0]); // mapping comment
@@ -76,7 +69,7 @@ export class CommentsRepository {
       `UPDATE comments SET content = $1, WHERE id = $2, "commentOwnerId" = $3;`,
       [content, commentId, userId],
     );
-    return result.affectedRows > 0;
+    return result[1];
   }
 
   async deleteCommentByCommentIdAndUserId(commentId: string, userId: string) {

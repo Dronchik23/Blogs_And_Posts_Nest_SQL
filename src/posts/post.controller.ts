@@ -73,9 +73,11 @@ export class PostsController {
     if (!post) {
       throw new NotFoundException();
     }
+
     const newComment = await this.commandBus.execute(
       new CreateCommentCommand(postId, commentCreateDTO.content, currentUser),
     );
+
     if (newComment) {
       return HttpStatus.CREATED, newComment;
     } else {

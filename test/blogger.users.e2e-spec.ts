@@ -8,8 +8,6 @@ import { AppModule } from '../src/app.module';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { UsersQueryRepository } from '../src/query-repositorys/users-query.repository';
-import { UserDBType } from '../src/types and models/types';
-
 
 describe('blogger tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);

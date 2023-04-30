@@ -3,6 +3,7 @@ import {
   CommentDBType,
   LikeDBType,
   LikeStatus,
+  NewestLikesType,
   PaginationType,
   PostDBType,
   UserDBType,
@@ -10,6 +11,7 @@ import {
 import {
   BloggerCommentViewModel,
   CommentViewModel,
+  UserViewModel,
 } from '../types and models/models';
 import { UsersQueryRepository } from './users-query.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -134,18 +136,17 @@ OFFSET $3;
     userId?: string,
   ): Promise<CommentViewModel> {
     try {
-      const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-        (user: UserDBType) => user.id,
+      debugger;
+      const result: CommentDBType = await this.dataSource.query(
+        `SELECT * FROM comments WHERE id = $1 AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);`,
+        [commentId],
       );
-      const comment: CommentDBType = await this.dataSource.query(
-        `SELECT * FROM comments WHERE id = $1, "commentatorId" = $2  AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);`,
-        [commentId, userId, bannedUserIds],
-      );
-
+      console.log('commentik', result);
       const commentWithLikesInfo = await this.getLikesInfoForComment(
-        comment,
+        result[0],
         userId,
       );
+      console.log('commentWithLikesInfo', commentWithLikesInfo);
       return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
     } catch (error) {
       throw new NotFoundException();
@@ -156,44 +157,54 @@ OFFSET $3;
     comment: CommentDBType,
     userId?: string,
   ) {
-    const bannedUserIds = (await this.usersQueryRepo.findBannedUsers()).map(
-      (u) => u.id,
+    const likesCountResult = await this.dataSource.query(
+      `
+    SELECT COUNT(*) AS "likesCount" 
+    FROM likes 
+    WHERE "parentId" = $1
+     AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+  `,
+      [comment.id],
+    );
+    comment.likesCount = parseInt(likesCountResult[0].likesCount);
+
+    const disLikesCountResult = await this.dataSource.query(
+      `
+    SELECT COUNT(*) AS "dislikesCount" 
+    FROM likes 
+    WHERE "parentId" = $1
+     AND status = 'Dislike' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+  `,
+      [comment.id],
     );
 
-    comment.likesCount = await this.dataSource.query(
-      `
-        SELECT COUNT(*) FROM likes
-    INNER JOIN comments ON likes."parentId" = comments.id
-    WHERE likes.status = 'like'
-    AND likes."userId" NOT IN ($1:scv)
-    AND comments.id = $2`,
-      [bannedUserIds, comment.id],
-    );
+    comment.dislikesCount = parseInt(disLikesCountResult[0].dislikesCount);
 
-    comment.dislikesCount = await this.dataSource.query(
+    const newestLikes: NewestLikesType[] = await this.dataSource.query(
       `
-        SELECT COUNT(*) FROM likes
-    INNER JOIN comments ON likes."parentId" = comments.id
-    WHERE likes.status = 'Dislike'
-    AND likes."userId" NOT IN ($1:scv)
-    AND comments.id = $2`,
-      [bannedUserIds, comment.id],
+    SELECT * 
+    FROM likes 
+    WHERE "parentId" = $1
+    AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+      [comment.id],
     );
 
     if (userId) {
-      const user = await this.usersQueryRepo.findUserByUserId(userId);
+      const user: UserViewModel = await this.usersQueryRepo.findUserByUserId(
+        userId,
+      );
       if (user.banInfo.isBanned === true) {
         comment.myStatus = LikeStatus.None;
       } else {
-        const status: LikeDBType = await this.dataSource.query(
+        const myLike: LikeDBType = await this.dataSource.query(
           `
 SELECT * FROM likes
 WHERE "parentId" = $1 AND userId = $2
 `,
           [comment.id, userId],
         );
-        if (status) {
-          comment.myStatus = status.status;
+        if (myLike) {
+          comment.myStatus = myLike.status;
         }
       }
     }

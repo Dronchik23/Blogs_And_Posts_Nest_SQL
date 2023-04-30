@@ -23,6 +23,9 @@ describe('sa/blogs tests (e2e)', () => {
     },
   };
   const url = '/sa/blogs';
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
   const wipeAllDataUrl = '/testing/all-data';
 
   beforeAll(async () => {
@@ -65,7 +68,7 @@ describe('sa/blogs tests (e2e)', () => {
 
         const loginUser = await request(server)
           .post('/auth/login')
-          .set('User-Agent', 'jest user-agent')
+          .set(userAgent)
           .send({
             loginOrEmail: createUserDto.login,
             password: createUserDto.password,
@@ -133,7 +136,7 @@ describe('sa/blogs tests (e2e)', () => {
 
         const loginUser = await request(server)
           .post('/auth/login')
-          .set('User-Agent', 'jest user-agent')
+          .set(userAgent)
           .send({
             loginOrEmail: createUserDto.login,
             password: createUserDto.password,
