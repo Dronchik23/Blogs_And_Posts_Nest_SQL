@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { LikeDBType, LikeStatus } from '../../types and models/types';
+import {  LikeStatus } from '../../types and models/types';
 import { LikesRepository } from '../../likes/like.repository';
-import { ObjectId } from 'mongodb';
 
 export class UpdateLikeStatusCommand {
   constructor(

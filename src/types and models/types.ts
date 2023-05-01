@@ -1,4 +1,3 @@
-import { ObjectId } from 'mongodb';
 import {
   BloggerCommentViewModel,
   BloggerUserViewModel,
@@ -32,7 +31,7 @@ export type JWTPayloadType = {
   deviceId: string;
   iat: number;
 };
-
+//
 //enums
 export enum LikeStatus {
   None = 'None',
@@ -199,7 +198,7 @@ export class DeviceDBType {
   ) {}
 }
 export class CommentatorInfoType {
-  constructor(public userId: ObjectId, public userLogin: string) {}
+  constructor(public userId: string, public userLogin: string) {}
 }
 export class BearerJwtPayloadType {
   iat: number;

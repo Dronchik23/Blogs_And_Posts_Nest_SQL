@@ -1,11 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogViewModel, PostViewModel } from '../../types and models/models';
-import {
-  ExtendedLikesInfoType,
-  LikeStatus,
-  PostDBType,
-} from '../../types and models/types';
-import { ObjectId } from 'mongodb';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { PostsRepository } from '../../posts/post.repository';
 
