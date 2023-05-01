@@ -133,7 +133,7 @@ export class UsersQueryRepository {
       `SELECT * FROM users WHERE email = $1;`,
       [email],
     );
-    return result.length ? result[0] : null;
+    return result[0];
   }
 
   async findUserByLogin(login: string): Promise<UserDBType | null> {
@@ -141,7 +141,7 @@ export class UsersQueryRepository {
       'SELECT * FROM users WHERE login = $1',
       [login],
     );
-    return result.length ? result[0] : null;
+    return result[0];
   }
 
   async findUserByPasswordRecoveryCode(recoveryCode: string) {
@@ -188,7 +188,6 @@ export class UsersQueryRepository {
 
     const mappedUsers =
       this.fromUserDBTypeToUserViewModelWithPaginationForBlogger(users);
-    console.log('users', users);
 
     const totalCount = users.length;
 

@@ -336,7 +336,7 @@ describe('sa/users (e2e)', () => {
     describe('delete user tests', () => {
       it('should not delete user that not exist ', async () => {
         await request(server)
-          .delete('/sa/users' + -12)
+          .delete('/sa/users' + `7hd9300388u`)
           .auth('admin', 'qwerty')
           .expect(404);
       });

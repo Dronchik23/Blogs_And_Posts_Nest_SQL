@@ -31,9 +31,11 @@ export class UsersRepository {
   }
 
   async deleteUserByUserId(userId: string) {
-    return await this.dataSource.query(`DELETE FROM users WHERE id = $1;`, [
-      userId,
-    ]);
+    const result = await this.dataSource.query(
+      `DELETE FROM users WHERE id = $1;`,
+      [userId],
+    );
+    return result[1];
   }
 
   async deleteAllUsers() {
