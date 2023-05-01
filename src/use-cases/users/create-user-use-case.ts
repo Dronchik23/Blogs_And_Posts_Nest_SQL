@@ -29,10 +29,11 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
     const confirmationExpirationDate = add(new Date(), {
       hours: 2,
       minutes: 3,
-    });
+    }).toISOString();
     const isEmailConfirmed = false;
     const recoveryCode = null;
     const isRecoveryConfirmed = true;
+    const isBanned = false;
     const result: UserViewModel = await this.usersRepository.createUser(
       command.login,
       command.email,
@@ -43,6 +44,7 @@ export class CreateUserService implements ICommandHandler<CreateUserCommand> {
       isEmailConfirmed,
       recoveryCode,
       isRecoveryConfirmed,
+      isBanned,
     );
 
     try {

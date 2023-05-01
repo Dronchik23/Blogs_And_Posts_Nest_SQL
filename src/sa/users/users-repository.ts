@@ -111,15 +111,16 @@ export class UsersRepository {
   }
 
   async createUser(
-    login,
-    email,
-    passwordHash,
-    createdAt,
-    confirmationCode,
-    confirmationExpirationDate,
-    isEmailConfirmed,
-    recoveryCode,
-    isRecoveryConfirmed,
+    login: string,
+    email: string,
+    passwordHash: string,
+    createdAt: string,
+    confirmationCode: string,
+    confirmationExpirationDate: string,
+    isEmailConfirmed: boolean,
+    recoveryCode: string,
+    isRecoveryConfirmed: boolean,
+    isBanned: boolean,
   ): Promise<UserViewModel> {
     const user = await this.dataSource.query(
       `
@@ -132,9 +133,10 @@ export class UsersRepository {
       "confirmationExpirationDate",
       "isEmailConfirmed",
       "recoveryCode",
-      "isRecoveryConfirmed"
+      "isRecoveryConfirmed",
+      "isBanned"
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
     RETURNING *
     `,
       [
@@ -147,6 +149,7 @@ export class UsersRepository {
         isEmailConfirmed,
         recoveryCode,
         isRecoveryConfirmed,
+        isBanned,
       ],
     );
     return this.fromUserDBTypeToUserViewModel(user[0]); // mapping user
