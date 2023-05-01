@@ -70,6 +70,7 @@ import { CommentsQueryRepository } from './query-repositorys/comments-query.repo
 import { UsersQueryRepository } from './query-repositorys/users-query.repository';
 import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
 import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
+import * as process from 'process';
 
 export const useCases = [
   CreateBlogService,
@@ -134,11 +135,11 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'nodeJS',
-      password: 'nodeJS',
-      database: 'mybd',
+      host: 'db.thin.dev',
+      port: 5432, // или другой порт, если он указан
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: '01effe61-c4d3-4a9c-8886-812fcda96076',
       autoLoadEntities: false,
       synchronize: false,
     }),

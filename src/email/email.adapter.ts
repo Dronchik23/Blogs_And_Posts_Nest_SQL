@@ -8,7 +8,7 @@ export class EmailAdapter {
     private mailerService: MailerService,
     private configService: ConfigService,
   ) {}
-//
+
   async sendEmail(email: string, subject: string, message: string) {
     console.log('email will be sent');
     const user = this.configService.get<string>('EMAIL_USER');

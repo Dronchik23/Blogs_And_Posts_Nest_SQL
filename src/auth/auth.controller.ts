@@ -10,7 +10,6 @@ import {
   Scope,
   UnauthorizedException,
   UseGuards,
-  Headers,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { TokenType, UserDBType } from '../types and models/types';
