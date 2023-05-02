@@ -67,7 +67,7 @@ export class UsersQueryRepository {
   FROM users
   WHERE login ILIKE $1
     OR email ILIKE $2
-    AND "isBanned" = $3
+    OR "isBanned" = $3
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $4
   OFFSET $5;
@@ -89,7 +89,7 @@ export class UsersQueryRepository {
         FROM users
         WHERE login ILIKE $1
         OR email ILIKE $2
-        AND "isBanned" = $3
+        OR "isBanned" = $3
 `,
       [`%${searchLoginTerm ?? ''}%`, `%${searchEmailTerm ?? ''}%`, banStatus],
     );

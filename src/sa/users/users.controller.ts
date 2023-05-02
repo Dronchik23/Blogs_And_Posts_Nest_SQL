@@ -49,7 +49,6 @@ export class UsersController {
       +query.pageNumber,
       query.banStatus,
     );
-    console.log(users);
     return users;
   }
 

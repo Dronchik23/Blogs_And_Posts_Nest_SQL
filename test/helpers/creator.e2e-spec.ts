@@ -44,7 +44,7 @@ describe('sa/users (e2e)', () => {
   });
 
   describe('creator', () => {
-    it('should create 5 users', async () => {
+    it('should create 10 users', async () => {
       await request(server).delete(wipeAllData);
 
       const createUserDto = (i: number) => ({
