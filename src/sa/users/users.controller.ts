@@ -40,7 +40,7 @@ export class UsersController {
   async getAllUsers(
     @Query() query: UserPaginationQueryModel,
   ): Promise<PaginationType> {
-    return this.usersQueryRepository.getAllUsers(
+    const users = this.usersQueryRepository.getAllUsers(
       query.searchLoginTerm,
       query.searchEmailTerm,
       +query.pageSize,
@@ -49,6 +49,8 @@ export class UsersController {
       +query.pageNumber,
       query.banStatus,
     );
+    console.log(users);
+    return users;
   }
 
   @UseGuards(BasicAuthGuard)
@@ -66,13 +68,15 @@ export class UsersController {
   async createUser(
     @Body() createUserDTO: UserInputModel,
   ): Promise<UserViewModel> {
-    return await this.commandBus.execute(
+    const user = await this.commandBus.execute(
       new CreateUserCommand(
         createUserDTO.login,
         createUserDTO.email,
         createUserDTO.password,
       ),
     );
+    console.dir(user);
+    return user;
   }
 
   @UseGuards(BasicAuthGuard)
