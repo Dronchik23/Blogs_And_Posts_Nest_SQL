@@ -75,7 +75,6 @@ export class UsersController {
         createUserDTO.password,
       ),
     );
-    console.dir(user);
     return user;
   }
 

@@ -63,14 +63,13 @@ export class UsersQueryRepository {
   ): Promise<PaginationType> {
     const users: UserDBType[] = await this.dataSource.query(
       `
-  SELECT *
-  FROM users
-  WHERE login ILIKE $1
-    OR email ILIKE $2
-    AND "isBanned" = $3
-  ORDER BY "${sortBy}" ${sortDirection}
-  LIMIT $4
-  OFFSET $5;
+ SELECT *
+FROM users
+WHERE (login ILIKE $1 OR email ILIKE $2)
+  AND "isBanned" = $3
+ORDER BY "${sortBy}" ${sortDirection}
+LIMIT $4
+OFFSET $5;
 `,
       [
         `%${searchLoginTerm ?? ''}%`,
@@ -85,11 +84,10 @@ export class UsersQueryRepository {
 
     const usersRawCount: number = await this.dataSource.query(
       `
-        SELECT COUNT(*)
-        FROM users
-        WHERE login ILIKE $1
-        OR email ILIKE $2
-        AND "isBanned" = $3
+   SELECT COUNT(*)
+    FROM users
+    WHERE (login ILIKE $1 OR email ILIKE $2)
+      AND "isBanned" = $3
 `,
       [`%${searchLoginTerm ?? ''}%`, `%${searchEmailTerm ?? ''}%`, banStatus],
     );
