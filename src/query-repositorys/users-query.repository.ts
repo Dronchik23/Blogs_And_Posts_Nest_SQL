@@ -84,13 +84,10 @@ export class UsersQueryRepository {
 
     const usersRawCount: number = await this.dataSource.query(
       `
-        SELECT *
+        SELECT COUNT(*)
         FROM users
-    WHERE (login ILIKE $1 OR email ILIKE $2)
+   WHERE (login ILIKE $1 OR email ILIKE $2)
     AND ("isBanned" = $3 OR $3 IS NULL)
-    ORDER BY "${sortBy}" ${sortDirection}
-    LIMIT $4
-    OFFSET $5;
 `,
       [`%${searchLoginTerm ?? ''}%`, `%${searchEmailTerm ?? ''}%`, banStatus],
     );
