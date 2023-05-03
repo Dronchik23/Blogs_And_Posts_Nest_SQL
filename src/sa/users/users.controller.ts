@@ -21,11 +21,12 @@ import {
 import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateUserCommand } from '../../use-cases/users/create-user-use-case';
+import { RegistrationUserCommand } from '../../use-cases/users/registration-user-use-case';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
 import { BanUserByUserIdBySACommand } from '../../use-cases/users/bun-user-by-userId-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PaginationType } from '../../types and models/types';
+import { CreateUserCommand } from '../../use-cases/users/create-user-by-super-admin-use-case';
 
 @SkipThrottle()
 @Controller({ path: 'sa/users', scope: Scope.REQUEST })

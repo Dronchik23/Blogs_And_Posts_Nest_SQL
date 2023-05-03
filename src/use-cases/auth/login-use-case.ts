@@ -33,7 +33,7 @@ export class LoginService implements ICommandHandler<LoginCommand> {
     if (!user) return null;
     if (user.isBanned === true) return null;
     const userId = user.id;
-    const deviceId = randomUUID().toString();
+    const deviceId = randomUUID();
     const { accessToken, refreshToken } = this.jwtService.createJWT(
       userId,
       deviceId,

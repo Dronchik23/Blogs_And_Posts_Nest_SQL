@@ -42,7 +42,7 @@ import { DeletePostService } from './use-cases/posts/delete-post-by-postId-use-c
 import { CreateCommentService } from './use-cases/comments/create-comment-use-case';
 import { DeleteCommentService } from './use-cases/comments/delete-comment-by-commentId-use-case';
 import { UpdateCommentService } from './use-cases/comments/update -comment-by-commentId-and-userId-use-case';
-import { CreateUserService } from './use-cases/users/create-user-use-case';
+import { RegistrationUserService } from './use-cases/users/registration-user-use-case';
 import { DeleteUserService } from './use-cases/users/delete-user-by-id-use-case';
 import { LoginService } from './use-cases/auth/login-use-case';
 import { RefreshTokenService } from './use-cases/auth/refresh-token-use-case';
@@ -71,6 +71,7 @@ import { UsersQueryRepository } from './query-repositorys/users-query.repository
 import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
 import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
 import * as process from 'process';
+import { CreateUserService } from './use-cases/users/create-user-by-super-admin-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -81,7 +82,7 @@ export const useCases = [
   CreateCommentService,
   DeleteCommentService,
   UpdateCommentService,
-  CreateUserService,
+  RegistrationUserService,
   DeleteUserService,
   LoginService,
   RefreshTokenService,
@@ -98,6 +99,7 @@ export const useCases = [
   BanBlogByBlogIdService,
   BanUserByUserIdByBloggerService,
   FindBannedUsersByBlogIdService,
+  CreateUserService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,

@@ -21,9 +21,11 @@ describe('sa/users (e2e)', () => {
       return;
     },
   };
-  //
   const url = '/sa/users';
   const wipeAllData = '/testing/all-data';
+  const userAgent = {
+    'User-Agent': 'jest user-agent',
+  };
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -144,7 +146,7 @@ describe('sa/users (e2e)', () => {
           })
           .expect(401);
       });
-      it('should ban user with correct data', async () => {
+      it('should ban/unban user with correct data', async () => {
         await request(server)
           .put(url + `/${user.id}/ban`)
           .auth('admin', 'qwerty')
@@ -159,8 +161,41 @@ describe('sa/users (e2e)', () => {
           .auth('admin', 'qwerty');
 
         user = responseForUser2.body;
-        console.log('user body', user);
         expect(user.banInfo.isBanned).toBe(true);
+
+        await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: 'user@gmail.com',
+            password: 'password',
+          })
+          .expect(401);
+
+        await request(server)
+          .put(url + `/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: false,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204);
+
+        const responseForUser3 = await request(server)
+          .get(url + `/${user.id}/`)
+          .auth('admin', 'qwerty');
+
+        user = responseForUser3.body;
+        expect(user.banInfo.isBanned).toBe(false);
+
+        await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: 'user@gmail.com',
+            password: 'password',
+          })
+          .expect(200);
       });
     });
     describe('create user tests', () => {

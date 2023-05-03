@@ -6,7 +6,7 @@ import { UsersRepository } from '../../sa/users/users-repository';
 import { UserViewModel } from '../../types and models/models';
 import { EmailService } from '../../email/email.service';
 
-export class CreateUserCommand {
+export class RegistrationUserCommand {
   constructor(
     public login: string,
     public email: string,
@@ -14,14 +14,16 @@ export class CreateUserCommand {
   ) {}
 }
 
-@CommandHandler(CreateUserCommand)
-export class CreateUserService implements ICommandHandler<CreateUserCommand> {
+@CommandHandler(RegistrationUserCommand)
+export class RegistrationUserService
+  implements ICommandHandler<RegistrationUserCommand>
+{
   constructor(
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
   ) {}
 
-  async execute(command: CreateUserCommand): Promise<UserViewModel> {
+  async execute(command: RegistrationUserCommand): Promise<UserViewModel> {
     const passwordSalt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(command.password, passwordSalt);
     const confirmationCode = uuidv4();

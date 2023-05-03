@@ -27,7 +27,7 @@ import { ClientIp, CurrentUser, JwtPayload, UserAgent } from './decorators';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { UsersQueryRepository } from '../query-repositorys/users-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
-import { CreateUserCommand } from '../use-cases/users/create-user-use-case';
+import { RegistrationUserCommand } from '../use-cases/users/registration-user-use-case';
 import { LoginCommand } from '../use-cases/auth/login-use-case';
 import { RefreshTokenCommand } from '../use-cases/auth/refresh-token-use-case';
 import { PasswordRecoveryCommand } from '../use-cases/auth/password-recovery-use-case';
@@ -150,7 +150,7 @@ export class AuthController {
       });
     }
     await this.commandBus.execute(
-      new CreateUserCommand(
+      new RegistrationUserCommand(
         createUserDTO.login,
         createUserDTO.email,
         createUserDTO.password,
