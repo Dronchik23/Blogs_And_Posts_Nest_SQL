@@ -30,6 +30,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       return response.status(status).json(errorResponse);
     } else if (status === 500) {
+      console.log({
+        message: exception.message,
+        res: exception.getResponse(),
+        stck: exception.stack,
+      });
       return response.status(500).send({
         message: exception.message,
         res: exception.getResponse(),
