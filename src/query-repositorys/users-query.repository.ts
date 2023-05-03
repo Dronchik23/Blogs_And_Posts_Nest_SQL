@@ -65,7 +65,7 @@ export class UsersQueryRepository {
       `
         SELECT *
         FROM users
-    WHERE (login ILIKE $1 OR email ILIKE $2)
+    WHERE (LOWER(login) ILIKE LOWER($1) OR LOWER(email) ILIKE LOWER($2))
     AND ("isBanned" = $3 OR $3 IS NULL)
     ORDER BY "${sortBy}" ${sortDirection}
     LIMIT $4
@@ -86,7 +86,7 @@ export class UsersQueryRepository {
       `
         SELECT COUNT(*)
         FROM users
-   WHERE (login ILIKE $1 OR email ILIKE $2)
+   WHERE (LOWER(login) ILIKE LOWER($1) OR LOWER(email) ILIKE LOWER($2))
     AND ("isBanned" = $3 OR $3 IS NULL)
 `,
       [`%${searchLoginTerm ?? ''}%`, `%${searchEmailTerm ?? ''}%`, banStatus],
