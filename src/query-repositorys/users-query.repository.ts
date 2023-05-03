@@ -63,13 +63,13 @@ export class UsersQueryRepository {
   ): Promise<PaginationType> {
     const users: UserDBType[] = await this.dataSource.query(
       `
-        SELECT *
-        FROM users
-    WHERE (LOWER(login) ILIKE LOWER($1) OR LOWER(email) ILIKE LOWER($2))
-    AND ("isBanned" = $3 OR $3 IS NULL)
-    ORDER BY "${sortBy}" ${sortDirection}
-    LIMIT $4
-    OFFSET $5;
+      SELECT *
+FROM users
+WHERE (LOWER(login) ILIKE LOWER($1) OR LOWER(email) ILIKE LOWER($2))
+AND ("isBanned" = $3 OR $3 IS NULL)
+ORDER BY "${sortBy}" COLLATE "C" ${sortDirection}
+LIMIT $4
+OFFSET $5;
 `,
       [
         `%${searchLoginTerm ?? ''}%`,
