@@ -45,14 +45,19 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
   @IsString()
   searchLoginTerm: string | null = null;
+
   @IsOptional()
   @IsString()
   searchEmailTerm: string | null = null;
+
   @IsOptional()
   @IsString()
-  @Transform(({ value }) => (value === 'banned' ? 'true' : value))
-  @Transform(({ value }) => (value === 'notBanned' ? 'false' : value))
-  @Transform(({ value }) => (value === 'all' ? null : value))
+  @Transform(({ value }) => {
+    if (value === 'banned') return true;
+    if (value === 'notBanned') return false;
+    if (value === 'all') return null;
+    return value;
+  })
   banStatus: string = null;
 }
 export class BlogPaginationQueryModel extends DefaultPaginationData {
