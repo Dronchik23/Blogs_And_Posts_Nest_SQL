@@ -24,6 +24,7 @@ import {
   IsLoginAlreadyExist,
 } from '../validator';
 import { Transform, Type } from 'class-transformer';
+import { Optional } from '@nestjs/common';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -38,6 +39,7 @@ export class DefaultPaginationData {
     return params.value === 'asc' ? 'asc' : 'desc';
   })
   sortDirection: 'asc' | 'desc' = 'desc';
+  @IsOptional()
   @Type(() => Number)
   pageNumber: number | null = 1;
 }
@@ -56,7 +58,7 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
     if (value === 'banned') return true;
     if (value === 'notBanned') return false;
     if (value === 'all') return null;
-    return value;
+    return null;
   })
   banStatus: string = null;
 }
