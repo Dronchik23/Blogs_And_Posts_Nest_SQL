@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
@@ -6,11 +11,25 @@ import { AuthGuard } from '@nestjs/passport';
 export class BasicAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
-    //TODO ?
-    const creds = request.headers['authorization']?.split(' ')[1];
-    if (creds === 'YWRtaW46cXdlcnR5') {
+
+    const credentials = request.headers['authorization']?.split(' ')[1];
+    if (credentials!) {
+      throw new UnauthorizedException();
+    }
+    if (credentials === 'YWRtaW46cXdlcnR5') {
       return true;
     }
     return false;
+  }
+}
+
+@Injectable()
+export class LogGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    console.log('LogGuard');
+    console.log(request.params);
+    console.error(request.params);
+    return true;
   }
 }

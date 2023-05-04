@@ -72,6 +72,7 @@ import { DevicesQueryRepository } from './query-repositorys/devices-query.reposi
 import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
 import * as process from 'process';
 import { CreateUserService } from './use-cases/users/create-user-by-super-admin-use-case';
+import { LogGuard } from './auth/strategys/basic-strategy';
 
 export const useCases = [
   CreateBlogService,
@@ -176,6 +177,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     SABlogsController,
   ],
   providers: [
+    LogGuard,
     EmailAdapter,
     ...strategies,
     ...constraints,
