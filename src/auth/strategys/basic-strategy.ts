@@ -13,7 +13,7 @@ export class BasicAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
 
     const credentials = request.headers['authorization']?.split(' ')[1];
-    if (credentials!) {
+    if (!credentials) {
       throw new UnauthorizedException();
     }
     if (credentials === 'YWRtaW46cXdlcnR5') {
