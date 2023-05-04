@@ -81,7 +81,6 @@ export class IsEmailAlreadyExistConstraint
   constructor(private readonly usersQueryRepository: UsersQueryRepository) {}
 
   async validate(email: string) {
-    debugger;
     const user = await this.usersQueryRepository.findUserByEmail(email);
     return !user;
   }

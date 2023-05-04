@@ -21,7 +21,6 @@ import {
 import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
-import { RegistrationUserCommand } from '../../use-cases/users/registration-user-use-case';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
 import { BanUserByUserIdBySACommand } from '../../use-cases/users/bun-user-by-userId-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
@@ -41,6 +40,7 @@ export class UsersController {
   async getAllUsers(
     @Query() query: UserPaginationQueryModel,
   ): Promise<PaginationType> {
+    debugger;
     const users = this.usersQueryRepository.getAllUsers(
       query.searchLoginTerm,
       query.searchEmailTerm,

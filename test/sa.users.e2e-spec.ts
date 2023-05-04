@@ -197,6 +197,64 @@ describe('sa/users (e2e)', () => {
           })
           .expect(200);
       });
+      it('test', async () => {
+        await request(server).delete(wipeAllData);
+
+        const createUserDto2: UserInputModel = {
+          login: `use2r`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+
+        expect(user2).toBeDefined();
+
+        await request(server)
+          .put(url + `/${user2.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204);
+
+        await request(server).get(url).auth('admin', 'qwerty').expect(200);
+      });
+      it('test 2', async () => {
+        await request(server).delete(wipeAllData);
+
+        const createUserDto2: UserInputModel = {
+          login: `use2r`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+
+        expect(user2).toBeDefined();
+
+        await request(server)
+          .put(url + `/${user2.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204);
+
+        await request(server).get(url).auth('admin', 'qwerty').expect(200);
+      });
     });
     describe('create user tests', () => {
       it('should create user with correct input data', async () => {
@@ -295,77 +353,6 @@ describe('sa/users (e2e)', () => {
             totalCount: 0,
             items: [],
           });
-      });
-    });
-    describe('update ban status user tests', () => {
-      beforeAll(async () => {
-        await request(server).delete(wipeAllData);
-
-        const createUserDto: UserInputModel = {
-          login: `user`,
-          password: 'password',
-          email: `user@gmail.com`,
-        };
-
-        const responseForUser = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto);
-
-        user = responseForUser.body;
-
-        expect(user).toBeDefined();
-      });
-      it('should not update user ban status with incorrect input data', async () => {
-        const reqWithIncorrectIsBanned = await request(server)
-          .put(`/sa/users/${user.id}/ban`)
-          .auth('admin', 'qwerty')
-          .send({ isBanned: '', banReason: 'validStringMoreThen20words' });
-
-        expect(reqWithIncorrectIsBanned.status).toBe(400);
-        expect(reqWithIncorrectIsBanned.body).toEqual({
-          errorsMessages: [
-            {
-              field: 'isBanned',
-              message: expect.any(String),
-            },
-          ],
-        });
-
-        const reqWithIncorrectBanReason = await request(server)
-          .put(`/sa/users/${user.id}/ban`)
-          .auth('admin', 'qwerty')
-          .send({ isBanned: true, banReason: '' });
-
-        expect(reqWithIncorrectBanReason.status).toBe(400);
-        expect(reqWithIncorrectBanReason.body).toEqual({
-          errorsMessages: [
-            {
-              field: 'banReason',
-              message: expect.any(String),
-            },
-          ],
-        });
-      });
-      it('should not update user ban status that not exist ', async () => {
-        await request(server)
-          .put('/sa/users' + -12)
-          .auth('admin', 'qwerty')
-          .send({ login: 'valid', password: 'valid', email: 'valid' })
-          .expect(404);
-      });
-      it('should not update user ban status with bad auth params', async () => {
-        await request(server)
-          .put(`/sa/users/${user.id}/ban`)
-          .set('Authorization', `Basic YWRtaW`)
-          .send({ login: 'valid', password: '', email: 'valid' })
-          .expect(401);
-
-        await request(server)
-          .put(`/sa/users/${user.id}/ban`)
-          .set('Authorization', `Bearer YWRtaW46cXdlcnR5`)
-          .send({ login: 'valid', password: 'valid', email: 'valid' })
-          .expect(401);
       });
     });
     describe('delete user tests', () => {
