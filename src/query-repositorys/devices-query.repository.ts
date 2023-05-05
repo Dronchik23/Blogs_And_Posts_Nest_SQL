@@ -19,10 +19,11 @@ export class DevicesQueryRepository {
     userId: string,
     lastActiveDate: string,
   ) {
-    return await this.dataSource.query(
+    const result = await this.dataSource.query(
       `SELECT * FROM devices WHERE "userId" = $1 AND "deviceId" = $2 AND "lastActiveDate" = $3`,
       [userId, deviceId, lastActiveDate],
     );
+    return result[0];
   }
 
   async findDeviceByDeviceIdAndDate(deviceId: string) {
