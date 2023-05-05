@@ -17,6 +17,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { DeleteAllDevicesExcludeCurrentCommand } from '../use-cases/devices/delete -all-devices-exclude-current-use-case';
 import { DeleteDeviceByDeviceIdCommand } from '../use-cases/devices/delete-device-by-deviceId-use-case';
 import { DeviceDBType } from '../types and models/types';
+import { DeviceViewModel } from '../types and models/models';
 
 @SkipThrottle()
 @Controller({ path: 'security/devices', scope: Scope.REQUEST })
@@ -28,7 +29,9 @@ export class DevicesController {
 
   @UseGuards(RefreshTokenGuard)
   @Get()
-  async getAllDevices(@CurrentUserId() currentUserId) {
+  async getAllDevices(
+    @CurrentUserId() currentUserId,
+  ): Promise<DeviceViewModel[]> {
     return await this.devicesQueryService.findAllDevicesByUserId(currentUserId);
   }
 
@@ -54,7 +57,6 @@ export class DevicesController {
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
   ) {
-    debugger;
     const device: DeviceDBType =
       await this.devicesQueryService.findDeviceByDeviceIdAndDate(deviceId);
     if (!device) {

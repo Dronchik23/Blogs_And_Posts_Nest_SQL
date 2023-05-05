@@ -73,6 +73,12 @@ export class CommentPaginationQueryModel extends DefaultPaginationData {
 }
 export class PostPaginationQueryModel extends DefaultPaginationData {}
 
+export class DeviceViewModel {
+  ip: string;
+  title: string;
+  lastActiveDate: string;
+  deviceId: string;
+}
 export class PostUpdateModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)
