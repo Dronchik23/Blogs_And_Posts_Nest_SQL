@@ -55,7 +55,7 @@ export class DevicesRepository {
     newLastActiveDate: string,
   ): Promise<any> {
     const result = await this.dataSource.query(
-      `UPDATE devices SET "lastActiveDate" = $1, WHERE "deviceId" = $2, "userId" = $3;`,
+      `UPDATE devices SET "lastActiveDate" = $1, WHERE "deviceId" = $2 AND "userId" = $3;`,
       [newLastActiveDate, deviceId, userId],
     );
     return result[1];
