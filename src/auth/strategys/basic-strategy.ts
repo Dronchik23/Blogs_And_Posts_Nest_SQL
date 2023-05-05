@@ -7,8 +7,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
-//export class BasicAuthGuard extends AuthGuard('basic') {}
-export class BasicAuthGuard implements CanActivate {
+export class BasicAuthGuard extends AuthGuard('basic') {}
+/*export class BasicAuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
 
@@ -21,7 +21,7 @@ export class BasicAuthGuard implements CanActivate {
     }
     return false;
   }
-}
+}*/
 
 @Injectable()
 export class LogGuard implements CanActivate {
