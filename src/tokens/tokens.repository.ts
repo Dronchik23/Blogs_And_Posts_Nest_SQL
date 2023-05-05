@@ -25,7 +25,8 @@ RETURNING *
 
   async findBannedToken(refreshToken: string) {
     return await this.dataSource.query(
-      `SELECT * FROM refreshTokenBlackList WHERE refreshToken = '${refreshToken}'`,
+      `SELECT * FROM "refreshTokenBlackList" WHERE "refreshToken" = $1`,
+      [refreshToken],
     );
   }
 }

@@ -81,7 +81,7 @@ export class AuthController {
     @JwtPayload() jwtPayload,
   ) {
     const tokens: TokenType | null = await this.commandBus.execute(
-      new RefreshTokenCommand(jwtPayload),
+      new RefreshTokenCommand(jwtPayload, jwtPayload.refreshToken),
     );
     if (!tokens) {
       throw new UnauthorizedException();
@@ -180,6 +180,7 @@ export class AuthController {
     }
     return HttpStatus.NO_CONTENT;
   }
+
   @SkipThrottle()
   @UseGuards(BearerAuthGuard)
   @Get('me')
@@ -190,6 +191,7 @@ export class AuthController {
       userId: currentUser.id,
     };
   }
+
   @SkipThrottle()
   @UseGuards(RefreshTokenGuard)
   @Post('logout')
@@ -197,7 +199,12 @@ export class AuthController {
   async logout(@JwtPayload() jwtPayload) {
     const lastActiveDate = new Date(jwtPayload.iat * 1000).toISOString();
     const device = await this.commandBus.execute(
-      new LogoutCommand(jwtPayload.deviceId, jwtPayload.userId, lastActiveDate),
+      new LogoutCommand(
+        jwtPayload.deviceId,
+        jwtPayload.userId,
+        lastActiveDate,
+        jwtPayload.refreshToken,
+      ),
     );
     if (!device) {
       throw new UnauthorizedException();

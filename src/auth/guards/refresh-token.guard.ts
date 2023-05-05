@@ -31,6 +31,7 @@ export class RefreshTokenGuard implements CanActivate {
       userId,
       deviceId: payload.deviceId,
       iat: payload.iat,
+      refreshToken,
     };
     return true;
   }
