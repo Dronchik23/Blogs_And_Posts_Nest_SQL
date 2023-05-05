@@ -35,11 +35,12 @@ export class RefreshTokenService
         lastActiveDate.toString(),
       );
     if (!device) return null;
+    console.log(device);
 
-    const bannedRefreshToken = await this.tokensRepository.findBannedToken(
+    const expiredRefreshToken = await this.tokensRepository.findBannedToken(
       command.refreshToken,
     );
-    if (bannedRefreshToken) {
+    if (expiredRefreshToken) {
       throw new UnauthorizedException();
     }
 
@@ -50,13 +51,16 @@ export class RefreshTokenService
 
     const newLastActiveDate = this.jwtService.getLastActiveDate(refreshToken);
 
-    await this.tokensRepository.addRefreshToBlackList(command.refreshToken);
-
     await this.devicesRepository.updateLastActiveDateByDevice(
       command.jwtPayload.deviceId,
       command.jwtPayload.userId,
       newLastActiveDate,
     );
+
+    await this.tokensRepository.addToRefreshTokenBlackList(
+      command.refreshToken,
+    );
+
     return { accessToken, refreshToken };
   }
 }

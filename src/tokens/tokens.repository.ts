@@ -4,29 +4,26 @@ import { DataSource } from 'typeorm';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class TokensRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
-    return;
-  }
+  constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
-  async addRefreshToBlackList(refreshToken: string) {
-    const query = `
-   INSERT INTO public.users(
-  "refreshToken",
+  async addToRefreshTokenBlackList(refreshToken: string) {
+    return await this.dataSource.query(
+      `
+INSERT INTO "refreshTokenBlackList" (
+  "refreshToken"
 ) 
-VALUES (
-  $1,
-) 
+VALUES ($1) 
 RETURNING *
-  `;
-    const values = [refreshToken];
-
-    return await this.dataSource.query(query, values);
+  `,
+      [refreshToken],
+    );
   }
 
   async findBannedToken(refreshToken: string) {
-    return await this.dataSource.query(
+    const result = await this.dataSource.query(
       `SELECT * FROM "refreshTokenBlackList" WHERE "refreshToken" = $1`,
       [refreshToken],
     );
+    return result[0];
   }
 }

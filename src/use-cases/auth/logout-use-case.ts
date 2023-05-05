@@ -3,6 +3,7 @@ import { DevicesRepository } from '../../devices/device.repository';
 import { DeviceDBType } from '../../types and models/types';
 import { DevicesQueryRepository } from '../../query-repositorys/devices-query.repository';
 import { TokensRepository } from '../../tokens/tokens.repository';
+import { UnauthorizedException } from '@nestjs/common';
 
 export class LogoutCommand {
   constructor(
@@ -22,13 +23,22 @@ export class LogoutService implements ICommandHandler<LogoutCommand> {
   ) {}
 
   async execute(command: LogoutCommand): Promise<DeviceDBType> {
+    const expiredRefreshToken = await this.tokensRepository.findBannedToken(
+      command.refreshToken,
+    );
+    if (expiredRefreshToken) {
+      throw new UnauthorizedException();
+    }
+
     await this.devicesQueryRepository.findDeviceByDeviceIdUserIdAndDate(
       command.deviceId,
       command.userId,
       command.lastActiveDate,
     );
 
-    await this.tokensRepository.addRefreshToBlackList(command.refreshToken);
+    await this.tokensRepository.addToRefreshTokenBlackList(
+      command.refreshToken,
+    );
 
     return this.devicesRepository.findAndDeleteDeviceByDeviceIdUserIdAndDate(
       command.deviceId,

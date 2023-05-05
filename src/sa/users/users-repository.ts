@@ -87,7 +87,7 @@ export class UsersRepository {
       `UPDATE users SET "isBanned" = $1, "banReason" = $2, "banDate" = $3 WHERE id = $4;`,
       [isBanned, banReason, banDate, userId],
     );
-    console.log('result', result);
+
     return result.affectedRows > 0;
   }
 

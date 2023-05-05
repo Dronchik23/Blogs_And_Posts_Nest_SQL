@@ -41,7 +41,7 @@ export class CustomJwtService {
   }
 
   async addRefreshToBlackList(refreshToken: string) {
-    return this.tokensRepository.addRefreshToBlackList(refreshToken);
+    return this.tokensRepository.addToRefreshTokenBlackList(refreshToken);
   }
 
   async findBannedToken(refreshToken: string) {
