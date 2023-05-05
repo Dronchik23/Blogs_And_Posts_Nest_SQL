@@ -53,7 +53,6 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
   searchEmailTerm: string | null = null;
 
   @IsOptional()
-  @IsString()
   @Transform(({ value }) => {
     if (value === 'banned') return true;
     if (value === 'notBanned') return false;
