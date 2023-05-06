@@ -69,7 +69,12 @@ export class BlogsQueryRepository {
       `
 SELECT * FROM blogs
 WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-ORDER BY "${sortBy}" ${sortDirection}
+ORDER BY 
+  CASE 
+    WHEN SUBSTRING(name from 1 for 1) = LOWER(SUBSTRING(name from 1 for 1)) THEN LOWER(name) 
+    ELSE name 
+  END 
+  ${sortDirection}
 LIMIT $3
 OFFSET $4;
 `,
