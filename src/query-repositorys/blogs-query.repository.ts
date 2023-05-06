@@ -186,7 +186,9 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
       this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
 
     const totalCount = await this.dataSource
-      .query(` SELECT COUNT(*) FROM blogs`)
+      .query(
+        ` SELECT COUNT(*) FROM blogs WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)`,
+      )
       .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(+totalCount / +pageSize);
