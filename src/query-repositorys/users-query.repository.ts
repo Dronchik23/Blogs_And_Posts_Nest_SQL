@@ -175,7 +175,7 @@ OFFSET $5;
       `
       SELECT *
   FROM users
-  WHERE (LOWER(login) LIKE $1 OR $1 IS NULL)
+  WHERE (login ILIKE $1 OR $1 IS NULL)
     AND "blogId" = $2
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $3

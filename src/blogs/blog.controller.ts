@@ -10,7 +10,6 @@ import {
   BlogPaginationQueryModel,
   BlogViewModel,
   PostPaginationQueryModel,
-  PostViewModel,
 } from '../types and models/models';
 import { CurrentUserIdFromToken } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';

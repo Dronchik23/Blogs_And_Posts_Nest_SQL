@@ -125,7 +125,6 @@ export class BloggerBlogsController {
         blogId,
       ),
     );
-    console.log('newPost', newPost);
     if (newPost) {
       return newPost;
     } else {

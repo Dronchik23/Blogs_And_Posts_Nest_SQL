@@ -142,7 +142,8 @@ WHERE "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = 
   async findBlogByBlogId(blogId: string): Promise<BlogViewModel | null> {
     try {
       const result = await this.dataSource.query(
-        `SELECT * FROM blogs WHERE id = $1 AND "blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+        `SELECT * FROM blogs WHERE id = $1 AND "blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
         [blogId],
       );
       return result[0] ? this.fromBlogDBTypeBlogViewModel(result[0]) : null;
@@ -184,7 +185,9 @@ WHERE "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = 
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
 
-    const totalCount = blogs.length;
+    const totalCount = await this.dataSource
+      .query(` SELECT COUNT(*) FROM blogs`)
+      .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(+totalCount / +pageSize);
 
