@@ -69,7 +69,7 @@ export class BlogsQueryRepository {
       `
 SELECT * FROM blogs
 WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-ORDER BY LOWER(name) ${sortDirection}, name ${sortDirection}
+ORDER BY "${sortBy}" ${sortDirection}
 LIMIT $3
 OFFSET $4;
 `,
@@ -110,7 +110,7 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
       `
   SELECT * FROM blogs
   WHERE (LOWER(name) LIKE $1 OR $1 IS NULL)
-  ORDER BY "${sortBy}" ${sortDirection}
+  ORDER BY COLLATE "C" "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
 `,
