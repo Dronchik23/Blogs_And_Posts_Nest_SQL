@@ -76,7 +76,15 @@ export class BlogsQueryRepository {
       [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
     );
 
-    const totalCount = blogs.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+SELECT COUNT(*) FROM blogs
+WHERE (LOWER(name) LIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+`,
+        [searchNameTerm, userId],
+      )
+      .then((result) => +result[0].count);
 
     const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
 

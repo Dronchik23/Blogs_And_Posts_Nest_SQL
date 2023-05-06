@@ -204,10 +204,7 @@ export class BloggerBlogsController {
       await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
         blogId,
         currentUserId,
-      ); // find blogOwner of the blog
-    // if (!blogOwner) {
-    //   throw new ForbiddenException();
-    // }
+      );
 
     const post = await this.postsQueryRepository.findPostByPostId(postId);
 

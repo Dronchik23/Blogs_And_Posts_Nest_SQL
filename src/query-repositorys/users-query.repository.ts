@@ -171,7 +171,6 @@ OFFSET $5;
     sortDirection: string,
     searchLoginTerm: string,
   ) {
-    debugger;
     const users: UserDBType[] = await this.dataSource.query(
       `
       SELECT *
@@ -187,7 +186,15 @@ OFFSET $5;
     const mappedUsers =
       this.fromUserDBTypeToUserViewModelWithPaginationForBlogger(users);
 
-    const totalCount = users.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+SELECT COUNT(*) FROM users
+WHERE (LOWER(login) LIKE $1 OR $1 IS NULL) AND "blogId" = $2 AND $2
+`,
+        [searchLoginTerm, blogId],
+      )
+      .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
