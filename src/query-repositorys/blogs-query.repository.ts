@@ -68,7 +68,7 @@ export class BlogsQueryRepository {
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+  WHERE (name ILIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $3
   OFFSET $4;
@@ -80,9 +80,9 @@ export class BlogsQueryRepository {
       .query(
         `
 SELECT COUNT(*) FROM blogs
-WHERE "blogOwnerId" = $1 AND $1 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+WHERE (name ILIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
 `,
-        [userId],
+        [searchNameTerm, userId],
       )
       .then((result) => +result[0].count);
 
@@ -174,7 +174,7 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
     const blogs = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL)
+  WHERE (name ILIKE $1 OR $1 IS NULL)
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
