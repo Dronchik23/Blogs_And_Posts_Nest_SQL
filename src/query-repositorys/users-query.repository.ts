@@ -177,7 +177,7 @@ OFFSET $5;
       FROM users
       WHERE (login ILIKE $1 OR $1 IS NULL)
         AND "blogId" = $2
-        AND "isBanned" = false
+        AND "isBanned" = true
       ORDER BY "${sortBy}" ${sortDirection}
       LIMIT $3
       OFFSET $4;
