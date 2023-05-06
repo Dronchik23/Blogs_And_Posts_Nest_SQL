@@ -67,11 +67,8 @@ export class BlogsQueryRepository {
   ): Promise<PaginationType> {
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
-SELECT * FROM blogs
+SELECT COUNT(*) FROM blogs
 WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-ORDER BY "${sortBy}" ${sortDirection}
-LIMIT $3
-OFFSET $4;
 `,
       [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
     );
