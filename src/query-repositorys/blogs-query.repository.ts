@@ -174,7 +174,7 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
     const blogs = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE (name ILIKE $1 OR $1 IS NULL)
+  WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;

@@ -192,7 +192,7 @@ OFFSET $5;
       .query(
         `
         SELECT COUNT(*) FROM users
-        WHERE (LOWER(login) LIKE $1 OR $1 IS NULL) AND "blogId" = $2 AND "isBanned" = false
+        WHERE (login ILIKE $1 OR $1 IS NULL) AND "blogId" = $2 AND "isBanned" = true
       `,
         [searchLoginTerm, blogId],
       )
