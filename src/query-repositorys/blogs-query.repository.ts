@@ -173,11 +173,11 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
   ): Promise<PaginationType> {
     const blogs = await this.dataSource.query(
       `
-  SELECT * FROM blogs
-  WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
-  ORDER BY "${sortBy}" ${sortDirection}
-  LIMIT $2
-  OFFSET $3;
+SELECT * FROM blogs
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
+ORDER BY "${sortBy}" ${sortDirection}
+LIMIT $2
+OFFSET $3;
 `,
       [searchNameTerm, pageSize, (pageNumber - 1) * pageSize],
     );
@@ -188,6 +188,7 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
     const totalCount = await this.dataSource
       .query(
         ` SELECT COUNT(*) FROM blogs WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)`,
+        [searchNameTerm],
       )
       .then((result) => +result[0].count);
 
