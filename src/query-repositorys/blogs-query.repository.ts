@@ -79,8 +79,8 @@ OFFSET $4;
     const totalCount = await this.dataSource
       .query(
         `
-SELECT COUNT(*) FROM blogs
-WHERE (name ILIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+SELECT * FROM blogs
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
 `,
         [searchNameTerm, userId],
       )
