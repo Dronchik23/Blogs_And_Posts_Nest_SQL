@@ -29,6 +29,7 @@ export class BlogsRepository {
     blogOwnerId: string,
     blogOwnerLogin: string,
     isMembership: boolean,
+    isBanned: boolean,
   ): Promise<BlogViewModel> {
     const result = await this.dataSource.query(
       `
@@ -39,9 +40,10 @@ description,
 "createdAt",
 "blogOwnerId",
 "blogOwnerLogin",
-"isMembership"
+"isMembership",
+"isBanned"
 )
-VALUES ($1, $2, $3, $4, $5, $6, $7)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *
 `,
       [
@@ -52,6 +54,7 @@ RETURNING *
         blogOwnerId,
         blogOwnerLogin,
         isMembership,
+        isBanned,
       ],
     );
 

@@ -19,6 +19,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
   async execute(command: CreateBlogCommand): Promise<BlogViewModel> {
     const createdAt = new Date().toISOString();
     const isMembership = false;
+    const isBanned = false;
 
     const blog: BlogViewModel = await this.blogsRepository.createBlog(
       command.name,
@@ -28,6 +29,7 @@ export class CreateBlogService implements ICommandHandler<CreateBlogCommand> {
       command.userId,
       command.login,
       isMembership,
+      isBanned,
     );
     return blog;
   }

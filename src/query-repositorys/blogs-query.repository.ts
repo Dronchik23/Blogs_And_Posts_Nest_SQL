@@ -80,9 +80,9 @@ export class BlogsQueryRepository {
       .query(
         `
 SELECT COUNT(*) FROM blogs
-WHERE "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+WHERE "blogOwnerId" = $1 AND $1 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
 `,
-        [searchNameTerm, userId],
+        [userId],
       )
       .then((result) => +result[0].count);
 

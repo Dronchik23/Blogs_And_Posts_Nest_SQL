@@ -174,12 +174,14 @@ OFFSET $5;
     const users: UserDBType[] = await this.dataSource.query(
       `
       SELECT *
-  FROM users
-  WHERE (login ILIKE $1 OR $1 IS NULL)
-    AND "blogId" = $2
-  ORDER BY "${sortBy}" ${sortDirection}
-  LIMIT $3
-  OFFSET $4;`,
+      FROM users
+      WHERE (login ILIKE $1 OR $1 IS NULL)
+        AND "blogId" = $2
+        AND "isBanned" = false
+      ORDER BY "${sortBy}" ${sortDirection}
+      LIMIT $3
+      OFFSET $4;
+    `,
       [searchLoginTerm, blogId, pageSize, (pageNumber - 1) * pageSize],
     );
 
@@ -189,9 +191,9 @@ OFFSET $5;
     const totalCount = await this.dataSource
       .query(
         `
-SELECT COUNT(*) FROM users
-WHERE (LOWER(login) LIKE $1 OR $1 IS NULL) AND "blogId" = $2 AND $2
-`,
+        SELECT COUNT(*) FROM users
+        WHERE (LOWER(login) LIKE $1 OR $1 IS NULL) AND "blogId" = $2 AND "isBanned" = false
+      `,
         [searchLoginTerm, blogId],
       )
       .then((result) => +result[0].count);
@@ -199,7 +201,7 @@ WHERE (LOWER(login) LIKE $1 OR $1 IS NULL) AND "blogId" = $2 AND $2
     const pagesCount = Math.ceil(totalCount / pageSize);
 
     return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
+      pagesCount: pagesCount === 0 ? 1 : pagesCount,
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
