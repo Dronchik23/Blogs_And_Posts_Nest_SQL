@@ -110,7 +110,7 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
       `
   SELECT * FROM blogs
   WHERE (name ILIKE $1 OR $1 IS NULL)
-  ORDER BY "${sortBy}" COLLATE ${sortDirection}
+  ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
 `,
