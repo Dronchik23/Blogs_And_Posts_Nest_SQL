@@ -109,8 +109,8 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE (name ILIKE $1 OR $1 IS NULL)
-  ORDER BY "${sortBy}" "${sortDirection}"
+  WHERE (name ILIKE $1 COLLATE "C" OR $1 IS NULL)
+  ORDER BY "${sortBy}" COLLATE "C" "${sortDirection}"
   LIMIT $2
   OFFSET $3;
 `,
