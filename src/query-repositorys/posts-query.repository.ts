@@ -19,7 +19,7 @@ export class PostsQueryRepository {
     private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
 
-  private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
+  fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
     return {
       id: post.id,
       title: post.title,
@@ -32,7 +32,13 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: post.newestLikes,
+        newestLikes: post.newestLikes.map((like) => {
+          return {
+            addedAt: like.addedAt,
+            userId: like.userId,
+            login: like.login,
+          };
+        }),
       },
     };
   };
@@ -52,7 +58,13 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: post.newestLikes,
+        newestLikes: post.newestLikes.map((like) => {
+          return {
+            addedAt: like.addedAt,
+            userId: like.userId,
+            login: like.login,
+          };
+        }),
       },
     }));
   };

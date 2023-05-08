@@ -74,10 +74,11 @@ RETURNING *
   }
 
   async deleteCommentByCommentIdAndUserId(commentId: string, userId: string) {
-    return await this.dataSource.query(
+    const result = await this.dataSource.query(
       `DELETE FROM comments WHERE id = $1, "commentOwnerId" = $2 ;`,
       [commentId, userId],
     );
+    return result[1];
   }
 
   async deleteAllComments() {

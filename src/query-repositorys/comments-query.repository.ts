@@ -1,7 +1,6 @@
 import {
   BlogDBType,
   CommentDBType,
-  LikeDBType,
   LikeStatus,
   NewestLikesType,
   PaginationType,
@@ -11,7 +10,6 @@ import {
 import {
   BloggerCommentViewModel,
   CommentViewModel,
-  UserViewModel,
 } from '../types and models/models';
 import { UsersQueryRepository } from './users-query.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -118,7 +116,15 @@ OFFSET $3;
       commentsWithLikesInfo,
     );
 
-    const totalCount = mappedComments.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+SELECT COUNT(*) FROM comments
+WHERE "postId" = $1;
+`,
+        [postId],
+      )
+      .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 

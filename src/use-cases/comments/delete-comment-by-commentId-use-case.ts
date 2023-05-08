@@ -13,11 +13,9 @@ export class DeleteCommentService
   constructor(private readonly commentsRepository: CommentsRepository) {}
 
   async execute(command: DeleteCommentCommand): Promise<boolean> {
-    const a: any =
-      await this.commentsRepository.deleteCommentByCommentIdAndUserId(
-        command.commentId,
-        command.userId,
-      );
-    return a;
+    return await this.commentsRepository.deleteCommentByCommentIdAndUserId(
+      command.commentId,
+      command.userId,
+    );
   }
 }

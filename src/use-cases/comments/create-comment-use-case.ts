@@ -4,6 +4,7 @@ import {
   CommentDBType,
   LikesInfoType,
   PostInfoType,
+  UserDBType,
 } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
 import { CommentViewModel, PostViewModel } from '../../types and models/models';
@@ -39,12 +40,16 @@ export class CreateCommentService
       return null;
     }
 
-    const user: any =
+    const user: UserDBType =
       await this.usersQueryRepository.findUserByUserIdWithDBType(
         command.user.id,
       );
 
     if (user.blogId === post.blogId) {
+      throw new ForbiddenException();
+    }
+
+    if (user.isBanned === true) {
       throw new ForbiddenException();
     }
 
