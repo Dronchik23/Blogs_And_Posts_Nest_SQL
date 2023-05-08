@@ -202,7 +202,7 @@ export class PostsQueryRepository {
     post.newestLikes = newestLikes;
 
     if (userId) {
-      const user: UserDBType[] =
+      const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
       if (user[0].isBanned === true) {

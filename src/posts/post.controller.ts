@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -29,6 +30,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
 import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
+import { PaginationType, UserDBType } from '../types and models/types';
 
 @SkipThrottle()
 @Controller({ path: 'posts', scope: Scope.REQUEST })
@@ -68,7 +70,14 @@ export class PostsController {
     @Param('postId') postId: string,
     @Body() commentCreateDTO: CommentInputModel,
     @CurrentUser() currentUser,
-  ) {
+  ): Promise<any> {
+    const user: any = this.usersQueryRepository.findUserByUserIdWithDBType(
+      currentUser.id,
+    );
+    if (user.isBanned === true) {
+      throw new ForbiddenException();
+    }
+
     const post = await this.postsQueryRepository.findPostByPostId(postId);
     if (!post) {
       throw new NotFoundException();
@@ -99,7 +108,7 @@ export class PostsController {
   async getAllPosts(
     @Query() query: PostPaginationQueryModel,
     @CurrentUserIdFromToken() currentUserId,
-  ) {
+  ): Promise<PaginationType> {
     return await this.postsQueryRepository.findAllPosts(
       query.pageSize,
       query.sortBy,

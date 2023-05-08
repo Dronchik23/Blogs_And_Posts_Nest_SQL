@@ -111,12 +111,12 @@ export class CommentsController {
     }
   }
   @UseGuards(BearerAuthGuard)
-  @Delete(':id')
+  @Delete(':commentId')
   @HttpCode(204)
   async deleteCommentByCommentId(
-    @Param('id') commentId: string,
+    @Param('commentId') commentId: string,
     @CurrentUserId() currentUserId,
-  ): Promise<void> {
+  ): Promise<any> {
     const comment = await this.commentsQueryRepository.findCommentByCommentId(
       commentId,
       currentUserId,

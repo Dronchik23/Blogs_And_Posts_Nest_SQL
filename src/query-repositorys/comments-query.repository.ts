@@ -142,17 +142,14 @@ WHERE "postId" = $1;
     userId?: string,
   ): Promise<CommentViewModel> {
     try {
-      debugger;
       const result: CommentDBType = await this.dataSource.query(
         `SELECT * FROM comments WHERE id = $1 AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);`,
         [commentId],
       );
-      console.log('commentik', result);
       const commentWithLikesInfo = await this.getLikesInfoForComment(
         result[0],
         userId,
       );
-      console.log('commentWithLikesInfo', commentWithLikesInfo);
       return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
     } catch (error) {
       throw new NotFoundException();
@@ -196,7 +193,7 @@ WHERE "postId" = $1;
     );
 
     if (userId) {
-      const user: UserDBType[] =
+      const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
       if (user[0].isBanned === true) {
