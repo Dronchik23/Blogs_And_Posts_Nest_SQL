@@ -353,6 +353,31 @@ describe('AppController (e2e)', () => {
           items: [],
         });
       });
+      it.skip('banned user can`t comment the post', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user).toBeDefined();
+
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
+
+        const accessToken2 = loginUser2.body.accessToken;
+      });
     });
     describe('like post tests', () => {
       beforeAll(async () => {
