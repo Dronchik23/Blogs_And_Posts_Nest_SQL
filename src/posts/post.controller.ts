@@ -72,7 +72,7 @@ export class PostsController {
     @CurrentUser() currentUser,
   ): Promise<any> {
     const user: UserDBType =
-      await this.usersQueryRepository.findUserByUserIdWithDBType(
+      await this.usersQueryRepository.findUserByUserIdWithDBTypeBonus(
         currentUser.id,
       );
     if (user.isBanned === true) {
