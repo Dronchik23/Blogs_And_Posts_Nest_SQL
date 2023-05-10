@@ -47,7 +47,7 @@ describe('blogs test (e2e)', () => {
     await app.close();
   });
 
-  describe('/blogs', () => {
+  describe('blogs tests', () => {
     describe('get blogs tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllDataUrl);

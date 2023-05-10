@@ -123,7 +123,15 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
       return !bannedBlogIds.includes(blog.id);
     });
 
-    const totalCount = sortedBlogs.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+SELECT COUNT(*) FROM blogs
+WHERE (name ILIKE $1 OR $1 IS NULL);
+`,
+        [searchNameTerm],
+      )
+      .then((result) => +result[0].count);
 
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPagination(sortedBlogs);

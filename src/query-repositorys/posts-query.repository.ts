@@ -92,7 +92,14 @@ export class PostsQueryRepository {
       await this.getLikesInfoForPost(post, userId);
     }
 
-    const totalCount = posts.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+SELECT COUNT(*) FROM posts
+WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);
+`,
+      )
+      .then((result) => +result[0].count);
 
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
@@ -153,7 +160,15 @@ export class PostsQueryRepository {
     }
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
-    const totalCount = mappedPosts.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+SELECT COUNT(*) FROM posts
+WHERE "blogId" = $1;
+`,
+        [blogId],
+      )
+      .then((result) => +result[0].count);
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
