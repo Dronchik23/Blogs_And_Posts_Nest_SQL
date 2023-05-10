@@ -196,6 +196,7 @@ export class PostsQueryRepository {
       WHERE "parentId" = $1
       AND status = 'Like' 
       AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
+      ORDER BY "addedAt";
     `,
       [post.id],
     );

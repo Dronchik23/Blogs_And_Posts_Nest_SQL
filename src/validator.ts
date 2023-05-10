@@ -32,7 +32,6 @@ export class isCodeAlreadyConfirmedConstraint
 }
 export function IsCodeAlreadyConfirmed(validationOptions?: ValidationOptions) {
   return (object: Record<string, any>, propertyName: string) => {
-    debugger;
     registerDecorator({
       target: object.constructor,
       propertyName: propertyName,

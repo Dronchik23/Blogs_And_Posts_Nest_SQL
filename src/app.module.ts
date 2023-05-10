@@ -144,7 +144,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       password: process.env.DB_PASSWORD,
       database: '01effe61-c4d3-4a9c-8886-812fcda96076',
       autoLoadEntities: false,
-      logging: true,
+      //logging: true,
       synchronize: false,
     }),
     MailerModule.forRoot({
