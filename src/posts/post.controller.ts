@@ -71,9 +71,10 @@ export class PostsController {
     @Body() commentCreateDTO: CommentInputModel,
     @CurrentUser() currentUser,
   ): Promise<any> {
-    const user: any = this.usersQueryRepository.findUserByUserIdWithDBType(
-      currentUser.id,
-    );
+    const user: UserDBType =
+      await this.usersQueryRepository.findUserByUserIdWithDBType(
+        currentUser.id,
+      );
     if (user.isBanned === true) {
       throw new ForbiddenException();
     }

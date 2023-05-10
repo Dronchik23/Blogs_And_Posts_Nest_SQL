@@ -353,7 +353,7 @@ describe('AppController (e2e)', () => {
           items: [],
         });
       });
-      it.skip('banned user can`t comment the post', async () => {
+      it('banned user can`t comment the post', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -377,6 +377,28 @@ describe('AppController (e2e)', () => {
           });
 
         const accessToken2 = loginUser2.body.accessToken;
+
+        await request(server)
+          .put(`/blogger/users/${user2.id}/ban`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({
+            isBanned: true,
+            banReason: 'valid string more than 20 letters ',
+            blogId: blog.id,
+          })
+          .expect(204); // ban user2
+
+        const response = await request(server)
+          .get(`/sa/users/${user2.id}`)
+          .auth('admin', 'qwerty');
+
+        expect(response.body.banInfo.isBanned).toBeTruthy();
+
+        await request(server)
+          .post(`/posts/${post.id}/comments`)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .send({ content: 'valid content string more than 20 letters' })
+          .expect(403);
       });
     });
     describe('like post tests', () => {
