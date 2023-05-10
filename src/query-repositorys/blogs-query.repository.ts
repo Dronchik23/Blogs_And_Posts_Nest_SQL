@@ -109,7 +109,7 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE (name ILIKE $1::text OR $1 IS NULL)
+  WHERE name ILIKE $1 OR $1 IS NULL
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
@@ -127,7 +127,7 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
       .query(
         `
 SELECT COUNT(*) FROM blogs
-WHERE (name ILIKE $1::text OR $1 IS NULL);
+ WHERE (name ILIKE $1 OR $1 IS NULL);
 `,
         [searchNameTerm],
       )
