@@ -37,7 +37,6 @@ import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { CurrentUser, CurrentUserId } from '../auth/decorators';
 import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
-import { UserDBType } from '../types and models/types';
 
 @SkipThrottle()
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
