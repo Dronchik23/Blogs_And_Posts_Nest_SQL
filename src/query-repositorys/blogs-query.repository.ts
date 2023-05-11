@@ -109,12 +109,12 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs
-  WHERE name ILIKE $1 OR $1 IS NULL
+  WHERE (name ILIKE $1 OR $1 IS NULL)
   ORDER BY "${sortBy}" ${sortDirection}
   LIMIT $2
   OFFSET $3;
 `,
-      [searchNameTerm, pageSize, (pageNumber - 1) * pageSize],
+      ['%' + searchNameTerm + '%', pageSize, (pageNumber - 1) * pageSize],
     );
 
     const bannedBlogIds = await this.getBannedBlogsIds();
