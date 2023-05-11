@@ -244,8 +244,6 @@ WHERE "postId" = $1;
       [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
     );
 
-    //const blogIds: string[] = blogs.map((blog: BlogDBType) => blog.id); // find all blogIds of current user
-
     const posts: PostDBType[] = await this.dataSource.query(
       `SELECT * FROM posts WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)
  ;`,
@@ -276,7 +274,15 @@ WHERE "postId" = $1;
         commentsWithLikesInfo,
       );
 
-    const totalCount = mappedComments.length;
+    const totalCount = await this.dataSource
+      .query(
+        `
+       SELECT COUNT(*) FROM comments
+       WHERE "postId" IN (${postIds.map((id) => `'${id}'`).join(', ')})
+       AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);
+`,
+      )
+      .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 
