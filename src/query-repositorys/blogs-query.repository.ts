@@ -129,7 +129,7 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
       .query(
         `
 SELECT COUNT(*) FROM blogs
- WHERE (name ILIKE $1 OR $1 IS NULL);
+WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL);
 `,
         [searchNameTerm],
       )
