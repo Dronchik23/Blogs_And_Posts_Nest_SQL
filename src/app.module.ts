@@ -132,10 +132,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    //ThrottlerModule.forRoot({
-    //ttl: 10,
-    //limit: 5,
-    //}),
+    ThrottlerModule.forRoot({
+      ttl: 10,
+      limit: 5,
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'db.thin.dev',
@@ -185,10 +185,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     ...useCases,
     ...queryRepos,
     ...repositories,
-    /*   {
+    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    },*/
+    },
   ],
 })
 export class AppModule {}
