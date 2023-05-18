@@ -39,7 +39,7 @@ export class DevicesQueryRepository {
     return result[0];
   }
 
-  async findDeviceByDeviceIdAndDate(deviceId: string) {
+  async findDeviceByDeviceId(deviceId: string) {
     const device = await this.dataSource.query(
       `SELECT * FROM devices WHERE "deviceId" = $1 `,
       [deviceId],

@@ -25,7 +25,7 @@ export class BlogsQueryRepository {
       isMembership: blog.isMembership,
     };
   }
-  //
+
   private fromBlogDBTypeBlogViewModelWithPagination(
     blogs: BlogDBType[],
   ): BlogViewModel[] {

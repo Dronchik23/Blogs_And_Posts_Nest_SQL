@@ -118,7 +118,7 @@ export class AuthController {
       return HttpStatus.NO_CONTENT;
     }
     await this.commandBus.execute(
-      new NewPasswordCommand(newPasswordInputModelDto.newPassword, user!._id),
+      new NewPasswordCommand(newPasswordInputModelDto.newPassword, user!.id),
     );
     return HttpStatus.NO_CONTENT;
   }

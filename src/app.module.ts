@@ -73,6 +73,14 @@ import { PostsQueryRepository } from './query-repositorys/posts-query.repository
 import * as process from 'process';
 import { CreateUserService } from './use-cases/users/create-user-by-super-admin-use-case';
 import { LogGuard } from './auth/strategys/basic-strategy';
+import { UsersModule } from './modules/users.module';
+import { BlogsModule } from './modules/blogs.module';
+import { CommentsModule } from './modules/comments.module';
+import { LikesModule } from './modules/likes.module';
+import { PostsModule } from './modules/posts.module';
+import { DevicesModule } from './modules/devices.module';
+import { refreshTokenBlackListModule } from './modules/refreshTokenBlackList.module';
+import { Blogs } from './entities/blogs.entity';
 
 export const useCases = [
   CreateBlogService,
@@ -139,14 +147,22 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'db.thin.dev',
-      port: 5432, // или другой порт, если он указан
+      port: 5432,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: '01effe61-c4d3-4a9c-8886-812fcda96076',
-      autoLoadEntities: false,
+      autoLoadEntities: true,
       //logging: true,
-      synchronize: false,
+      synchronize: true,
     }),
+    TypeOrmModule.forFeature([Blogs]),
+    UsersModule,
+    BlogsModule,
+    PostsModule,
+    CommentsModule,
+    LikesModule,
+    DevicesModule,
+    refreshTokenBlackListModule,
     MailerModule.forRoot({
       transport: {
         service: 'gmail',

@@ -1,5 +1,4 @@
 import {
-  LikeDBType,
   LikeStatus,
   NewestLikesType,
   PaginationType,

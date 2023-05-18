@@ -31,7 +31,7 @@ export type JWTPayloadType = {
   deviceId: string;
   iat: number;
 };
-//
+
 //enums
 export enum LikeStatus {
   None = 'None',

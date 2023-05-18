@@ -39,7 +39,7 @@ export class DevicesController {
   @Delete()
   @HttpCode(204)
   async deleteAllDevicesExcludeCurrent(@JwtPayload() jwtPayload) {
-    const isDeleted = await this.commandBus.execute(
+    const isDeleted: boolean = await this.commandBus.execute(
       new DeleteAllDevicesExcludeCurrentCommand(
         jwtPayload.userId,
         jwtPayload.deviceId,
@@ -58,7 +58,7 @@ export class DevicesController {
     @CurrentUserId() currentUserId,
   ) {
     const device: DeviceDBType =
-      await this.devicesQueryService.findDeviceByDeviceIdAndDate(deviceId);
+      await this.devicesQueryService.findDeviceByDeviceId(deviceId);
     if (!device) {
       throw new NotFoundException();
     }

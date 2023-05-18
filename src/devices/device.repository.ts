@@ -34,11 +34,10 @@ export class DevicesRepository {
   }
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {
-    const result = await this.dataSource.query(
+    await this.dataSource.query(
       `DELETE FROM devices WHERE "userId" = $1 AND "deviceId" != $2;`,
       [userId, deviceId],
     );
-    return result[1];
   }
 
   async deleteDeviceByDeviceId(deviceId: string) {

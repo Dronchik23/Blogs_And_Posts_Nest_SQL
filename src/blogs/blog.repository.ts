@@ -1,12 +1,20 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { BlogDBType } from '../types and models/types';
-import { BlogViewModel, UserViewModel } from '../types and models/models';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import {
+  BlogInputModel,
+  BlogViewModel,
+  UserViewModel,
+} from '../types and models/models';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Blogs } from '../entities/blogs.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class BlogsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Blogs) private readonly blogModel: Repository<Blogs>,
+  ) {
     return;
   }
 
@@ -22,43 +30,13 @@ export class BlogsRepository {
   }
 
   async createBlog(
-    name: string,
-    description: string,
-    websiteUrl: string,
-    createdAt: string,
+    createBlogDTO: BlogInputModel,
     blogOwnerId: string,
     blogOwnerLogin: string,
-    isMembership: boolean,
-    isBanned: boolean,
   ): Promise<BlogViewModel> {
-    const result = await this.dataSource.query(
-      `
-INSERT INTO blogs (
-name,
-description,
-"websiteUrl",
-"createdAt",
-"blogOwnerId",
-"blogOwnerLogin",
-"isMembership",
-"isBanned"
-)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING *
-`,
-      [
-        name,
-        description,
-        websiteUrl,
-        createdAt,
-        blogOwnerId,
-        blogOwnerLogin,
-        isMembership,
-        isBanned,
-      ],
-    );
-
-    return this.fromBlogDBTypeBlogViewModel(result[0]); // mapping blog
+    const newBlog = Blogs.create(createBlogDTO, blogOwnerId, blogOwnerLogin);
+    const createdBlog = await this.blogModel.save(newBlog);
+    return new BlogViewModel(createdBlog);
   }
 
   async updateBlogByBlogId(

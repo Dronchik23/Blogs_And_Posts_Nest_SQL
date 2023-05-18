@@ -18,6 +18,9 @@ export const createApp = (app: INestApplication) => {
     new ValidationPipe({
       stopAtFirstError: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
       exceptionFactory: (errors) => {
         const errorForResponse = [];
 

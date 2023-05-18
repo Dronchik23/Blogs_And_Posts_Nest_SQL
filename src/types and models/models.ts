@@ -25,6 +25,7 @@ import {
 } from '../validator';
 import { Transform, Type } from 'class-transformer';
 import { Optional } from '@nestjs/common';
+import { Blogs } from '../entities/blogs.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -103,7 +104,14 @@ export class BlogViewModel {
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
-  blogOwnerInfo?: BlogOwnerInfoType;
+  constructor(blogFromDb: Blogs) {
+    this.id = blogFromDb.id;
+    this.name = blogFromDb.name;
+    this.description = blogFromDb.description;
+    this.websiteUrl = blogFromDb.websiteUrl;
+    this.createdAt = blogFromDb.createdAt;
+    this.isMembership = blogFromDb.isMembership;
+  }
 }
 export class SABlogViewModel {
   id: string;
@@ -187,7 +195,7 @@ export class BlogInputModel {
   @Matches(
     /^https:\/\/([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$/,
   )
-  @Length(0, 100)
+  @Length(1, 100)
   websiteUrl: string;
 }
 export class BlogPostInputModel {

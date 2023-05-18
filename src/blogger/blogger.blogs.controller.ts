@@ -88,13 +88,7 @@ export class BloggerBlogsController {
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<BlogViewModel> {
     return await this.commandBus.execute(
-      new CreateBlogCommand(
-        createBlogDTO.name,
-        createBlogDTO.description,
-        createBlogDTO.websiteUrl,
-        currentUser.id,
-        currentUser.login,
-      ),
+      new CreateBlogCommand(createBlogDTO, currentUser.id, currentUser.login),
     );
   }
 

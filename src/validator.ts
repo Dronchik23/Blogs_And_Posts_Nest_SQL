@@ -19,9 +19,8 @@ export class isCodeAlreadyConfirmedConstraint
   constructor(private readonly usersQueryRepository: UsersQueryRepository) {}
 
   async validate(code: string): Promise<boolean> {
-    const user = await this.usersQueryRepository.findUserByConfirmationCode(
-      code,
-    );
+    const user: UserDBType =
+      await this.usersQueryRepository.findUserByConfirmationCode(code);
     const isEmailNotConfirmed = user && user.isEmailConfirmed === true;
     return !isEmailNotConfirmed;
   }
