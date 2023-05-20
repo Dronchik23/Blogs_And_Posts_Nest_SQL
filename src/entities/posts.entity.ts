@@ -10,6 +10,12 @@ import { Blogs } from './blogs.entity';
 import { Users } from './users.entity';
 import { Comments } from './comments.entity';
 import { Likes } from './likes.entity';
+import {
+  BlogInputModel,
+  BlogPostInputModel,
+  BlogViewModel,
+} from '../types and models/models';
+import { LikeStatus, NewestLikesType } from '../types and models/types';
 
 @Entity()
 export class Posts {
@@ -26,11 +32,9 @@ export class Posts {
   content: string;
 
   @Column({ type: 'uuid' })
-  @JoinColumn({ name: 'blogId' })
   blogId: string;
 
-  @Column({ type: 'uuid' })
-  @JoinColumn({ name: 'blogName' })
+  @Column()
   blogName: string;
 
   @Column()
@@ -42,8 +46,8 @@ export class Posts {
   @Column({ default: 0 })
   dislikesCount: number;
 
-  @Column({ default: 'None' })
-  myStatus: string;
+  @Column({ default: LikeStatus.None })
+  myStatus: LikeStatus;
 
   @ManyToOne(() => Posts, (p) => p.postsBlog)
   postsBlog: Posts;
@@ -53,4 +57,18 @@ export class Posts {
 
   @OneToMany(() => Likes, (l) => l.postsLike)
   like: Likes[];
+
+  static create(dto: BlogPostInputModel, blog: BlogViewModel) {
+    const newPost = new Posts();
+    newPost.title = dto.title;
+    newPost.shortDescription = dto.shortDescription;
+    newPost.content = dto.content;
+    newPost.createdAt = new Date().toISOString();
+    newPost.blogId = blog.id;
+    newPost.blogName = blog.name;
+    newPost.likesCount = 0;
+    newPost.dislikesCount = 0;
+    newPost.myStatus = LikeStatus.None;
+    return newPost;
+  }
 }

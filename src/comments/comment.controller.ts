@@ -28,8 +28,9 @@ import { CommentsQueryRepository } from '../query-repositorys/comments-query.rep
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteCommentCommand } from '../use-cases/comments/delete-comment-by-commentId-use-case';
 import { UpdateCommentCommand } from '../use-cases/comments/update -comment-by-commentId-and-userId-use-case';
-import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
+import { PostUpdateLikeStatusCommand } from '../use-cases/likes/post-update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CommentUpdateLikeStatusCommand } from '../use-cases/likes/comment-update-like-status-use-case';
 
 @SkipThrottle()
 @Controller({ path: 'comments', scope: Scope.REQUEST })
@@ -55,14 +56,8 @@ export class CommentsController {
       throw new NotFoundException();
     }
 
-    const parentId = comment.id;
     await this.commandBus.execute(
-      new UpdateLikeStatusCommand(
-        parentId,
-        currentUser.id,
-        currentUser.login,
-        likeStatusDTO.likeStatus,
-      ),
+      new CommentUpdateLikeStatusCommand(commentId, currentUser, likeStatusDTO),
     );
 
     return HttpStatus.NO_CONTENT;

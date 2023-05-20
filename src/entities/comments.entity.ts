@@ -10,6 +10,14 @@ import { Users } from './users.entity';
 import { Blogs } from './blogs.entity';
 import { Posts } from './posts.entity';
 import { Likes } from './likes.entity';
+import { LikeStatus } from '../types and models/types';
+import {
+  BlogPostInputModel,
+  BlogViewModel,
+  CommentInputModel,
+  PostViewModel,
+  UserViewModel,
+} from '../types and models/models';
 
 @Entity()
 export class Comments {
@@ -19,11 +27,10 @@ export class Comments {
   @Column()
   content: string;
 
-  //@JoinColumn({ name: 'commentatorId' })
   @Column({ type: 'uuid' })
   commentatorId: string;
 
-  @JoinColumn({ name: 'commentatorLogin' })
+  @Column()
   commentatorLogin: string;
 
   @Column()
@@ -36,21 +43,18 @@ export class Comments {
   dislikesCount: number;
 
   @Column({ default: 'None' })
-  myStatus: string;
+  myStatus: LikeStatus;
 
-  //@JoinColumn({ name: 'postId' })
   @Column({ type: 'uuid' })
   postId: string;
 
-  //@JoinColumn({ name: 'postTitle' })
   @Column()
   postTitle: string;
 
-  //@JoinColumn({ name: 'blogId' })
   @Column({ type: 'uuid' })
   blogId: string;
 
-  @JoinColumn({ name: 'blogName' })
+  @Column()
   blogName: string;
 
   @ManyToOne(() => Posts, (p) => p.commentsPost)
@@ -58,4 +62,21 @@ export class Comments {
 
   @OneToMany(() => Likes, (l) => l.commentsLike)
   like: Likes[];
+
+  static create(
+    dto: CommentInputModel,
+    user: UserViewModel,
+    post: PostViewModel,
+  ) {
+    const newComment = new Comments();
+    newComment.content = dto.content;
+    newComment.commentatorId = user.id;
+    newComment.commentatorLogin = user.login;
+    newComment.blogId = post.blogId;
+    newComment.blogName = post.blogName;
+    newComment.postId = post.id;
+    newComment.postTitle = post.title;
+    newComment.createdAt = new Date().toISOString();
+    return newComment;
+  }
 }

@@ -54,7 +54,7 @@ import { DeleteAllDevicesExcludeCurrentService } from './use-cases/devices/delet
 import { LogoutService } from './use-cases/auth/logout-use-case';
 import { DeleteDeviceByDeviceIdService } from './use-cases/devices/delete-device-by-deviceId-use-case';
 import { BanUserByUserIdService } from './use-cases/users/bun-user-by-userId-use-case';
-import { UpdateLikeStatusService } from './use-cases/likes/update-like-status-use-case';
+import { PostUpdateLikeStatusService } from './use-cases/likes/post-update-like-status-use-case';
 import { UpdatePostService } from './use-cases/posts/update-post-by-postId-and-blogid-use-case';
 import { APP_GUARD } from '@nestjs/core';
 import { BanBlogByBlogIdService } from './use-cases/blogs/ban-blog-by-blogId-use-case';
@@ -81,6 +81,11 @@ import { PostsModule } from './modules/posts.module';
 import { DevicesModule } from './modules/devices.module';
 import { refreshTokenBlackListModule } from './modules/refreshTokenBlackList.module';
 import { Blogs } from './entities/blogs.entity';
+import { Posts } from './entities/posts.entity';
+import { TestingRepository } from './testing/testing.repository';
+import { Comments } from './entities/comments.entity';
+import { Likes } from './entities/likes.entity';
+import { CommentUpdateLikeStatusService } from './use-cases/likes/comment-update-like-status-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -103,7 +108,8 @@ export const useCases = [
   DeleteAllDevicesExcludeCurrentService,
   DeleteDeviceByDeviceIdService,
   BanUserByUserIdService,
-  UpdateLikeStatusService,
+  CommentUpdateLikeStatusService,
+  PostUpdateLikeStatusService,
   UpdatePostService,
   BanBlogByBlogIdService,
   BanUserByUserIdByBloggerService,
@@ -125,6 +131,7 @@ export const repositories = [
   BlogsRepository,
   CommentsRepository,
   PostsRepository,
+  TestingRepository,
 ];
 export const services = [CustomJwtService, AppService, EmailService];
 export const constraints = [
@@ -155,7 +162,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       //logging: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([Blogs]),
+    TypeOrmModule.forFeature([Blogs, Posts, Comments, Likes]),
     UsersModule,
     BlogsModule,
     PostsModule,

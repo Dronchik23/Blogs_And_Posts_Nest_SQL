@@ -1,13 +1,15 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogViewModel, PostViewModel } from '../../types and models/models';
+import {
+  BlogPostInputModel,
+  BlogViewModel,
+  PostViewModel,
+} from '../../types and models/models';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { PostsRepository } from '../../posts/post.repository';
 
 export class CreatePostCommand {
   constructor(
-    public title: string,
-    public shortDescription: string,
-    public content: string,
+    public blogPostCreateDTO: BlogPostInputModel,
     public blogId: string,
   ) {}
 }
@@ -28,15 +30,10 @@ export class CreatePostService implements ICommandHandler<CreatePostCommand> {
       return null;
     }
 
-    const createdAt = new Date().toISOString();
-
-    return await this.postsRepository.createPost(
-      command.title,
-      command.shortDescription,
-      command.content,
-      command.blogId,
-      blog.name,
-      createdAt,
+    const post: PostViewModel = await this.postsRepository.createPost(
+      command.blogPostCreateDTO,
+      blog,
     );
+    return post;
   }
 }

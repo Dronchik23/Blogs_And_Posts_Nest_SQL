@@ -103,21 +103,16 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const owner: any =
+    const blogOwner: any =
       await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
         blogId,
         currentUserId,
-      ); // find owner of the blog
-    if (!owner) {
+      );
+    if (!blogOwner) {
       throw new ForbiddenException();
     }
     const newPost = await this.commandBus.execute(
-      new CreatePostCommand(
-        blogPostCreateDTO.title,
-        blogPostCreateDTO.shortDescription,
-        blogPostCreateDTO.content,
-        blogId,
-      ),
+      new CreatePostCommand(blogPostCreateDTO, blogId),
     );
     if (newPost) {
       return newPost;
@@ -144,11 +139,7 @@ export class BloggerBlogsController {
       throw new ForbiddenException();
     }
     const isUpdated = await this.commandBus.execute(
-      new UpdateBlogCommand(
-        blogId,
-        updateBlogDto.name,
-        updateBlogDto.websiteUrl,
-      ),
+      new UpdateBlogCommand(blogId, updateBlogDto),
     );
     if (!isUpdated) {
       throw new NotFoundException();
@@ -199,14 +190,19 @@ export class BloggerBlogsController {
         currentUserId,
       );
 
-    const post = await this.postsQueryRepository.findPostByPostId(postId);
+    const post: PostViewModel =
+      await this.postsQueryRepository.findPostByPostId(postId);
+
+    if (post.blogId !== blogId) {
+      throw new ForbiddenException();
+    }
 
     if (!post) {
       throw new NotFoundException();
     }
 
     const isDeleted = await this.commandBus.execute(
-      new DeletePostCommand(blogId, postId),
+      new DeletePostCommand(postId),
     );
 
     if (isDeleted) {
@@ -229,12 +225,12 @@ export class BloggerBlogsController {
     if (!blog) {
       throw new NotFoundException();
     }
-    const owner: any =
+    const blogOwner: any =
       await this.blogsQueryRepository.findBlogByBlogIdAndUserId(
         blogId,
         currentUserId,
-      ); // find owner of the blog
-    if (!owner) {
+      );
+    if (!blogOwner) {
       throw new ForbiddenException();
     }
 
@@ -244,13 +240,7 @@ export class BloggerBlogsController {
     }
 
     const isUpdated = await this.commandBus.execute(
-      new UpdatePostCommand(
-        postId,
-        postUpdateDTO.title,
-        postUpdateDTO.shortDescription,
-        postUpdateDTO.content,
-        blogId,
-      ),
+      new UpdatePostCommand(postId, postUpdateDTO),
     );
     if (!isUpdated) {
       throw new NotFoundException();

@@ -1,98 +1,55 @@
 import { LikeStatus, PostDBType } from '../types and models/types';
-import { PostViewModel } from '../types and models/models';
-import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import {
+  BlogPostInputModel,
+  BlogViewModel,
+  PostUpdateModel,
+  PostViewModel,
+} from '../types and models/models';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Blogs } from '../entities/blogs.entity';
+import { Posts } from '../entities/posts.entity';
+import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 
 @Injectable()
 export class PostsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
-    return;
-  }
-
-  private fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
-    return {
-      id: post.id,
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId,
-      blogName: post.blogName,
-      createdAt: post.createdAt,
-      extendedLikesInfo: {
-        likesCount: post.likesCount,
-        dislikesCount: post.dislikesCount,
-        myStatus: post.myStatus,
-        newestLikes: post.newestLikes,
-      },
-    };
-  };
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Posts) private readonly postModel: Repository<Posts>,
+    private readonly postsQueryRepository: PostsQueryRepository,
+  ) {}
 
   async createPost(
-    title: string,
-    shortDescription: string,
-    content: string,
-    blogId: string,
-    blogName: string,
-    createdAt: string,
+    createPostDTO: BlogPostInputModel,
+    blog: BlogViewModel,
   ): Promise<PostViewModel> {
-    const result = await this.dataSource.query(
-      `
-INSERT INTO posts (
-title,
-"shortDescription",
-content,
-"blogId",
-"blogName",
-"createdAt"
-)
-VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING *
-`,
-      [title, shortDescription, content, blogId, blogName, createdAt],
-    );
-
-    const mappedPost: PostViewModel = await this.fromPostDBTypePostViewModel(
-      result[0],
-    ); // mapping post
-
-    return {
-      ...mappedPost,
-      extendedLikesInfo: {
-        likesCount: 0,
-        dislikesCount: 0,
-        myStatus: LikeStatus.None,
-        newestLikes: [],
-      },
-    }; // add default newest likes
+    const newPost = Posts.create(createPostDTO, blog);
+    const createdPost = await this.postModel.save(newPost);
+    return new PostViewModel(createdPost);
   }
 
-  async updatePostByPostIdAndBlogId(
+  async updatePostByPostId(
     postId: string,
-    title: string,
-    shortDescription: string,
-    content: string,
-    blogId: string,
+    postUpdateDTO: PostUpdateModel,
   ): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `UPDATE posts SET title = $1, 
-"shortDescription" = $2, content = $3 WHERE id = $4 AND "blogId" = $5;`,
-      [title, shortDescription, content, postId, blogId],
-    );
-    return result[1];
+    const post = await this.postsQueryRepository.findPostByPostId(postId);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    post.title = postUpdateDTO.title;
+    post.content = postUpdateDTO.content;
+    post.shortDescription = postUpdateDTO.shortDescription;
+    await this.postModel.save(post);
+    return true;
   }
 
-  async deletePostByPostIdAndBlogId(
-    blogId: string,
-    postId: string,
-  ): Promise<boolean> {
-    return await this.dataSource.query(
-      `DELETE FROM posts WHERE "blogId" = $1 AND id = $2;`,
-      [blogId, postId],
-    );
+  async deletePostByPostId(postId: string): Promise<boolean> {
+    const result = await this.postModel.delete(postId);
+    return result.affected > 0;
   }
 
   async deleteAllPosts(): Promise<any> {
-    return await this.dataSource.query(`DELETE FROM posts;`);
+    return await this.dataSource.query(`DELETE FROM posts CASCADE;`);
   }
 }

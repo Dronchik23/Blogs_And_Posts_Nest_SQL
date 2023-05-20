@@ -1,19 +1,22 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { BlogDBType } from '../types and models/types';
 import {
   BlogInputModel,
+  BlogUpdateModel,
   BlogViewModel,
   UserViewModel,
 } from '../types and models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Blogs } from '../entities/blogs.entity';
+import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class BlogsRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Blogs) private readonly blogModel: Repository<Blogs>,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
   ) {
     return;
   }
@@ -41,24 +44,26 @@ export class BlogsRepository {
 
   async updateBlogByBlogId(
     blogId: string,
-    name: string,
-    websiteUrl: string,
+    updateBlogDto: BlogUpdateModel,
   ): Promise<boolean> {
-    const result = await this.dataSource.query(
-      `UPDATE blogs SET name = $1, "websiteUrl" = $2 WHERE id = $3;`,
-      [name, websiteUrl, blogId],
-    );
-    return result[1];
+    const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
+    if (!blog) {
+      throw new NotFoundException();
+    }
+    blog.name = updateBlogDto.name;
+    blog.websiteUrl = updateBlogDto.websiteUrl;
+    blog.description = updateBlogDto.description;
+    await this.blogModel.save(blog);
+    return true;
   }
 
   async deleteBlogByBlogId(blogId: string): Promise<boolean> {
-    return await this.dataSource.query(`DELETE FROM blogs WHERE id = $1;`, [
-      blogId,
-    ]);
+    const result = await this.blogModel.delete(blogId);
+    return result.affected > 0;
   }
 
   async deleteAllBlogs() {
-    return await this.dataSource.query(`DELETE FROM blogs;`);
+    return await this.dataSource.query(`DELETE FROM blogs CASCADE;`);
   }
 
   async bindBlogToUser(blogId: string, user: UserViewModel): Promise<boolean> {

@@ -39,7 +39,7 @@ export class UsersRepository {
   }
 
   async deleteAllUsers() {
-    return await this.dataSource.query(`DELETE FROM users CASCADE;`);
+    return await this.dataSource.query(`DELETE FROM public.users CASCADE;`);
   }
 
   async updateConfirmationCodeByUserId(

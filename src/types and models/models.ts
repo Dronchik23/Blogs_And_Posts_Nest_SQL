@@ -24,8 +24,9 @@ import {
   IsLoginAlreadyExist,
 } from '../validator';
 import { Transform, Type } from 'class-transformer';
-import { Optional } from '@nestjs/common';
 import { Blogs } from '../entities/blogs.entity';
+import { Posts } from '../entities/posts.entity';
+import { Comments } from '../entities/comments.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -104,13 +105,13 @@ export class BlogViewModel {
   websiteUrl: string;
   createdAt: string;
   isMembership: boolean;
-  constructor(blogFromDb: Blogs) {
-    this.id = blogFromDb.id;
-    this.name = blogFromDb.name;
-    this.description = blogFromDb.description;
-    this.websiteUrl = blogFromDb.websiteUrl;
-    this.createdAt = blogFromDb.createdAt;
-    this.isMembership = blogFromDb.isMembership;
+  constructor(blogFromDB: Blogs) {
+    this.id = blogFromDB.id;
+    this.name = blogFromDB.name;
+    this.description = blogFromDB.description;
+    this.websiteUrl = blogFromDB.websiteUrl;
+    this.createdAt = blogFromDB.createdAt;
+    this.isMembership = blogFromDB.isMembership;
   }
 }
 export class SABlogViewModel {
@@ -131,6 +132,21 @@ export class PostViewModel {
   blogName: string;
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
+  constructor(postFromDB: Posts) {
+    this.id = postFromDB.id;
+    this.title = postFromDB.title;
+    this.shortDescription = postFromDB.shortDescription;
+    this.content = postFromDB.content;
+    this.blogName = postFromDB.blogName;
+    this.blogId = postFromDB.blogId;
+    this.createdAt = postFromDB.createdAt;
+    this.extendedLikesInfo = {
+      likesCount: postFromDB.likesCount,
+      dislikesCount: postFromDB.dislikesCount,
+      myStatus: postFromDB.myStatus,
+      newestLikes: [],
+    };
+  }
 }
 export class UserViewModel {
   id: string;
@@ -179,6 +195,20 @@ export class CommentViewModel {
     dislikesCount: number;
     myStatus: LikeStatus;
   };
+  constructor(commentFromDB: Comments) {
+    this.id = commentFromDB.id;
+    this.content = commentFromDB.content;
+    this.commentatorInfo = {
+      userId: commentFromDB.commentatorId,
+      userLogin: commentFromDB.commentatorLogin,
+    };
+    this.createdAt = commentFromDB.createdAt;
+    this.likesInfo = {
+      likesCount: commentFromDB.likesCount,
+      dislikesCount: commentFromDB.dislikesCount,
+      myStatus: commentFromDB.myStatus,
+    };
+  }
 }
 export class BlogInputModel {
   @IsString()
@@ -315,4 +345,13 @@ export class BloggerBanUserInputModel {
   @IsNotEmpty()
   @IsBlogExist()
   blogId: string;
+}
+export class LikeViewModel {
+  id: string;
+  commentId?: string;
+  postId?: string;
+  userId: string;
+  login: string;
+  status: LikeStatus = LikeStatus.None;
+  addedAt: string;
 }

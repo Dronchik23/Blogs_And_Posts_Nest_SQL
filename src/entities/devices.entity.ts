@@ -25,7 +25,6 @@ export class Devices {
   lastActiveDate: string;
 
   @Column({ type: 'uuid' })
-  //@JoinColumn({ name: 'userId' })
   userId: string;
 
   // @ManyToOne(() => Users, (u) => u.devices)

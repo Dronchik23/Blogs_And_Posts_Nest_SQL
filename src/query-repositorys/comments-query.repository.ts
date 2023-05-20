@@ -164,7 +164,7 @@ WHERE "postId" = $1;
       `
     SELECT COUNT(*) AS "likesCount" 
     FROM likes 
-    WHERE "parentId" = $1
+    WHERE "commentId" = $1
      AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
   `,
       [comment.id],
@@ -175,7 +175,7 @@ WHERE "postId" = $1;
       `
     SELECT COUNT(*) AS "dislikesCount" 
     FROM likes 
-    WHERE "parentId" = $1
+    WHERE "commentId" = $1
      AND status = 'Dislike' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
   `,
       [comment.id],
@@ -187,7 +187,7 @@ WHERE "postId" = $1;
       `
     SELECT * 
     FROM likes 
-    WHERE "parentId" = $1
+    WHERE "commentId" = $1
     AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
       [comment.id],
     );
@@ -203,7 +203,7 @@ WHERE "postId" = $1;
           `
     SELECT status 
     FROM likes 
-    WHERE "parentId" = $1 
+    WHERE "commentId" = $1 
     AND "userId" = $2
     `,
           [comment.id, userId],

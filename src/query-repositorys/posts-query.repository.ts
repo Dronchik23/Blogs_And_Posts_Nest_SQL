@@ -8,39 +8,17 @@ import {
 import { PostViewModel } from '../types and models/models';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Posts } from '../entities/posts.entity';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Posts) private readonly blogModel: Repository<Posts>,
     private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
-
-  fromPostDBTypePostViewModel = (post: PostDBType): PostViewModel => {
-    return {
-      id: post.id,
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId,
-      blogName: post.blogName,
-      createdAt: post.createdAt,
-      extendedLikesInfo: {
-        likesCount: post.likesCount,
-        dislikesCount: post.dislikesCount,
-        myStatus: post.myStatus,
-        newestLikes: post.newestLikes.map((like) => {
-          return {
-            addedAt: like.addedAt,
-            userId: like.userId,
-            login: like.login,
-          };
-        }),
-      },
-    };
-  };
 
   private fromPostDBTypeToPostViewModelWithPagination = (
     posts: PostDBType[],
@@ -57,13 +35,14 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: post.newestLikes.map((like) => {
+        newestLikes: [],
+        /*  newestLikes: post.newestLikes.map((like) => {
           return {
             addedAt: like.addedAt,
             userId: like.userId,
             login: like.login,
           };
-        }),
+        }),*/
       },
     }));
   };
@@ -118,18 +97,19 @@ WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);
     userId?: string,
   ): Promise<PostViewModel | null> {
     try {
-      const result: PostDBType = await this.dataSource.query(
-        `SELECT * FROM posts WHERE id = $1 AND "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);`,
-        [postId],
-      );
+      const result = await this.blogModel.findOneBy({
+        id: postId,
+      });
+      if (!result) {
+        throw new NotFoundException();
+      }
 
-      const postWithLikesInfo = await this.getLikesInfoForPost(
-        result[0],
-        userId,
-      );
+      const post = new PostViewModel(result);
 
-      return this.fromPostDBTypePostViewModel(postWithLikesInfo);
-    } catch (error) {
+      const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
+
+      return new PostViewModel(postWithLikesInfo);
+    } catch (e) {
       throw new NotFoundException();
     }
   }
@@ -178,12 +158,12 @@ WHERE "blogId" = $1;
     };
   }
 
-  private async getLikesInfoForPost(post: PostDBType, userId?: string) {
+  private async getLikesInfoForPost(post: any, userId?: string) {
     const likesCountResult = await this.dataSource.query(
       `
       SELECT COUNT(*) AS "likesCount" 
       FROM likes 
-      WHERE "parentId" = $1
+      WHERE "postId" = $1
       AND status = 'Like' 
       AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
     `,
@@ -195,7 +175,7 @@ WHERE "blogId" = $1;
       `
       SELECT COUNT(*) AS "dislikesCount" 
       FROM likes 
-      WHERE "parentId" = $1
+      WHERE "postId" = $1
       AND status = 'Dislike' 
       AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
     `,
@@ -207,7 +187,7 @@ WHERE "blogId" = $1;
       `
       SELECT * 
       FROM likes 
-      WHERE "parentId" = $1
+      WHERE "postId" = $1
       AND status = 'Like' 
       AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
       ORDER BY "addedAt" DESC
@@ -215,9 +195,9 @@ WHERE "blogId" = $1;
     `,
       [post.id],
     );
-    post.newestLikes = newestLikes;
 
     if (userId) {
+      debugger;
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
@@ -228,11 +208,12 @@ WHERE "blogId" = $1;
           `
     SELECT status 
     FROM likes 
-    WHERE "parentId" = $1 
+    WHERE "postId" = $1 
     AND "userId" = $2
     `,
           [post.id, userId],
         );
+        console.log(result);
         if (result.length > 0) {
           if (result[0].status === 'Like') {
             post.myStatus = LikeStatus.Like;
@@ -245,8 +226,18 @@ WHERE "blogId" = $1;
           post.myStatus = LikeStatus.None;
         }
       }
+    } else {
+      post.myStatus = LikeStatus.None;
     }
 
-    return post;
+    return {
+      ...post,
+      extendedLikesInfo: {
+        likesCount: post.likesCount,
+        dislikesCount: post.dislikesCount,
+        myStatus: post.myStatus,
+        newestLikes: newestLikes,
+      },
+    };
   }
 }

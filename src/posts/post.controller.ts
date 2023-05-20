@@ -28,7 +28,7 @@ import { UsersQueryRepository } from '../query-repositorys/users-query.repositor
 import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
-import { UpdateLikeStatusCommand } from '../use-cases/likes/update-like-status-use-case';
+import { PostUpdateLikeStatusCommand } from '../use-cases/likes/post-update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PaginationType, UserDBType } from '../types and models/types';
 
@@ -85,7 +85,7 @@ export class PostsController {
     }
 
     const newComment = await this.commandBus.execute(
-      new CreateCommentCommand(postId, commentCreateDTO.content, currentUser),
+      new CreateCommentCommand(postId, commentCreateDTO, currentUser),
     );
 
     if (newComment) {
@@ -119,9 +119,9 @@ export class PostsController {
     );
   }
 
-  @Get(':id')
+  @Get(':postId')
   async getPostByPostId(
-    @Param('id') id: string,
+    @Param('postId') id: string,
     @CurrentUserIdFromToken() CurrentUserId: string | null,
   ): Promise<PostViewModel> {
     const post = await this.postsQueryRepository.findPostByPostId(
@@ -148,17 +148,13 @@ export class PostsController {
       postId,
       currentUser.id,
     );
+
     if (!post) {
       throw new NotFoundException();
     }
-    const parentId = post.id;
+
     await this.commandBus.execute(
-      new UpdateLikeStatusCommand(
-        parentId,
-        currentUser.id,
-        currentUser.login,
-        likeStatusDTO.likeStatus,
-      ),
+      new PostUpdateLikeStatusCommand(postId, currentUser, likeStatusDTO),
     );
   }
 }

@@ -26,4 +26,10 @@ RETURNING *
     );
     return result[0];
   }
+
+  async deleteAllBannedRefreshTokens() {
+    return await this.dataSource.query(
+      `DELETE FROM "refreshTokenBlackList" CASCADE;`,
+    );
+  }
 }

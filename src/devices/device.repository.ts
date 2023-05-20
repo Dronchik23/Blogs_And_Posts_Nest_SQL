@@ -73,6 +73,6 @@ export class DevicesRepository {
   }
 
   async deleteAllDevices() {
-    return await this.dataSource.query(`DELETE FROM devices;`);
+    return await this.dataSource.query(`DELETE FROM devices CASCADE;`);
   }
 }

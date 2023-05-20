@@ -3,13 +3,10 @@ import { BlogsRepository } from '../../blogs/blog.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { ForbiddenException } from '@nestjs/common';
+import { BlogUpdateModel } from '../../types and models/models';
 
 export class UpdateBlogCommand {
-  constructor(
-    public id: string,
-    public name: string,
-    public websiteUrl: string,
-  ) {}
+  constructor(public blogId: string, public updateBlogDto: BlogUpdateModel) {}
 }
 
 @CommandHandler(UpdateBlogCommand)
@@ -18,9 +15,8 @@ export class UpdateBlogService implements ICommandHandler<UpdateBlogCommand> {
 
   async execute(command: UpdateBlogCommand): Promise<boolean> {
     return await this.blogsRepository.updateBlogByBlogId(
-      command.id,
-      command.name,
-      command.websiteUrl,
+      command.blogId,
+      command.updateBlogDto,
     );
   }
 }

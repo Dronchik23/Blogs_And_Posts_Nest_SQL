@@ -595,7 +595,7 @@ describe('blogger blogs tests (e2e)', () => {
       beforeAll(async () => {
         await sleep(10);
 
-        await request(server).delete('/testing/all-users');
+        await request(server).delete(wipeAllDataUrl);
 
         const createUserDto: UserInputModel = {
           login: `user`,
@@ -632,6 +632,7 @@ describe('blogger blogs tests (e2e)', () => {
 
         blog = responseForBlog.body;
         expect(blog).toBeDefined();
+        console.log('blog', blog);
       });
       it('should not create post with incorrect input data', async () => {
         await request(server)
@@ -800,6 +801,7 @@ describe('blogger blogs tests (e2e)', () => {
           .expect(201);
 
         const post2 = createResponseForPost.body;
+        console.log('post2', post2);
 
         expect(post2).toEqual({
           id: expect.any(String),

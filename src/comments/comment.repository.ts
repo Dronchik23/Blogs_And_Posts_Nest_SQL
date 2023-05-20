@@ -1,12 +1,23 @@
 import { CommentDBType } from '../types and models/types';
-import { CommentViewModel } from '../types and models/models';
+import {
+  CommentInputModel,
+  CommentViewModel,
+  PostViewModel,
+  UserViewModel,
+} from '../types and models/models';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Posts } from '../entities/posts.entity';
+import { Comments } from '../entities/comments.entity';
 
 @Injectable()
 export class CommentsRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Comments)
+    private readonly commentModel: Repository<Comments>,
+  ) {
     return;
   }
 
@@ -30,34 +41,13 @@ export class CommentsRepository {
   };
 
   async createComment(
-    content: string,
-    userId: string,
-    login: string,
-    createdAt: string,
-    postId: string,
-    postTitle: string,
-    blogId: string,
-    blogName: string,
+    commentCreateDTO: CommentInputModel,
+    user: UserViewModel,
+    post: PostViewModel,
   ): Promise<CommentViewModel> {
-    const comment = await this.dataSource.query(
-      `
-INSERT INTO comments (
-        content,
-        "commentatorId",
-        "commentatorLogin",
-        "createdAt",
-        "postId",
-        "postTitle",
-        "blogId",
-        "blogName"
-)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING *
-`,
-      [content, userId, login, createdAt, postId, postTitle, blogId, blogName],
-    );
-
-    return this.fromCommentDBTypeToCommentViewModel(comment[0]); // mapping comment
+    const newComment = Comments.create(commentCreateDTO, user, post);
+    const createdComment = await this.commentModel.save(newComment);
+    return new CommentViewModel(createdComment);
   }
 
   async updateCommentByCommentIdAndUserId(
@@ -82,6 +72,6 @@ RETURNING *
   }
 
   async deleteAllComments() {
-    return await this.dataSource.query(`DELETE FROM comments;`);
+    return await this.dataSource.query(`DELETE FROM comments CASCADE;`);
   }
 }

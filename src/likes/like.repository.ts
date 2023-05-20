@@ -1,42 +1,69 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { LikeStatus, LikeDBType } from '../types and models/types';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import {
+  LikeInputModel,
+  LikeViewModel,
+  UserViewModel,
+} from '../types and models/models';
+import { Likes } from '../entities/likes.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class LikesRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Likes)
+    private readonly likeModel: Repository<Likes>,
+  ) {
     return;
   }
 
-  async updateLikeStatus(
-    parentId: string,
-    userId: string,
-    login: string,
-    likeStatus: LikeStatus,
-    addedAt: string,
-  ): Promise<LikeDBType> {
-    const existingLike = await this.dataSource.query(
-      `SELECT * FROM likes WHERE "parentId" = $1 AND "userId" = $2`,
-      [parentId, userId],
-    );
+  async postsUpdateLikeStatus(
+    postId: string,
+    user: UserViewModel,
+    likeStatusDTO: LikeInputModel,
+  ): Promise<LikeViewModel> {
+    const existingLike = await this.likeModel.find({
+      where: [{ postId: postId, userId: user.id }],
+    });
+
+    if (existingLike.length > 0) {
+      const like = existingLike[0];
+      console.log(like);
+      like.status = likeStatusDTO.likeStatus;
+      like.addedAt = new Date().toISOString();
+      like.login = user.login;
+      const updatedLike = await this.likeModel.save(like);
+      return updatedLike;
+    } else {
+      const newLike = Likes.createPostLike(postId, user, likeStatusDTO);
+      const createdLike = await this.likeModel.save(newLike);
+      return createdLike;
+    }
+  }
+  async commentsUpdateLikeStatus(
+    postId: string,
+    user: UserViewModel,
+    likeStatusDTO: LikeInputModel,
+  ): Promise<LikeViewModel> {
+    const existingLike = await this.likeModel.find({
+      where: [{ postId: postId, userId: user.id }],
+    });
 
     if (existingLike.length) {
-      const result = await this.dataSource.query(
-        `UPDATE likes SET status = $1, "addedAt" = $2, "login" = $3 WHERE "parentId" = $4 AND "userId" = $5`,
-        [likeStatus, addedAt, login, parentId, userId],
-      );
-      return result[0];
+      const like = existingLike[0];
+      like.status = likeStatusDTO.likeStatus;
+      like.addedAt = new Date().toISOString();
+      like.login = user.login;
+      return like;
     } else {
-      const result = await this.dataSource.query(
-        `INSERT INTO likes ("parentId", "userId", "login", "status", "addedAt") VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [parentId, userId, login, likeStatus, addedAt],
-      );
-      return result[0];
+      const newLike = Likes.createCommentLike(postId, user, likeStatusDTO);
+      const createdLike = await this.likeModel.save(newLike);
+      return createdLike;
     }
   }
 
   async deleteAllLikes() {
-    return await this.dataSource.query(`DELETE FROM likes;`);
+    return await this.dataSource.query(`DELETE FROM likes CASCADE;`);
   }
 }

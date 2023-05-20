@@ -106,8 +106,6 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    //const searchNameTermWithWildcards = `%${searchNameTerm}%`;
-
     const blogs: BlogDBType[] = await this.dataSource.query(
       `
   SELECT * FROM blogs

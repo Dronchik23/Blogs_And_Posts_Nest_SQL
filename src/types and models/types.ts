@@ -69,8 +69,7 @@ export class PostDBType {
     public createdAt: string,
     public likesCount: number = 0,
     public dislikesCount: number = 0,
-    public myStatus: LikeStatus = LikeStatus.None,
-    public newestLikes: NewestLikesType[],
+    public myStatus: LikeStatus = LikeStatus.None, //public newestLikes: NewestLikesType[],
   ) {}
 }
 export class CommentDBType {
@@ -158,14 +157,16 @@ export class PostInfoType {
 }
 export class LikeDBType {
   constructor(
-    public id: string,
-    public parentId: string,
     public userId: string,
+    public id: string,
     public login: string,
     public status: LikeStatus = LikeStatus.None,
     public addedAt: string,
+    public postId?: string,
+    public commentId?: string,
   ) {}
 }
+
 export class LikesInfoType {
   constructor(
     public likesCount: number = 0,

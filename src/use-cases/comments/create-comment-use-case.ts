@@ -7,7 +7,12 @@ import {
   UserDBType,
 } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
-import { CommentViewModel, PostViewModel } from '../../types and models/models';
+import {
+  CommentInputModel,
+  CommentViewModel,
+  PostViewModel,
+  UserViewModel,
+} from '../../types and models/models';
 import { PostsQueryRepository } from '../../query-repositorys/posts-query.repository';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { ForbiddenException } from '@nestjs/common';
@@ -15,8 +20,8 @@ import { ForbiddenException } from '@nestjs/common';
 export class CreateCommentCommand {
   constructor(
     public postId: string,
-    public content: string,
-    public user: any,
+    public commentCreateDTO: CommentInputModel,
+    public user: UserViewModel,
   ) {}
 }
 
@@ -53,17 +58,10 @@ export class CreateCommentService
       throw new ForbiddenException();
     }
 
-    const createdAt = new Date().toISOString();
-
     return await this.commentsRepository.createComment(
-      command.content,
-      command.user.id,
-      command.user.login,
-      createdAt,
-      post.id,
-      post.title,
-      post.blogId,
-      post.blogName,
+      command.commentCreateDTO,
+      command.user,
+      post,
     );
   }
 }
