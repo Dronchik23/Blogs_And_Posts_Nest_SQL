@@ -31,16 +31,14 @@ export class BloggerUsersController {
   @HttpCode(204)
   async banUserByUserId(
     @Param('userId') userId: string,
-    @Body() BloggerBanUserDTO: BloggerBanUserInputModel,
+    @Body() bloggerBanUserDTO: BloggerBanUserInputModel,
     @CurrentUserId() currentUserId: string,
   ): Promise<boolean> {
     return await this.commandBus.execute(
       new BanUserByUserIdByBloggerCommand(
         currentUserId,
         userId,
-        BloggerBanUserDTO.isBanned,
-        BloggerBanUserDTO.banReason,
-        BloggerBanUserDTO.blogId,
+        bloggerBanUserDTO,
       ),
     );
   }

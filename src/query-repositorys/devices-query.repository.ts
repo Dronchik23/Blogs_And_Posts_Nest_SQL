@@ -1,30 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { DeviceDBType } from '../types and models/types';
-import { DeviceViewModel } from '../types and models/models';
+import { DeviceViewModel, UserViewModel } from '../types and models/models';
+import { Users } from '../entities/users.entity';
+import { Devices } from '../entities/devices.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
-
-  private fromDeviceDBTypeToDeviceView(
-    devices: DeviceDBType[],
-  ): DeviceViewModel[] {
-    return devices.map((device) => ({
-      deviceId: device.deviceId,
-      ip: device.ip,
-      lastActiveDate: device.lastActiveDate,
-      title: device.title,
-    }));
-  }
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Devices)
+    private readonly deviceModel: Repository<Devices>,
+  ) {}
 
   async findAllDevicesByUserId(userId: string): Promise<DeviceViewModel[]> {
-    const devices: DeviceDBType[] = await this.dataSource.query(
-      `SELECT * FROM devices WHERE "userId" = $1`,
-      [userId],
+    const results: Devices[] = await this.deviceModel.find({
+      where: {
+        userId: userId,
+      },
+    });
+
+    const devices: DeviceViewModel[] = results.map(
+      (result) => new DeviceViewModel(result),
     );
-    return this.fromDeviceDBTypeToDeviceView(devices);
+    return devices;
   }
 
   async findDeviceByDeviceIdUserIdAndDate(
@@ -32,19 +32,34 @@ export class DevicesQueryRepository {
     userId: string,
     lastActiveDate: string,
   ) {
-    const result = await this.dataSource.query(
-      `SELECT * FROM devices WHERE "userId" = $1 AND "deviceId" = $2 AND "lastActiveDate" = $3`,
-      [userId, deviceId, lastActiveDate],
+    const result: DeviceDBType = await this.deviceModel.findOneBy({
+      deviceId: deviceId,
+      userId: userId,
+      lastActiveDate: lastActiveDate,
+    });
+
+    const device = new DeviceDBType(
+      result.ip,
+      result.title,
+      result.lastActiveDate,
+      result.deviceId,
+      result.userId,
     );
-    return result[0];
+    return device;
   }
 
-  async findDeviceByDeviceId(deviceId: string) {
-    const device = await this.dataSource.query(
-      `SELECT * FROM devices WHERE "deviceId" = $1 `,
-      [deviceId],
+  async findDeviceByDeviceId(deviceId) {
+    const result: DeviceDBType = await this.deviceModel.findOneBy({
+      deviceId: deviceId,
+    });
+
+    const device = new DeviceDBType(
+      result.ip,
+      result.title,
+      result.lastActiveDate,
+      result.deviceId,
+      result.userId,
     );
-    console.log('device', device);
-    return device[0];
+    return device;
   }
 }

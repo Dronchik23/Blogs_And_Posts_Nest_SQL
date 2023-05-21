@@ -1,10 +1,4 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Users } from './users.entity';
 
 @Entity()
@@ -27,6 +21,22 @@ export class Devices {
   @Column({ type: 'uuid' })
   userId: string;
 
-  // @ManyToOne(() => Users, (u) => u.devices)
-  // deviceOwner: Users;
+  @ManyToOne(() => Users, (u) => u.devices)
+  deviceOwner: Users;
+
+  static create(
+    ip: string,
+    title: string,
+    lastActiveDate: string,
+    deviceId: string,
+    userId: string,
+  ) {
+    const newDevice = new Devices();
+    newDevice.ip = ip;
+    newDevice.title = title;
+    newDevice.lastActiveDate = lastActiveDate;
+    newDevice.deviceId = deviceId;
+    newDevice.userId = userId;
+    return newDevice;
+  }
 }

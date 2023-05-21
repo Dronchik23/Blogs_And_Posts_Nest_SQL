@@ -79,11 +79,7 @@ export class CommentsController {
     }
 
     const isUpdated = await this.commandBus.execute(
-      new UpdateCommentCommand(
-        commentId,
-        commentInputDTO.content,
-        currentUserId,
-      ),
+      new UpdateCommentCommand(commentId, commentInputDTO, currentUserId),
     );
     if (!isUpdated) {
       throw new ForbiddenException();
@@ -105,6 +101,7 @@ export class CommentsController {
       throw new NotFoundException();
     }
   }
+
   @UseGuards(BearerAuthGuard)
   @Delete(':commentId')
   @HttpCode(204)

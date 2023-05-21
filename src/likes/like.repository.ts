@@ -23,13 +23,13 @@ export class LikesRepository {
     user: UserViewModel,
     likeStatusDTO: LikeInputModel,
   ): Promise<LikeViewModel> {
+    debugger;
     const existingLike = await this.likeModel.find({
       where: [{ postId: postId, userId: user.id }],
     });
-
     if (existingLike.length > 0) {
       const like = existingLike[0];
-      console.log(like);
+      console.log('like', like);
       like.status = likeStatusDTO.likeStatus;
       like.addedAt = new Date().toISOString();
       like.login = user.login;
@@ -42,12 +42,12 @@ export class LikesRepository {
     }
   }
   async commentsUpdateLikeStatus(
-    postId: string,
+    commentId: string,
     user: UserViewModel,
     likeStatusDTO: LikeInputModel,
   ): Promise<LikeViewModel> {
     const existingLike = await this.likeModel.find({
-      where: [{ postId: postId, userId: user.id }],
+      where: [{ commentId: commentId, userId: user.id }],
     });
 
     if (existingLike.length) {
@@ -57,7 +57,7 @@ export class LikesRepository {
       like.login = user.login;
       return like;
     } else {
-      const newLike = Likes.createCommentLike(postId, user, likeStatusDTO);
+      const newLike = Likes.createCommentLike(commentId, user, likeStatusDTO);
       const createdLike = await this.likeModel.save(newLike);
       return createdLike;
     }

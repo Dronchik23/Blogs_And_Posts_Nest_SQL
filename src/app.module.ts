@@ -86,6 +86,8 @@ import { TestingRepository } from './testing/testing.repository';
 import { Comments } from './entities/comments.entity';
 import { Likes } from './entities/likes.entity';
 import { CommentUpdateLikeStatusService } from './use-cases/likes/comment-update-like-status-use-case';
+import { Devices } from './entities/devices.entity';
+import { Users } from './entities/users.entity';
 
 export const useCases = [
   CreateBlogService,
@@ -162,7 +164,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       //logging: true,
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([Blogs, Posts, Comments, Likes]),
+    TypeOrmModule.forFeature([Users, Blogs, Posts, Comments, Likes, Devices]),
     UsersModule,
     BlogsModule,
     PostsModule,

@@ -1,10 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { DeviceViewModel } from '../types and models/models';
+import { Devices } from '../entities/devices.entity';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Devices)
+    private readonly deviceModel: Repository<Devices>,
+  ) {
     return;
   }
 
@@ -15,22 +21,15 @@ export class DevicesRepository {
     deviceId: string,
     userId: string,
   ) {
-    return await this.dataSource.query(
-      `INSERT INTO devices(
+    const newDevice = Devices.create(
       ip,
       title,
-      "lastActiveDate",
-      "deviceId",
-      "userId"
-    ) VALUES (
-      $1,
-      $2,
-      $3,
-      $4,
-      $5
-    )`,
-      [ip, title, lastActiveDate, deviceId, userId],
+      lastActiveDate,
+      deviceId,
+      userId,
     );
+    const createdDevice = await this.deviceModel.save(newDevice);
+    return new DeviceViewModel(createdDevice);
   }
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {

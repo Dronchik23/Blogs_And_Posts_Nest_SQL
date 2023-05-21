@@ -57,6 +57,7 @@ export class DevicesController {
     @Param('deviceId') deviceId: string,
     @CurrentUserId() currentUserId,
   ) {
+    debugger;
     const device: DeviceDBType =
       await this.devicesQueryService.findDeviceByDeviceId(deviceId);
     if (!device) {

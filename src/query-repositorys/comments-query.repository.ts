@@ -1,6 +1,7 @@
 import {
   BlogDBType,
   CommentDBType,
+  LikeDBType,
   LikeStatus,
   NewestLikesType,
   PaginationType,
@@ -10,37 +11,22 @@ import {
 import {
   BloggerCommentViewModel,
   CommentViewModel,
+  UserViewModel,
 } from '../types and models/models';
 import { UsersQueryRepository } from './users-query.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Comments } from '../entities/comments.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Comments)
+    private readonly commentModel: Repository<Comments>,
     private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
-
-  private fromCommentDBTypeToCommentViewModel = (
-    comment: CommentDBType,
-  ): CommentViewModel => {
-    return {
-      id: comment.id,
-      content: comment.content,
-      commentatorInfo: {
-        userId: comment.commentatorId,
-        userLogin: comment.commentatorLogin,
-      },
-      createdAt: comment.createdAt,
-      likesInfo: {
-        likesCount: comment.likesCount,
-        dislikesCount: comment.dislikesCount,
-        myStatus: comment.myStatus,
-      },
-    };
-  };
 
   private fromCommentDBTypeToBloggerCommentViewModelWithPagination = (
     comment: CommentDBType[],
@@ -142,24 +128,20 @@ WHERE "postId" = $1;
     userId?: string,
   ): Promise<CommentViewModel> {
     try {
-      const result: CommentDBType = await this.dataSource.query(
-        `SELECT * FROM comments WHERE id = $1 AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);`,
-        [commentId],
-      );
-      const commentWithLikesInfo = await this.getLikesInfoForComment(
-        result[0],
-        userId,
-      );
-      return this.fromCommentDBTypeToCommentViewModel(commentWithLikesInfo);
+      debugger;
+      const result = await this.commentModel.findOneBy({
+        id: commentId,
+        commentatorId: userId,
+      });
+      const comment = new CommentViewModel(result);
+
+      return await this.getLikesInfoForComment(comment, userId);
     } catch (error) {
       throw new NotFoundException();
     }
   }
 
-  private async getLikesInfoForComment(
-    comment: CommentDBType,
-    userId?: string,
-  ) {
+  private async getLikesInfoForComment(comment: any, userId?: string) {
     const likesCountResult = await this.dataSource.query(
       `
     SELECT COUNT(*) AS "likesCount" 
@@ -169,7 +151,7 @@ WHERE "postId" = $1;
   `,
       [comment.id],
     );
-    comment.likesCount = parseInt(likesCountResult[0].likesCount);
+    comment.likesInfo.likesCount = parseInt(likesCountResult[0].likesCount);
 
     const disLikesCountResult = await this.dataSource.query(
       `
@@ -181,25 +163,19 @@ WHERE "postId" = $1;
       [comment.id],
     );
 
-    comment.dislikesCount = parseInt(disLikesCountResult[0].dislikesCount);
-
-    const newestLikes: NewestLikesType[] = await this.dataSource.query(
-      `
-    SELECT * 
-    FROM likes 
-    WHERE "commentId" = $1
-    AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
-      [comment.id],
+    comment.likesInfo.dislikesCount = parseInt(
+      disLikesCountResult[0].dislikesCount,
     );
 
+    debugger;
     if (userId) {
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
       if (user[0].isBanned === true) {
-        comment.myStatus = LikeStatus.None;
+        comment.likesInfo.myStatus = LikeStatus.None;
       } else {
-        const result = await this.dataSource.query(
+        const result: LikeDBType[] = await this.dataSource.query(
           `
     SELECT status 
     FROM likes 
@@ -208,21 +184,33 @@ WHERE "postId" = $1;
     `,
           [comment.id, userId],
         );
+
         if (result.length > 0) {
           if (result[0].status === 'Like') {
-            comment.myStatus = LikeStatus.Like;
+            comment.likesInfo.myStatus = LikeStatus.Like;
           } else if (result[0].status === 'Dislike') {
-            comment.myStatus = LikeStatus.Dislike;
+            comment.likesInfo.myStatus = LikeStatus.Dislike;
           } else {
-            comment.myStatus = LikeStatus.None;
+            comment.likesInfo.myStatus = LikeStatus.None;
           }
         } else {
-          comment.myStatus = LikeStatus.None;
+          comment.likesInfo.myStatus = LikeStatus.None;
         }
       }
+    } else {
+      comment.likesInfo.myStatus = LikeStatus.None;
     }
 
     return comment;
+
+    /*    return {
+      ...comment,
+      likesInfo: {
+        likesCount: comment.likesInfo.likesCount,
+        dislikesCount: comment.likesInfo.dislikesCount,
+        myStatus: comment.likesInfo.myStatus,
+      },
+    };*/
   }
 
   async findAllCommentsForBlogOwner(

@@ -123,15 +123,13 @@ export class PostsController {
   async getPostByPostId(
     @Param('postId') id: string,
     @CurrentUserIdFromToken() CurrentUserId: string | null,
-  ): Promise<PostViewModel> {
+  ): Promise<any> {
     const post = await this.postsQueryRepository.findPostByPostId(
       id,
       CurrentUserId,
     );
 
-    if (post) {
-      return post;
-    } else {
+    if (!post) {
       throw new NotFoundException();
     }
   }

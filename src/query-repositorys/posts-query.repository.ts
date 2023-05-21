@@ -197,7 +197,6 @@ WHERE "blogId" = $1;
     );
 
     if (userId) {
-      debugger;
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
@@ -213,7 +212,7 @@ WHERE "blogId" = $1;
     `,
           [post.id, userId],
         );
-        console.log(result);
+
         if (result.length > 0) {
           if (result[0].status === 'Like') {
             post.myStatus = LikeStatus.Like;

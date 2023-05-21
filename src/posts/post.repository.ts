@@ -33,15 +33,12 @@ export class PostsRepository {
     postId: string,
     postUpdateDTO: PostUpdateModel,
   ): Promise<boolean> {
-    const post = await this.postsQueryRepository.findPostByPostId(postId);
-    if (!post) {
-      throw new NotFoundException();
-    }
-    post.title = postUpdateDTO.title;
-    post.content = postUpdateDTO.content;
-    post.shortDescription = postUpdateDTO.shortDescription;
-    await this.postModel.save(post);
-    return true;
+    const result = await this.postModel.update(postId, {
+      title: postUpdateDTO.title,
+      content: postUpdateDTO.content,
+      shortDescription: postUpdateDTO.shortDescription,
+    });
+    return result.affected > 0;
   }
 
   async deletePostByPostId(postId: string): Promise<boolean> {

@@ -21,7 +21,7 @@ export class DeleteAllDevicesExcludeCurrentService
       command.deviceId,
     );
 
-    const device = await this.devicesQueryRepository.findDeviceByDeviceId(
+    const device: any = await this.devicesQueryRepository.findDeviceByDeviceId(
       command.deviceId,
     );
     if (device) return true;

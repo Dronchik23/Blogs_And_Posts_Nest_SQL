@@ -161,6 +161,7 @@ describe('sa/users (e2e)', () => {
           .auth('admin', 'qwerty');
 
         user = responseForUser2.body;
+        console.log(user, 'user');
         expect(user.banInfo.isBanned).toBe(true);
 
         await request(server)
@@ -197,64 +198,6 @@ describe('sa/users (e2e)', () => {
           })
           .expect(200);
       });
-      it('test', async () => {
-        await request(server).delete(wipeAllData);
-
-        const createUserDto2: UserInputModel = {
-          login: `use2r`,
-          password: 'password',
-          email: `user2@gmail.com`,
-        };
-
-        const responseForUser2 = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto2);
-
-        const user2 = responseForUser2.body;
-
-        expect(user2).toBeDefined();
-
-        await request(server)
-          .put(url + `/${user2.id}/ban`)
-          .auth('admin', 'qwerty')
-          .send({
-            isBanned: true,
-            banReason: 'valid string more than 20 letters ',
-          })
-          .expect(204);
-
-        await request(server).get(url).auth('admin', 'qwerty').expect(200);
-      });
-      it('test 2', async () => {
-        await request(server).delete(wipeAllData);
-
-        const createUserDto2: UserInputModel = {
-          login: `use2r`,
-          password: 'password',
-          email: `user2@gmail.com`,
-        };
-
-        const responseForUser2 = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto2);
-
-        const user2 = responseForUser2.body;
-
-        expect(user2).toBeDefined();
-
-        await request(server)
-          .put(url + `/${user2.id}/ban`)
-          .auth('admin', 'qwerty')
-          .send({
-            isBanned: true,
-            banReason: 'valid string more than 20 letters ',
-          })
-          .expect(204);
-
-        await request(server).get(url).auth('admin', 'qwerty').expect(200);
-      });
     });
     describe('create user tests', () => {
       it('should create user with correct input data', async () => {
@@ -276,7 +219,9 @@ describe('sa/users (e2e)', () => {
           })
           .expect(201);
 
-        const user2 = createResponseForUser2.body;
+        const user2: UserViewModel = createResponseForUser2.body;
+
+        console.log('user2', user2);
 
         await request(server)
           .get('/sa/users')

@@ -70,11 +70,7 @@ export class UsersController {
     @Body() createUserDTO: UserInputModel,
   ): Promise<UserViewModel> {
     const user = await this.commandBus.execute(
-      new CreateUserCommand(
-        createUserDTO.login,
-        createUserDTO.email,
-        createUserDTO.password,
-      ),
+      new CreateUserCommand(createUserDTO),
     );
     return user;
   }
@@ -100,12 +96,9 @@ export class UsersController {
     @Param('userId') userId: string,
     @Body() banUserDTO: BanUserInputModel,
   ): Promise<boolean> {
+    debugger;
     return await this.commandBus.execute(
-      new BanUserByUserIdBySACommand(
-        userId,
-        banUserDTO.isBanned,
-        banUserDTO.banReason,
-      ),
+      new BanUserByUserIdBySACommand(userId, banUserDTO),
     );
   }
 }

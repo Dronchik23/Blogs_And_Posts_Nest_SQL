@@ -1,11 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CommentDBType, PostDBType } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
+import { CommentUpdateModel } from '../../types and models/models';
 
 export class UpdateCommentCommand {
   constructor(
     public commentId: string,
-    public content: string,
+    public commentInputDTO: CommentUpdateModel,
     public userId: string,
   ) {}
 }
@@ -20,7 +21,7 @@ export class UpdateCommentService
     const a: any =
       await this.commentsRepository.updateCommentByCommentIdAndUserId(
         command.commentId,
-        command.content,
+        command.commentInputDTO,
         command.userId,
       );
     return a;

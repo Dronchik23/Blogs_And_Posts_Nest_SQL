@@ -1,26 +1,22 @@
-import { Injectable, Scope } from '@nestjs/common';
-import { UserDBType } from '../../types and models/types';
-import { UserViewModel } from '../../types and models/models';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { Injectable, NotFoundException, Scope } from '@nestjs/common';
+import {
+  BanUserInputModel,
+  BloggerBanUserInputModel,
+  UserInputModel,
+  UserViewModel,
+} from '../../types and models/models';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
+import { Users } from '../../entities/users.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {}
-
-  private fromUserDBTypeToUserViewModel(user: UserDBType): UserViewModel {
-    return {
-      id: user.id,
-      login: user.login,
-      email: user.email,
-      createdAt: user.createdAt,
-      banInfo: {
-        isBanned: user.isBanned,
-        banDate: user.banDate,
-        banReason: user.banReason,
-      },
-    };
-  }
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Users) protected readonly userModel: Repository<Users>,
+    protected usersQueryRepository: UsersQueryRepository,
+  ) {}
 
   async updateConfirmation(userId: string) {
     const result = await this.dataSource.query(
@@ -74,84 +70,66 @@ export class UsersRepository {
 
   async changeBanStatusForUserBySA(
     userId: string,
-    isBanned: boolean,
-    banReason: string,
+    banUserDTO: BanUserInputModel,
     banDate: string,
-  ) {
-    debugger;
-    if (isBanned === false) {
-      banReason = null;
+  ): Promise<boolean> {
+    if (banUserDTO.isBanned === false) {
+      banUserDTO.banReason = null;
       banDate = null;
     } // if user unbanned - clear banReason and banDate
-    const result = await this.dataSource.query(
-      `UPDATE users SET "isBanned" = $1, "banReason" = $2, "banDate" = $3 WHERE id = $4;`,
-      [isBanned, banReason, banDate, userId],
-    );
 
-    return result.affectedRows > 0;
+    const result = await this.userModel.update(userId, {
+      isBanned: banUserDTO.isBanned,
+      banReason: banUserDTO.banReason,
+      banDate: banDate,
+    });
+
+    return result.affected > 0;
   }
 
   async changeBanStatusForUserByBlogger(
     userId: string,
-    isBanned: boolean,
-    banReason: string,
+    bloggerBanUserDTO: BloggerBanUserInputModel,
     banDate: string,
-    blogId: string,
-  ) {
-    if (!isBanned) {
-      banReason = null;
+  ): Promise<boolean> {
+    if (bloggerBanUserDTO.isBanned === false) {
+      bloggerBanUserDTO.banReason = null;
       banDate = null;
-      blogId = null;
+      bloggerBanUserDTO.blogId = null;
     } // if user unbanned - clear banReason and banDate
-    const result = await this.dataSource.query(
-      `UPDATE users SET "isBanned" = $1, "banReason" = $2, "banDate" = $3, "blogId" = $4  WHERE id = $5;`,
-      [isBanned, banReason, banDate, blogId, userId],
-    );
-    return result.affectedRows > 0;
+
+    const user: UserViewModel =
+      await this.usersQueryRepository.findUserByUserId(userId);
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    await this.userModel.update(userId, {
+      isBanned: bloggerBanUserDTO.isBanned,
+      banReason: bloggerBanUserDTO.banReason,
+      blogId: bloggerBanUserDTO.blogId,
+      banDate: user.banInfo.banDate,
+    });
+
+    return true;
+  }
+
+  async createUserBySA(
+    createUserDTO: UserInputModel,
+    passwordHash: string,
+  ): Promise<UserViewModel> {
+    const newUser = Users.createBySa(createUserDTO, passwordHash);
+    const createdUser = await this.userModel.save(newUser);
+    return new UserViewModel(createdUser);
   }
 
   async createUser(
-    login: string,
-    email: string,
+    createUserDTO: UserInputModel,
     passwordHash: string,
-    createdAt: string,
     confirmationCode: string,
-    confirmationExpirationDate: string,
-    isEmailConfirmed: boolean,
-    recoveryCode: string,
-    isRecoveryConfirmed: boolean,
-    isBanned: boolean,
   ): Promise<UserViewModel> {
-    const user = await this.dataSource.query(
-      `
-    INSERT INTO users (
-      login,
-      email,
-      "passwordHash",
-      "createdAt",
-      "confirmationCode",
-      "confirmationExpirationDate",
-      "isEmailConfirmed",
-      "recoveryCode",
-      "isRecoveryConfirmed",
-      "isBanned"
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-    RETURNING *
-    `,
-      [
-        login,
-        email,
-        passwordHash,
-        createdAt,
-        confirmationCode,
-        confirmationExpirationDate,
-        isEmailConfirmed,
-        recoveryCode,
-        isRecoveryConfirmed,
-        isBanned,
-      ],
-    );
-    return this.fromUserDBTypeToUserViewModel(user[0]); // mapping user
+    const newUser = Users.create(createUserDTO, passwordHash, confirmationCode);
+    const createdUser = await this.userModel.save(newUser);
+    return new UserViewModel(createdUser);
   }
 }

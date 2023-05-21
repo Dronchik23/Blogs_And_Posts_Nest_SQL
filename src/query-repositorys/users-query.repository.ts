@@ -1,28 +1,17 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { PaginationType, UserDBType } from '../types and models/types';
-import { UserViewModel } from '../types and models/models';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { PostViewModel, UserViewModel } from '../types and models/models';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Posts } from '../entities/posts.entity';
+import { Users } from '../entities/users.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
-    return;
-  }
-
-  private fromUserDBTypeToUserViewModel(user: UserDBType): UserViewModel {
-    return {
-      id: user.id,
-      login: user.login,
-      email: user.email,
-      createdAt: user.createdAt,
-      banInfo: {
-        isBanned: user.isBanned,
-        banDate: user.banDate,
-        banReason: user.banReason,
-      },
-    };
-  }
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Users) private readonly userModel: Repository<Users>,
+  ) {}
 
   private fromUserDBTypeToUserViewModelWithPagination(users: UserDBType[]) {
     return users.map((user) => ({
@@ -106,11 +95,15 @@ OFFSET $5;
 
   async findUserByUserId(userId: string): Promise<UserViewModel | null> {
     try {
-      const user = await this.dataSource.query(
-        `SELECT * FROM users WHERE id = $1;`,
-        [userId],
-      );
-      return this.fromUserDBTypeToUserViewModel(user[0]);
+      const result = await this.userModel.findOneBy({
+        id: userId,
+      });
+      if (!result) {
+        throw new NotFoundException();
+      }
+      const user = new UserViewModel(result);
+
+      return user;
     } catch (e) {
       throw new NotFoundException();
     }

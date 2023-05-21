@@ -53,12 +53,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     const tokens = await this.commandBus.execute(
-      new LoginCommand(
-        loginInputModelDto.loginOrEmail,
-        loginInputModelDto.password,
-        ip,
-        title,
-      ),
+      new LoginCommand(loginInputModelDto, ip, title),
     );
     if (!tokens) {
       throw new UnauthorizedException();
@@ -149,13 +144,7 @@ export class AuthController {
         ],
       });
     }
-    await this.commandBus.execute(
-      new RegistrationUserCommand(
-        createUserDTO.login,
-        createUserDTO.email,
-        createUserDTO.password,
-      ),
-    );
+    await this.commandBus.execute(new RegistrationUserCommand(createUserDTO));
   }
 
   @Post('registration-email-resending')

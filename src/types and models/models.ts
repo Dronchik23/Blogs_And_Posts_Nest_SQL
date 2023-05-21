@@ -27,6 +27,7 @@ import { Transform, Type } from 'class-transformer';
 import { Blogs } from '../entities/blogs.entity';
 import { Posts } from '../entities/posts.entity';
 import { Comments } from '../entities/comments.entity';
+import { Users } from '../entities/users.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -80,6 +81,12 @@ export class DeviceViewModel {
   title: string;
   lastActiveDate: string;
   deviceId: string;
+  constructor(deviceFromDB: DeviceViewModel) {
+    this.ip = deviceFromDB.ip;
+    this.title = deviceFromDB.title;
+    this.deviceId = deviceFromDB.deviceId;
+    this.lastActiveDate = deviceFromDB.lastActiveDate;
+  }
 }
 export class PostUpdateModel {
   @IsString()
@@ -154,6 +161,18 @@ export class UserViewModel {
   email: string;
   createdAt: string;
   banInfo: UserBanInfoType;
+  constructor(userFromDB: Users) {
+    this.id = userFromDB.id;
+    this.login = userFromDB.login;
+    this.email = userFromDB.email;
+    this.createdAt = userFromDB.createdAt;
+    this.banInfo = {
+      isBanned: userFromDB.isBanned,
+      banDate: userFromDB.banDate,
+      banReason: userFromDB.banReason,
+      //blogId: userFromDB.blogId,
+    };
+  }
 }
 export class BloggerUserViewModel {
   id: string;

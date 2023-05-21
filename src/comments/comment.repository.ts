@@ -52,15 +52,16 @@ export class CommentsRepository {
 
   async updateCommentByCommentIdAndUserId(
     commentId: string,
-    content: string,
+    commentInputDTO: CommentInputModel,
     userId: string,
   ) {
-    const result = await this.dataSource.query(
-      `UPDATE comments SET content = $1 WHERE id = $2 AND "commentatorId" = $3;
-`,
-      [content, commentId, userId],
+    const result = await this.commentModel.update(
+      { id: commentId, commentatorId: userId },
+      {
+        content: commentInputDTO.content,
+      },
     );
-    return result[1];
+    return result.affected > 0;
   }
 
   async deleteCommentByCommentIdAndUserId(commentId: string, userId: string) {

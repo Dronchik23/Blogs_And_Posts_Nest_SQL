@@ -28,10 +28,9 @@ export class Likes {
   @Column({ nullable: true, type: 'uuid' })
   postId: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'uuid' })
   commentId: string;
 
-  @JoinColumn({ name: 'userId' })
   @Column({ type: 'uuid' })
   userId: string;
 
@@ -48,12 +47,12 @@ export class Likes {
   postsLike: Likes[];
 
   static createPostLike(
-    parentId: string,
+    postId: string,
     user: UserViewModel,
     dto: LikeInputModel,
   ) {
     const newLike = new Likes();
-    newLike.postId = parentId;
+    newLike.postId = postId;
     newLike.userId = user.id;
     newLike.login = user.login;
     newLike.status = dto.likeStatus;
@@ -62,12 +61,12 @@ export class Likes {
   }
 
   static createCommentLike(
-    parentId: string,
+    commentId: string,
     user: UserViewModel,
     dto: LikeInputModel,
   ) {
     const newLike = new Likes();
-    newLike.postId = parentId;
+    newLike.commentId = commentId;
     newLike.userId = user.id;
     newLike.login = user.login;
     newLike.status = dto.likeStatus;
