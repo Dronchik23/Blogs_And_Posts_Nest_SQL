@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
-import { BlogDBType } from '../../types and models/types';
+import { BlogDBType } from '../../types/types';
 import { BlogsRepository } from '../../blogs/blog.repository';
 
 export class BanBlogByBlogIdCommand {

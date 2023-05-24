@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Blogs } from './blogs.entity';
 import { Devices } from './devices.entity';
-import { UserInputModel } from '../types and models/models';
+import { UserInputModel } from '../models/models';
 import { add } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -59,8 +59,9 @@ export class Users {
     const newUser = new Users();
     newUser.login = dto.login;
     newUser.email = dto.email;
-    newUser.confirmationCode = uuidv4();
+    newUser.passwordHash = passwordHash;
     newUser.createdAt = new Date().toISOString();
+    newUser.confirmationCode = uuidv4().toString();
     newUser.confirmationExpirationDate = add(new Date(), {
       hours: 2,
       minutes: 3,
@@ -69,7 +70,9 @@ export class Users {
     newUser.recoveryCode = null;
     newUser.isRecoveryConfirmed = true;
     newUser.isBanned = false;
-    newUser.passwordHash = passwordHash;
+    newUser.banReason = null;
+    newUser.blogId = null;
+
     return newUser;
   }
 
@@ -81,17 +84,20 @@ export class Users {
     const newUser = new Users();
     newUser.login = dto.login;
     newUser.email = dto.email;
-    newUser.confirmationCode = confirmationCode;
+    newUser.passwordHash = passwordHash;
     newUser.createdAt = new Date().toISOString();
+    newUser.confirmationCode = confirmationCode;
     newUser.confirmationExpirationDate = add(new Date(), {
       hours: 2,
       minutes: 3,
     }).toISOString();
-    newUser.isEmailConfirmed = true;
+    newUser.isEmailConfirmed = false;
     newUser.recoveryCode = null;
-    newUser.isRecoveryConfirmed = true;
+    newUser.isRecoveryConfirmed = false;
     newUser.isBanned = false;
-    newUser.passwordHash = passwordHash;
+    newUser.banReason = null;
+    newUser.blogId = null;
+
     return newUser;
   }
 }

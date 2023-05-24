@@ -1,13 +1,12 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Users } from './users.entity';
-import { BlogInputModel } from '../types and models/models';
+import { BlogInputModel } from '../models/models';
 import { Posts } from './posts.entity';
 
 @Entity()

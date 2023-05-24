@@ -10,14 +10,14 @@ import {
   BlogPaginationQueryModel,
   BlogViewModel,
   PostPaginationQueryModel,
-} from '../types and models/models';
+} from '../models/models';
 import { CurrentUserIdFromToken } from '../auth/decorators';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CreateBlogService } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
-import { PaginationType } from '../types and models/types';
+import { PaginationType } from '../types/types';
 
 @SkipThrottle()
 @Controller({ path: 'blogs', scope: Scope.REQUEST })

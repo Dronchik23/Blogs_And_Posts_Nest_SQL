@@ -3,7 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel } from '../src/types and models/models';
+import { UserInputModel } from '../src/models/models';
 import { EmailAdapter } from '../src/email/email.adapter';
 
 describe('sa/blogs tests (e2e)', () => {

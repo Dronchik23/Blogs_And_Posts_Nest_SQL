@@ -4,7 +4,7 @@ import {
   BlogUpdateModel,
   BlogViewModel,
   UserViewModel,
-} from '../types and models/models';
+} from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Blogs } from '../entities/blogs.entity';
@@ -39,7 +39,7 @@ export class BlogsRepository {
   }
 
   async deleteBlogByBlogId(blogId: string): Promise<boolean> {
-    const result = await this.blogModel.delete(blogId);
+    const result = await this.blogModel.delete({ id: blogId });
     return result.affected > 0;
   }
 

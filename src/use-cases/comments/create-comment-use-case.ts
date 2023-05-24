@@ -1,18 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import {
-  CommentatorInfoType,
-  CommentDBType,
-  LikesInfoType,
-  PostInfoType,
-  UserDBType,
-} from '../../types and models/types';
+import { UserDBType } from '../../types/types';
 import { CommentsRepository } from '../../comments/comment.repository';
 import {
   CommentInputModel,
   CommentViewModel,
   PostViewModel,
   UserViewModel,
-} from '../../types and models/models';
+} from '../../models/models';
 import { PostsQueryRepository } from '../../query-repositorys/posts-query.repository';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { ForbiddenException } from '@nestjs/common';

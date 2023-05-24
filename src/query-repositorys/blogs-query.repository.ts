@@ -4,16 +4,19 @@ import {
   NotFoundException,
   Scope,
 } from '@nestjs/common';
-import { BlogDBType, PaginationType } from '../types and models/types';
-import { BlogViewModel, SABlogViewModel } from '../types and models/models';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { BlogDBType, PaginationType, SortDirection } from '../types/types';
+import { BlogViewModel, SABlogViewModel } from '../models/models';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Blogs } from '../entities/blogs.entity';
+import { plainToClass } from 'class-transformer';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class BlogsQueryRepository {
-  constructor(@InjectDataSource() protected dataSource: DataSource) {
-    return;
-  }
+  constructor(
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(Blogs) private readonly blogModel: Repository<Blogs>,
+  ) {}
 
   private fromBlogDBTypeBlogViewModel(blog: BlogDBType): BlogViewModel {
     return {
@@ -63,28 +66,28 @@ export class BlogsQueryRepository {
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
-    userId?: string,
+    userId: string,
   ): Promise<PaginationType> {
-    const blogs: BlogDBType[] = await this.dataSource.query(
-      `
-SELECT * FROM blogs
-WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-ORDER BY "${sortBy}" ${sortDirection}
-LIMIT $3
-OFFSET $4;
-`,
-      [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
-    );
+    const builder = await this.blogModel
+      .createQueryBuilder('blogs')
+      .where('blogs."blogOwnerId" = :userId', { userId })
+      .andWhere(
+        'blogs."blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+      );
 
-    const totalCount = await this.dataSource
-      .query(
-        `
-SELECT COUNT(*) FROM blogs
-WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL) AND "blogOwnerId" = $2 AND $2 NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-`,
-        [searchNameTerm, userId],
-      )
-      .then((result) => +result[0].count);
+    if (searchNameTerm) {
+      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+        searchNameTerm: `%${searchNameTerm}%`,
+      });
+    }
+
+    const blogs: BlogDBType[] = await builder
+      .orderBy(`blogs.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .skip((pageNumber - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+
+    const totalCount: number = await builder.getCount();
 
     const mappedBlogs = this.fromBlogDBTypeBlogViewModelWithPagination(blogs);
 
@@ -149,12 +152,16 @@ WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL);
 
   async findBlogByBlogId(blogId: string): Promise<BlogViewModel | null> {
     try {
-      const result = await this.dataSource.query(
-        `SELECT * FROM blogs WHERE id = $1 AND "blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
-        [blogId],
-      );
-      return result[0] ? this.fromBlogDBTypeBlogViewModel(result[0]) : null;
+      const blog = await this.blogModel
+        .createQueryBuilder('blogs')
+        .where('blogs.id = :blogId', { blogId })
+        .andWhere(
+          'blogs."blogOwnerId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+        )
+        .andWhere('NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)')
+        .getOne();
+
+      return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
     } catch (error) {
       throw new NotFoundException();
     }
@@ -162,11 +169,16 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
 
   async findBlogByBlogIdAndUserId(blogId: string, userId: string) {
     try {
-      const blog: BlogDBType = await this.dataSource.query(
-        `SELECT * FROM blogs WHERE id = $1 AND "blogOwnerId" = $2 AND id NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
-        [blogId, userId],
-      );
-      return blog ? this.fromBlogDBTypeBlogViewModel(blog[0]) : null;
+      const blog: BlogDBType = await this.blogModel
+        .createQueryBuilder('blogs')
+        .where('blogs.id = :blogId', { blogId })
+        .andWhere('blogs."blogOwnerId" = :userId', { userId })
+        .andWhere(
+          'blogs.id NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+        )
+        .getOne();
+
+      return blog ? this.fromBlogDBTypeBlogViewModel(blog) : null;
     } catch (error) {
       throw new ForbiddenException();
     }
@@ -179,26 +191,24 @@ AND NOT EXISTS(SELECT id FROM blogs WHERE "isBanned" = true)`,
     sortDirection: string,
     pageNumber: number,
   ): Promise<PaginationType> {
-    const blogs = await this.dataSource.query(
-      `
-SELECT * FROM blogs
-WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)
-ORDER BY "${sortBy}" ${sortDirection}
-LIMIT $2
-OFFSET $3;
-`,
-      [searchNameTerm, pageSize, (pageNumber - 1) * pageSize],
-    );
+    const builder = await this.blogModel.createQueryBuilder('blogs');
+
+    if (searchNameTerm) {
+      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+        searchNameTerm: `%${searchNameTerm}%`,
+      });
+    }
+
+    const blogs: BlogDBType[] = await builder
+      .orderBy(`blogs.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .skip((pageNumber - 1) * pageSize)
+      .take(pageSize)
+      .getMany();
+
+    const totalCount: number = await builder.getCount();
 
     const mappedBlogs =
       this.fromBlogDBTypeBlogViewModelWithPaginationForSa(blogs);
-
-    const totalCount = await this.dataSource
-      .query(
-        ` SELECT COUNT(*) FROM blogs WHERE (name ILIKE '%' || $1 || '%' OR $1 IS NULL)`,
-        [searchNameTerm],
-      )
-      .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(+totalCount / +pageSize);
 
@@ -213,11 +223,12 @@ OFFSET $3;
 
   async findBlogByBlogIdWithBlogDBType(blogId: string): Promise<BlogDBType> {
     try {
-      const result = await this.dataSource.query(
-        `SELECT * FROM blogs WHERE id = $1`,
-        [blogId],
-      );
-      return result[0];
+      const result = await this.blogModel.findOneBy({ id: blogId });
+      if (!result) {
+        throw new NotFoundException();
+      }
+      const blog = plainToClass(BlogDBType, result);
+      return blog;
     } catch (error) {
       throw new NotFoundException();
     }

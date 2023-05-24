@@ -4,7 +4,7 @@ import {
   BloggerBanUserInputModel,
   UserInputModel,
   UserViewModel,
-} from '../../types and models/models';
+} from '../../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
@@ -19,53 +19,53 @@ export class UsersRepository {
   ) {}
 
   async updateConfirmation(userId: string) {
-    const result = await this.dataSource.query(
-      `UPDATE users SET "isEmailConfirmed" = true WHERE id = $1;`,
-      [userId],
-    );
-    return result[1];
+    const result = await this.userModel.update(userId, {
+      isEmailConfirmed: true,
+    });
+
+    return result.affected > 0;
   }
 
   async deleteUserByUserId(userId: string) {
-    const result = await this.dataSource.query(
-      `DELETE FROM users WHERE id = $1;`,
-      [userId],
-    );
-    return result[1];
+    const result = await this.userModel.delete({ id: userId });
+    return result.affected > 0;
   }
 
   async deleteAllUsers() {
-    return await this.dataSource.query(`DELETE FROM public.users CASCADE;`);
+    return await this.userModel.delete({});
   }
 
   async updateConfirmationCodeByUserId(
     userId: string,
     newConfirmationCode: string,
   ) {
-    const result = await this.dataSource.query(
-      `UPDATE users SET "confirmationCode" = $1 WHERE id = $2`,
-      [newConfirmationCode, userId],
+    const result = await this.userModel.update(
+      { id: userId },
+      { confirmationCode: newConfirmationCode },
     );
-    return result.affectedRows > 0;
+    return result.affected > 0;
   }
 
   async updatePasswordRecoveryCodeByEmail(
     email: string,
     newConfirmationCode: string,
   ) {
-    const result = await this.dataSource.query(
-      `UPDATE users SET "confirmationCode" = ${newConfirmationCode} WHERE email = ${email};`,
-      [newConfirmationCode, email],
+    const result = await this.userModel.update(
+      { email },
+      {
+        confirmationCode: newConfirmationCode,
+      },
     );
-    return result.affectedRows > 0;
+
+    return result.affected > 0;
   }
 
-  async updatePassword(passwordHash: string, userId: string) {
-    const result = await this.dataSource.query(
-      `UPDATE users SET "passwordHash" = $1 WHERE id = $2;`,
-      [passwordHash, userId],
+  async updatePassword(newPasswordHash: string, userId: string) {
+    const result = await this.userModel.update(
+      { id: userId },
+      { passwordHash: newPasswordHash },
     );
-    return result.affectedRows > 0;
+    return result.affected > 0;
   }
 
   async changeBanStatusForUserBySA(
@@ -104,14 +104,14 @@ export class UsersRepository {
       throw new NotFoundException();
     }
 
-    await this.userModel.update(userId, {
+    const result = await this.userModel.update(userId, {
       isBanned: bloggerBanUserDTO.isBanned,
       banReason: bloggerBanUserDTO.banReason,
       blogId: bloggerBanUserDTO.blogId,
       banDate: user.banInfo.banDate,
     });
 
-    return true;
+    return result.affected > 0;
   }
 
   async createUserBySA(

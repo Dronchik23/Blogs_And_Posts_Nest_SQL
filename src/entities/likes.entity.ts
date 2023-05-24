@@ -1,21 +1,8 @@
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Posts } from './posts.entity';
 import { Comments } from './comments.entity';
-import { Users } from './users.entity';
-import { LikeStatus } from '../types and models/types';
-import {
-  CommentInputModel,
-  LikeInputModel,
-  PostViewModel,
-  UserViewModel,
-} from '../types and models/models';
+import { LikeStatus } from '../types/types';
+import { LikeInputModel, UserViewModel } from '../models/models';
 
 @Entity()
 export class Likes {

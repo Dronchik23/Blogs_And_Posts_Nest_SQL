@@ -3,10 +3,10 @@ import { UsersRepository } from '../../sa/users/users-repository';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
-import { TokenType, UserDBType } from '../../types and models/types';
+import { TokenType, UserDBType } from '../../types/types';
 import { CustomJwtService } from '../../jwt/jwt.service';
 import { DevicesRepository } from '../../devices/device.repository';
-import { LoginInputModel } from '../../types and models/models';
+import { LoginInputModel } from '../../models/models';
 
 export class LoginCommand {
   constructor(

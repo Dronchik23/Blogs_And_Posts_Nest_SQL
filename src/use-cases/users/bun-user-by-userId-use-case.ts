@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { UsersRepository } from '../../sa/users/users-repository';
-import { BanUserInputModel } from '../../types and models/models';
+import { BanUserInputModel } from '../../models/models';
 import { NotFoundException } from '@nestjs/common';
 
 export class BanUserByUserIdBySACommand {

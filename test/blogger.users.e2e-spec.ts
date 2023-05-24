@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel } from '../src/types and models/models';
+import { UserInputModel } from '../src/models/models';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { UsersQueryRepository } from '../src/query-repositorys/users-query.repository';

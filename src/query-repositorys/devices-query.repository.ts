@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { DeviceDBType } from '../types and models/types';
-import { DeviceViewModel, UserViewModel } from '../types and models/models';
-import { Users } from '../entities/users.entity';
+import { DeviceDBType } from '../types/types';
+import { DeviceViewModel } from '../models/models';
 import { Devices } from '../entities/devices.entity';
 
 @Injectable()

@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostDBType } from '../../types and models/types';
 import { PostsRepository } from '../../posts/post.repository';
-import { PostUpdateModel } from '../../types and models/models';
+import { PostUpdateModel } from '../../models/models';
 
 export class UpdatePostCommand {
   constructor(public postId: string, public postUpdateDTO: PostUpdateModel) {}

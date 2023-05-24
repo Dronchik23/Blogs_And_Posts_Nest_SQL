@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { UserViewModel } from '../../src/types and models/models';
+import { UserViewModel } from '../../src/models/models';
 import { EmailAdapter } from '../../src/email/email.adapter';
 import { createApp } from '../../src/helpers/createApp';
 import { AppModule } from '../../src/app.module';

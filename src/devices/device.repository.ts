@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { DeviceViewModel } from '../types and models/models';
+import { DeviceViewModel } from '../models/models';
 import { Devices } from '../entities/devices.entity';
 
 @Injectable()
@@ -40,23 +40,23 @@ export class DevicesRepository {
   }
 
   async deleteDeviceByDeviceId(deviceId: string) {
-    const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE "deviceId" = $1;`,
-      [deviceId],
-    );
-    return result[1];
+    debugger;
+    const result = await this.deviceModel.delete({ deviceId: deviceId });
+
+    return result.affected > 0;
   }
 
   async updateLastActiveDateByDevice(
     deviceId: string,
     userId: string,
     newLastActiveDate: string,
-  ): Promise<any> {
-    const result = await this.dataSource.query(
-      `UPDATE devices SET "lastActiveDate" = $1 WHERE "deviceId" = $2 AND "userId" = $3;`,
-      [newLastActiveDate, deviceId, userId],
+  ): Promise<boolean> {
+    const result = await this.deviceModel.update(
+      { deviceId: deviceId, userId: userId },
+      { lastActiveDate: newLastActiveDate },
     );
-    return result[1];
+
+    return result.affected > 0;
   }
 
   async findAndDeleteDeviceByDeviceIdUserIdAndDate(

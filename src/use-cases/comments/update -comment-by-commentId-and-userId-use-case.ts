@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CommentDBType, PostDBType } from '../../types and models/types';
 import { CommentsRepository } from '../../comments/comment.repository';
-import { CommentUpdateModel } from '../../types and models/models';
+import { CommentUpdateModel } from '../../models/models';
 
 export class UpdateCommentCommand {
   constructor(

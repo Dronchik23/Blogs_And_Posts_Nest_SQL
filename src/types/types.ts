@@ -5,7 +5,7 @@ import {
   CommentViewModel,
   PostViewModel,
   UserViewModel,
-} from './models';
+} from '../models/models';
 
 // types
 export type PaginationType = {
@@ -37,6 +37,10 @@ export enum LikeStatus {
   None = 'None',
   Like = 'Like',
   Dislike = 'Dislike',
+}
+export enum SortDirection {
+  ASC = 'ASC',
+  DESC = 'DESC',
 }
 export enum BanStatus {
   banned = 'banned',
@@ -96,7 +100,7 @@ export class UserDBType {
     public passwordHash: string,
     public createdAt: string,
     public confirmationCode: string,
-    public expirationDate: Date,
+    public confirmationExpirationDate: string,
     public isEmailConfirmed: boolean,
     public recoveryCode: string | null,
     public isRecoveryConfirmed: boolean,

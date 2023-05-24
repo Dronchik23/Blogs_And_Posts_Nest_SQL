@@ -1,23 +1,22 @@
 import {
   BlogDBType,
   CommentDBType,
-  LikeDBType,
   LikeStatus,
-  NewestLikesType,
   PaginationType,
   PostDBType,
+  SortDirection,
   UserDBType,
-} from '../types and models/types';
-import {
-  BloggerCommentViewModel,
-  CommentViewModel,
-  UserViewModel,
-} from '../types and models/models';
+} from '../types/types';
+import { BloggerCommentViewModel, CommentViewModel } from '../models/models';
 import { UsersQueryRepository } from './users-query.repository';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Comments } from '../entities/comments.entity';
+import { Likes } from '../entities/likes.entity';
+import { Users } from '../entities/users.entity';
+import { Blogs } from '../entities/blogs.entity';
+import { Posts } from '../entities/posts.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
@@ -27,6 +26,25 @@ export class CommentsQueryRepository {
     private readonly commentModel: Repository<Comments>,
     private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
+
+  private fromCommentDBTypeToBloggerCommentViewModel(
+    comment: CommentDBType,
+  ): CommentViewModel {
+    return {
+      id: comment.id,
+      content: comment.content,
+      commentatorInfo: {
+        userId: comment.commentatorId,
+        userLogin: comment.commentatorLogin,
+      },
+      createdAt: comment.createdAt,
+      likesInfo: {
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: comment.myStatus,
+      },
+    };
+  }
 
   private fromCommentDBTypeToBloggerCommentViewModelWithPagination = (
     comment: CommentDBType[],
@@ -80,17 +98,21 @@ export class CommentsQueryRepository {
     sortDirection: string,
     userId?: string,
   ): Promise<PaginationType> {
-    const comments: CommentDBType[] = await this.dataSource.query(
-      `
-  SELECT *
-FROM comments
-WHERE "postId" = $1
-ORDER BY "${sortBy}" ${sortDirection}
-LIMIT $2
-OFFSET $3;
-  `,
-      [postId, pageSize, (pageNumber - 1) * pageSize],
-    );
+    const queryBuilder = await this.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from(Comments, 'comments')
+      .where('comments."postId" = :postId', { postId })
+      .andWhere(
+        '"userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+      )
+      .orderBy(`posts.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .take(pageSize)
+      .skip((pageNumber - 1) * pageSize);
+
+    const totalCount = await queryBuilder.getCount();
+
+    const comments: CommentDBType[] = await queryBuilder.getMany();
 
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {
@@ -98,19 +120,10 @@ OFFSET $3;
       }),
     );
 
-    const mappedComments = this.fromCommentDBTypeCommentViewModelWithPagination(
-      commentsWithLikesInfo,
-    );
-
-    const totalCount = await this.dataSource
-      .query(
-        `
-SELECT COUNT(*) FROM comments
-WHERE "postId" = $1;
-`,
-        [postId],
-      )
-      .then((result) => +result[0].count);
+    const mappedComments: CommentViewModel[] =
+      this.fromCommentDBTypeCommentViewModelWithPagination(
+        commentsWithLikesInfo,
+      );
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 
@@ -128,129 +141,171 @@ WHERE "postId" = $1;
     userId?: string,
   ): Promise<CommentViewModel> {
     try {
-      debugger;
-      const result = await this.commentModel.findOneBy({
-        id: commentId,
-        commentatorId: userId,
-      });
-      const comment = new CommentViewModel(result);
+      const result: CommentDBType = await this.commentModel
+        .createQueryBuilder('comments')
+        .where('comments.id = :commentId', { commentId })
+        .andWhere(
+          '"commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+        )
+        .getOne();
 
-      return await this.getLikesInfoForComment(comment, userId);
+      const comment = new CommentDBType(
+        result.id,
+        result.content,
+        result.commentatorId,
+        result.commentatorLogin,
+        result.createdAt,
+        result.likesCount,
+        result.dislikesCount,
+        result.myStatus,
+        result.postId,
+        result.postTitle,
+        result.blogId,
+        result.blogName,
+      );
+
+      const commentWithLikeInfo = await this.getLikesInfoForComment(
+        comment,
+        userId,
+      );
+
+      return this.fromCommentDBTypeToBloggerCommentViewModel(
+        commentWithLikeInfo,
+      );
     } catch (error) {
       throw new NotFoundException();
     }
   }
 
-  private async getLikesInfoForComment(comment: any, userId?: string) {
-    const likesCountResult = await this.dataSource.query(
-      `
-    SELECT COUNT(*) AS "likesCount" 
-    FROM likes 
-    WHERE "commentId" = $1
-     AND status = 'Like' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-  `,
-      [comment.id],
-    );
-    comment.likesInfo.likesCount = parseInt(likesCountResult[0].likesCount);
+  private async getLikesInfoForComment(
+    comment: CommentDBType,
+    userId?: string,
+  ) {
+    const likesCountResult = await this.dataSource
+      .createQueryBuilder()
+      .select('COUNT(*)', 'likesCount')
+      .from(Likes, 'likes')
+      .where('likes."commentId" = :commentId', { commentId: comment.id })
+      .andWhere('likes.status = :status', { status: 'Like' })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('id')
+          .from(Users, 'users')
+          .where('"isBanned" = true')
+          .getQuery();
+        return `"userId" NOT IN ${subQuery}`;
+      })
+      .getRawOne();
 
-    const disLikesCountResult = await this.dataSource.query(
-      `
-    SELECT COUNT(*) AS "dislikesCount" 
-    FROM likes 
-    WHERE "commentId" = $1
-     AND status = 'Dislike' AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-  `,
-      [comment.id],
-    );
+    comment.likesCount = +likesCountResult.likesCount;
 
-    comment.likesInfo.dislikesCount = parseInt(
-      disLikesCountResult[0].dislikesCount,
-    );
+    const dislikesCountResult = await this.dataSource
+      .createQueryBuilder()
+      .select('COUNT(*)', 'dislikesCount')
+      .from(Likes, 'likes')
+      .where('likes."commentId" = :commentId', { commentId: comment.id })
+      .andWhere('likes.status = :status', { status: 'Dislike' })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('id')
+          .from(Users, 'users')
+          .where('"isBanned" = true')
+          .getQuery();
+        return `"userId" NOT IN ${subQuery}`;
+      })
+      .getRawOne();
 
-    debugger;
+    comment.dislikesCount = +dislikesCountResult.dislikesCount;
+
     if (userId) {
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
       if (user[0].isBanned === true) {
-        comment.likesInfo.myStatus = LikeStatus.None;
+        comment.myStatus = LikeStatus.None;
       } else {
-        const result: LikeDBType[] = await this.dataSource.query(
-          `
-    SELECT status 
-    FROM likes 
-    WHERE "commentId" = $1 
-    AND "userId" = $2
-    `,
-          [comment.id, userId],
-        );
+        const result = await this.dataSource
+          .createQueryBuilder()
+          .select('likes.status', 'status')
+          .from(Likes, 'likes')
+          .where('"commentId" = :commentId')
+          .andWhere('"userId" = :userId')
+          .setParameter('commentId', comment.id)
+          .setParameter('userId', userId)
+          .execute();
 
         if (result.length > 0) {
           if (result[0].status === 'Like') {
-            comment.likesInfo.myStatus = LikeStatus.Like;
+            comment.myStatus = LikeStatus.Like;
           } else if (result[0].status === 'Dislike') {
-            comment.likesInfo.myStatus = LikeStatus.Dislike;
+            comment.myStatus = LikeStatus.Dislike;
           } else {
-            comment.likesInfo.myStatus = LikeStatus.None;
+            comment.myStatus = LikeStatus.None;
           }
         } else {
-          comment.likesInfo.myStatus = LikeStatus.None;
+          comment.myStatus = LikeStatus.None;
         }
       }
     } else {
-      comment.likesInfo.myStatus = LikeStatus.None;
+      comment.myStatus = LikeStatus.None;
     }
 
-    return comment;
-
-    /*    return {
+    return {
       ...comment,
       likesInfo: {
-        likesCount: comment.likesInfo.likesCount,
-        dislikesCount: comment.likesInfo.dislikesCount,
-        myStatus: comment.likesInfo.myStatus,
+        likesCount: comment.likesCount,
+        dislikesCount: comment.dislikesCount,
+        myStatus: comment.myStatus,
       },
-    };*/
+    };
   }
 
   async findAllCommentsForBlogOwner(
-    searchNameTerm: string,
     pageSize: number,
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
     userId: string,
   ): Promise<PaginationType> {
-    const blogs: BlogDBType[] = await this.dataSource.query(
-      `
-  SELECT * FROM blogs
-  WHERE (LOWER(name) LIKE $1 OR $1 IS NULL) AND "blogOwnerId" = $2
-  ORDER BY "${sortBy}" ${sortDirection}
-  LIMIT $3
-  OFFSET $4;
-`,
-      [searchNameTerm, userId, pageSize, (pageNumber - 1) * pageSize],
-    );
+    debugger;
+    const blogs: BlogDBType[] = await this.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from(Blogs, 'blogs')
+      .where('blogs."blogOwnerId" = :userId', { userId })
+      .execute();
 
-    const posts: PostDBType[] = await this.dataSource.query(
-      `SELECT * FROM posts WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)
- ;`,
-    );
+    const blogIds = blogs.map((blog) => blog.id); // find all blogIds of current user
 
-    const postIds: string[] = posts.map((post: PostDBType) => post.id); // find all postId of current user blogs
+    const posts = await this.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from(Posts, 'posts')
+      .where(`"blogId" = ANY(:blogIds)`, { blogIds: blogIds })
+      .execute();
 
-    const comments: CommentDBType[] = await this.dataSource.query(
-      `
-        SELECT * FROM comments
-        WHERE "postId" IN (${postIds.map((id) => `'${id}'`).join(', ')})
-        AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-        ORDER BY "${sortBy}" ${sortDirection}
-        LIMIT $1
-        OFFSET $2
-    `,
-      [pageSize, (pageNumber - 1) * pageSize],
-    );
+    const postIds: string[] = posts.map((post: PostDBType) => post.id); // find all postIds of current user
 
+    const builder = await this.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from(Comments, 'comments')
+      .where(`"postId" = ANY(:postIds)`, { postIds: postIds })
+      .andWhere(
+        `"commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)`,
+      )
+      .orderBy(
+        `comments.${sortBy}`,
+        sortDirection.toUpperCase() as SortDirection,
+      )
+      .take(pageSize)
+      .skip((pageNumber - 1) * pageSize);
+
+    const totalCount = await builder.getCount();
+
+    const comments: CommentDBType[] = await builder.execute();
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {
         return this.getLikesInfoForComment(comment, userId);
@@ -261,16 +316,6 @@ WHERE "postId" = $1;
       this.fromCommentDBTypeToBloggerCommentViewModelWithPagination(
         commentsWithLikesInfo,
       );
-
-    const totalCount = await this.dataSource
-      .query(
-        `
-       SELECT COUNT(*) FROM comments
-       WHERE "postId" IN (${postIds.map((id) => `'${id}'`).join(', ')})
-       AND "commentatorId" NOT IN (SELECT id FROM users WHERE "isBanned" = true);
-`,
-      )
-      .then((result) => +result[0].count);
 
     const pagesCount = Math.ceil(totalCount / +pageSize);
 

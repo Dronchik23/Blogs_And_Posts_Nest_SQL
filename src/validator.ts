@@ -5,7 +5,7 @@ import {
   ValidatorConstraintInterface,
   ValidatorConstraint,
 } from 'class-validator';
-import { UserDBType } from './types and models/types';
+import { UserDBType } from './types/types';
 import { BlogsQueryRepository } from './query-repositorys/blogs-query.repository';
 import { UsersQueryRepository } from './query-repositorys/users-query.repository';
 import { CommentsQueryRepository } from './query-repositorys/comments-query.repository';

@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel, UserViewModel } from '../src/types and models/models';
+import { UserInputModel, UserViewModel } from '../src/models/models';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
@@ -221,8 +221,6 @@ describe('sa/users (e2e)', () => {
 
         const user2: UserViewModel = createResponseForUser2.body;
 
-        console.log('user2', user2);
-
         await request(server)
           .get('/sa/users')
           .auth('admin', 'qwerty')
@@ -301,6 +299,28 @@ describe('sa/users (e2e)', () => {
       });
     });
     describe('delete user tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllData);
+
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const createResponseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send({
+            login: createUserDto2.login,
+            password: createUserDto2.password,
+            email: createUserDto2.email,
+          })
+          .expect(201);
+
+        user = createResponseForUser2.body;
+        expect(user).toBeDefined();
+      });
       it('should not delete user that not exist ', async () => {
         await request(server)
           .delete('/sa/users' + `7hd9300388u`)
@@ -319,30 +339,13 @@ describe('sa/users (e2e)', () => {
           .expect(401);
       });
       it('should delete user with correct id', async () => {
-        await request(server).delete(wipeAllData);
-
-        const createUserDto2: UserInputModel = {
-          login: `user2`,
-          password: 'password',
-          email: `user2@gmail.com`,
-        };
-
-        const responseForUser2 = await request(server)
-          .post('/sa/users')
-          .auth('admin', 'qwerty')
-          .send(createUserDto2);
-
-        const user2 = responseForUser2.body;
-
-        expect(user2).toBeDefined();
-
         await request(server)
-          .delete(`/sa/users/${user2.id}`)
+          .delete(`/sa/users/${user.id}`)
           .auth('admin', 'qwerty')
           .expect(204);
 
         await request(server)
-          .get(`/sa/users/${user2.id}`)
+          .get(`/sa/users/${user.id}`)
           .auth('admin', 'qwerty')
           .expect(404);
       });

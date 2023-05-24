@@ -3,20 +3,23 @@ import {
   NewestLikesType,
   PaginationType,
   PostDBType,
+  SortDirection,
   UserDBType,
-} from '../types and models/types';
-import { PostViewModel } from '../types and models/models';
+} from '../types/types';
+import { PostViewModel } from '../models/models';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Posts } from '../entities/posts.entity';
+import { Likes } from '../entities/likes.entity';
+import { Users } from '../entities/users.entity';
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
-    @InjectRepository(Posts) private readonly blogModel: Repository<Posts>,
+    @InjectRepository(Posts) private readonly postModel: Repository<Posts>,
     private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
 
@@ -36,13 +39,6 @@ export class PostsQueryRepository {
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
         newestLikes: [],
-        /*  newestLikes: post.newestLikes.map((like) => {
-          return {
-            addedAt: like.addedAt,
-            userId: like.userId,
-            login: like.login,
-          };
-        }),*/
       },
     }));
   };
@@ -54,30 +50,22 @@ export class PostsQueryRepository {
     pageNumber: number,
     userId?: string,
   ): Promise<PaginationType> {
-    const posts: PostDBType[] = await this.dataSource.query(
-      `
-  SELECT * 
-  FROM posts 
-  WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)
-  ORDER BY "${sortBy}" ${sortDirection}
-  LIMIT $1
-  OFFSET $2;
-`,
-      [pageSize, (pageNumber - 1) * pageSize],
-    );
+    const queryBuilder = await this.postModel
+      .createQueryBuilder('posts')
+      .where(
+        'posts."blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)',
+      )
+      .orderBy(`posts.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .take(pageSize)
+      .skip((pageNumber - 1) * pageSize);
+
+    const totalCount = await queryBuilder.getCount();
+
+    const posts: PostDBType[] = await queryBuilder.getMany();
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
     }
-
-    const totalCount = await this.dataSource
-      .query(
-        `
-SELECT COUNT(*) FROM posts
-WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);
-`,
-      )
-      .then((result) => +result[0].count);
 
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
@@ -97,9 +85,14 @@ WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);
     userId?: string,
   ): Promise<PostViewModel | null> {
     try {
-      const result = await this.blogModel.findOneBy({
-        id: postId,
-      });
+      const result = await this.postModel
+        .createQueryBuilder('posts')
+        .where('posts.id = :postId', { postId })
+        .andWhere(
+          '"blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)',
+        )
+        .getOne();
+
       if (!result) {
         throw new NotFoundException();
       }
@@ -122,32 +115,21 @@ WHERE "blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true);
     sortDirection: string,
     userId?: string,
   ) {
-    const posts: PostDBType[] = await this.dataSource.query(
-      `
-  SELECT * 
-  FROM posts 
-  WHERE "blogId" = $1
-  ORDER BY "${sortBy}" ${sortDirection}
-  LIMIT $2
-  OFFSET $3;
-`,
-      [blogId, pageSize, (pageNumber - 1) * pageSize],
-    );
+    const builder = await this.postModel
+      .createQueryBuilder('posts')
+      .where('posts."blogId = :blogId', { blogId })
+      .orderBy(`posts.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .take(pageSize)
+      .skip((pageNumber - 1) * pageSize);
+
+    const totalCount = await builder.getCount();
+
+    const posts: PostDBType[] = await builder.getMany();
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
     }
     const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
-
-    const totalCount = await this.dataSource
-      .query(
-        `
-SELECT COUNT(*) FROM posts
-WHERE "blogId" = $1;
-`,
-        [blogId],
-      )
-      .then((result) => +result[0].count);
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
@@ -159,42 +141,58 @@ WHERE "blogId" = $1;
   }
 
   private async getLikesInfoForPost(post: any, userId?: string) {
-    const likesCountResult = await this.dataSource.query(
-      `
-      SELECT COUNT(*) AS "likesCount" 
-      FROM likes 
-      WHERE "postId" = $1
-      AND status = 'Like' 
-      AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-    `,
-      [post.id],
-    );
-    post.likesCount = parseInt(likesCountResult[0].likesCount);
+    const likesCountResult = await this.dataSource
+      .createQueryBuilder()
+      .select('COUNT(*)', 'likesCount')
+      .from(Likes, 'likes')
+      .where('likes."postId" = :postId', { postId: post.id })
+      .andWhere('likes.status = :status', { status: 'Like' })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('id')
+          .from(Users, 'users')
+          .where('"isBanned" = true')
+          .getQuery();
+        return `"userId" NOT IN ${subQuery}`;
+      })
+      .getRawOne();
 
-    const disLikesCountResult = await this.dataSource.query(
-      `
-      SELECT COUNT(*) AS "dislikesCount" 
-      FROM likes 
-      WHERE "postId" = $1
-      AND status = 'Dislike' 
-      AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-    `,
-      [post.id],
-    );
-    post.dislikesCount = parseInt(disLikesCountResult[0].dislikesCount);
+    post.likesCount = +likesCountResult.likesCount;
 
-    const newestLikes: NewestLikesType[] = await this.dataSource.query(
-      `
-      SELECT * 
-      FROM likes 
-      WHERE "postId" = $1
-      AND status = 'Like' 
-      AND "userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)
-      ORDER BY "addedAt" DESC
-      LIMIT 3;
-    `,
-      [post.id],
-    );
+    const dislikesCountResult = await this.dataSource
+      .createQueryBuilder()
+      .select('COUNT(*)', 'dislikesCount')
+      .from(Likes, 'likes')
+      .where('likes."postId" = :postId', { postId: post.id })
+      .andWhere('likes.status = :status', { status: 'Dislike' })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('id')
+          .from(Users, 'users')
+          .where('"isBanned" = true')
+          .getQuery();
+        return `"userId" NOT IN ${subQuery}`;
+      })
+      .getRawOne();
+
+    post.dislikesCount = +dislikesCountResult.dislikesCount;
+
+    const newestLikes: NewestLikesType[] = await this.dataSource
+      .createQueryBuilder()
+      .select('*')
+      .from(Likes, 'likes')
+      .where('"postId" = :postId')
+      .andWhere('status = :status')
+      .andWhere(
+        '"userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+      )
+      .orderBy('"addedAt"', 'DESC')
+      .limit(3)
+      .setParameter('postId', post.id)
+      .setParameter('status', 'Like')
+      .getRawMany();
 
     if (userId) {
       const user: UserDBType =
@@ -203,15 +201,15 @@ WHERE "blogId" = $1;
       if (user[0].isBanned === true) {
         post.myStatus = LikeStatus.None;
       } else {
-        const result = await this.dataSource.query(
-          `
-    SELECT status 
-    FROM likes 
-    WHERE "postId" = $1 
-    AND "userId" = $2
-    `,
-          [post.id, userId],
-        );
+        const result = await this.dataSource
+          .createQueryBuilder()
+          .select('likes.status', 'status')
+          .from(Likes, 'likes')
+          .where('"postId" = :postId')
+          .andWhere('"userId" = :userId')
+          .setParameter('postId', post.id)
+          .setParameter('userId', userId)
+          .execute();
 
         if (result.length > 0) {
           if (result[0].status === 'Like') {

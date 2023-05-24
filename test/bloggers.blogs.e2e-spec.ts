@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel } from '../src/types and models/models';
+import { UserInputModel } from '../src/models/models';
 import { AppModule } from '../src/app.module';
 import { sleep } from './helpers/sleepfunction';
 import { EmailAdapter } from '../src/email/email.adapter';
@@ -817,6 +817,7 @@ describe('blogger blogs tests (e2e)', () => {
         const postFoundedById = await request(server)
           .get(`/posts/${post2.id}`)
           .expect(200);
+        console.log(postFoundedById.body, 'somepost');
 
         expect(postFoundedById.body).toEqual(post2);
       });
@@ -1209,7 +1210,7 @@ describe('blogger blogs tests (e2e)', () => {
           .set('Authorization', `Bearer `)
           .expect(401);
       });
-      it('should get all comments', async () => {
+      it('should get all comments fo current user', async () => {
         const response = await request(server)
           .get(url + `/comments`)
           .set('Authorization', `Bearer ${accessToken}`)

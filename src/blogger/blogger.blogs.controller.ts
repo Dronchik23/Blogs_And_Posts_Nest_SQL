@@ -23,7 +23,7 @@ import {
   PostUpdateModel,
   PostViewModel,
   UserViewModel,
-} from '../types and models/models';
+} from '../models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CreateBlogCommand } from '../use-cases/blogs/create-blog-use-case';
 import { CommandBus } from '@nestjs/cqrs';
@@ -72,7 +72,6 @@ export class BloggerBlogsController {
     @CurrentUserId() currentUserId,
   ) {
     return await this.commentsQueryRepository.findAllCommentsForBlogOwner(
-      query.searchLoginTerm,
       +query.pageSize,
       query.sortBy,
       query.sortDirection,

@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { DevicesRepository } from '../../devices/device.repository';
-import { DeviceDBType } from '../../types and models/types';
+import { DeviceDBType } from '../../types/types';
 import { DevicesQueryRepository } from '../../query-repositorys/devices-query.repository';
 import { TokensRepository } from '../../tokens/tokens.repository';
 import { UnauthorizedException } from '@nestjs/common';

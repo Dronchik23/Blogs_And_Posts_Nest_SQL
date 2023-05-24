@@ -14,7 +14,7 @@ import {
 import {
   BanBlogInputModel,
   BlogPaginationQueryModel,
-} from '../../types and models/models';
+} from '../../models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { CommandBus } from '@nestjs/cqrs';

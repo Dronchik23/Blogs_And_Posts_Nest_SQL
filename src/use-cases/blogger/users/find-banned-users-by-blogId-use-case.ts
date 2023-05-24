@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../../../query-repositorys/users-query.repository';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { BlogsQueryRepository } from '../../../query-repositorys/blogs-query.repository';
-import { BlogDBType, PaginationType } from '../../../types and models/types';
+import { BlogDBType, PaginationType } from '../../../types/types';
 
 export class findBannedUsersByBlogIdCommand {
   constructor(

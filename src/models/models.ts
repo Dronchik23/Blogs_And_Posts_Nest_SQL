@@ -4,7 +4,7 @@ import {
   LikeStatus,
   PostInfoType,
   UserBanInfoType,
-} from './types';
+} from '../types/types';
 import {
   IsBoolean,
   IsEnum,

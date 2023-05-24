@@ -2,12 +2,12 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersQueryRepository } from '../../../query-repositorys/users-query.repository';
 import { UsersRepository } from '../../../sa/users/users-repository';
 import { BlogsQueryRepository } from '../../../query-repositorys/blogs-query.repository';
-import { BlogDBType } from '../../../types and models/types';
+import { BlogDBType } from '../../../types/types';
 import { ForbiddenException } from '@nestjs/common';
 import {
   BloggerBanUserInputModel,
   UserViewModel,
-} from '../../../types and models/models';
+} from '../../../models/models';
 
 export class BanUserByUserIdByBloggerCommand {
   constructor(

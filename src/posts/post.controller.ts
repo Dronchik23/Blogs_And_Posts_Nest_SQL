@@ -20,7 +20,7 @@ import {
   PostPaginationQueryModel,
   PostViewModel,
   UserViewModel,
-} from '../types and models/models';
+} from '../models/models';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { CurrentUser, CurrentUserIdFromToken } from '../auth/decorators';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
@@ -30,7 +30,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-case';
 import { PostUpdateLikeStatusCommand } from '../use-cases/likes/post-update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
-import { PaginationType, UserDBType } from '../types and models/types';
+import { PaginationType, UserDBType } from '../types/types';
 
 @SkipThrottle()
 @Controller({ path: 'posts', scope: Scope.REQUEST })
@@ -123,15 +123,15 @@ export class PostsController {
   async getPostByPostId(
     @Param('postId') id: string,
     @CurrentUserIdFromToken() CurrentUserId: string | null,
-  ): Promise<any> {
+  ): Promise<PostViewModel> {
     const post = await this.postsQueryRepository.findPostByPostId(
       id,
       CurrentUserId,
     );
-
     if (!post) {
       throw new NotFoundException();
     }
+    return post;
   }
 
   @UseGuards(BearerAuthGuard)

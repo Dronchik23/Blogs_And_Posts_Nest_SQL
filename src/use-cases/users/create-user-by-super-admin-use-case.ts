@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import * as bcrypt from 'bcrypt';
 import { UsersRepository } from '../../sa/users/users-repository';
-import { UserInputModel, UserViewModel } from '../../types and models/models';
+import { UserInputModel, UserViewModel } from '../../models/models';
 
 export class CreateUserCommand {
   constructor(public createUserDTO: UserInputModel) {}

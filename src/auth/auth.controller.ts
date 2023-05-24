@@ -12,7 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { TokenType, UserDBType } from '../types and models/types';
+import { TokenType, UserDBType } from '../types/types';
 import { CustomJwtService } from '../jwt/jwt.service';
 import {
   CodeInputModel,
@@ -20,7 +20,7 @@ import {
   NewPasswordInputModel,
   RegistrationEmailResendingModel,
   UserInputModel,
-} from '../types and models/models';
+} from '../models/models';
 import { BearerAuthGuard } from './strategys/bearer-strategy';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ClientIp, CurrentUser, JwtPayload, UserAgent } from './decorators';

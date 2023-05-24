@@ -1,6 +1,6 @@
 import { BlogsRepository } from '../../blogs/blog.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { UserViewModel } from '../../types and models/models';
+import { UserViewModel } from '../../models/models';
 
 export class BindBlogToUserCommand {
   constructor(public blogId: string, public user: UserViewModel) {}
@@ -10,9 +10,7 @@ export class BindBlogToUserCommand {
 export class BindBlogToUserService
   implements ICommandHandler<BindBlogToUserCommand>
 {
-  constructor(
-    private readonly blogsRepository: BlogsRepository,
-  ) {}
+  constructor(private readonly blogsRepository: BlogsRepository) {}
 
   async execute(command: BindBlogToUserCommand): Promise<boolean> {
     return await this.blogsRepository.bindBlogToUser(

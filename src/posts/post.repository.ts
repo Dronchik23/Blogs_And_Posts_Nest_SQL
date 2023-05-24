@@ -1,23 +1,19 @@
-import { LikeStatus, PostDBType } from '../types and models/types';
 import {
   BlogPostInputModel,
   BlogViewModel,
   PostUpdateModel,
   PostViewModel,
-} from '../types and models/models';
-import { Injectable, NotFoundException } from '@nestjs/common';
+} from '../models/models';
+import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { Blogs } from '../entities/blogs.entity';
 import { Posts } from '../entities/posts.entity';
-import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 
 @Injectable()
 export class PostsRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Posts) private readonly postModel: Repository<Posts>,
-    private readonly postsQueryRepository: PostsQueryRepository,
   ) {}
 
   async createPost(
@@ -42,11 +38,11 @@ export class PostsRepository {
   }
 
   async deletePostByPostId(postId: string): Promise<boolean> {
-    const result = await this.postModel.delete(postId);
+    const result = await this.postModel.delete({ id: postId });
     return result.affected > 0;
   }
 
-  async deleteAllPosts(): Promise<any> {
-    return await this.dataSource.query(`DELETE FROM posts CASCADE;`);
+  async deleteAllPosts() {
+    return await this.postModel.delete({});
   }
 }

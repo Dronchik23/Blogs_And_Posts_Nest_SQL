@@ -3,7 +3,7 @@ import {
   BlogPostInputModel,
   BlogViewModel,
   PostViewModel,
-} from '../../types and models/models';
+} from '../../models/models';
 import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
 import { PostsRepository } from '../../posts/post.repository';
 

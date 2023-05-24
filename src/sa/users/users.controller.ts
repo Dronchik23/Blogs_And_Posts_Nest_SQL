@@ -17,14 +17,14 @@ import {
   UserInputModel,
   UserPaginationQueryModel,
   UserViewModel,
-} from '../../types and models/models';
+} from '../../models/models';
 import { BasicAuthGuard, LogGuard } from '../../auth/strategys/basic-strategy';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
 import { BanUserByUserIdBySACommand } from '../../use-cases/users/bun-user-by-userId-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
-import { PaginationType } from '../../types and models/types';
+import { PaginationType } from '../../types/types';
 import { CreateUserCommand } from '../../use-cases/users/create-user-by-super-admin-use-case';
 
 @SkipThrottle()
@@ -41,7 +41,6 @@ export class UsersController {
   async getAllUsers(
     @Query() query: UserPaginationQueryModel,
   ): Promise<PaginationType> {
-    debugger;
     const users = this.usersQueryRepository.getAllUsers(
       query.searchLoginTerm,
       query.searchEmailTerm,
@@ -66,7 +65,7 @@ export class UsersController {
 
   @UseGuards(BasicAuthGuard)
   @Post()
-  async createUser(
+  async createUserBySA(
     @Body() createUserDTO: UserInputModel,
   ): Promise<UserViewModel> {
     const user = await this.commandBus.execute(

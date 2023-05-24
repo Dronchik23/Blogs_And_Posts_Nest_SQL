@@ -1,7 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { LikeStatus } from '../../types and models/types';
 import { LikesRepository } from '../../likes/like.repository';
-import { LikeInputModel, UserViewModel } from '../../types and models/models';
+import { LikeInputModel, UserViewModel } from '../../models/models';
 
 export class PostUpdateLikeStatusCommand {
   constructor(

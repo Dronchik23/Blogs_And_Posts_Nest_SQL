@@ -1,5 +1,4 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { PostDBType } from '../../types and models/types';
 import { PostsRepository } from '../../posts/post.repository';
 
 export class DeletePostCommand {

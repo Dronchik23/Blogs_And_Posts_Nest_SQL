@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
-import { PostViewModel, UserInputModel } from '../src/types and models/models';
+import { PostViewModel, UserInputModel } from '../src/models/models';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 
@@ -207,7 +207,6 @@ describe('AppController (e2e)', () => {
       it('should get post by postId', async () => {
         const response = await request(server).get(postsUrl + `/${post.id}`);
 
-        console.log('response.body', response.body);
         expect(response.body).toEqual(post);
       });
       it('should return 404 for not existing post', async () => {

@@ -12,13 +12,13 @@ import {
 import {
   BloggerBanUserInputModel,
   UserPaginationQueryModel,
-} from '../types and models/models';
+} from '../models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { BanUserByUserIdByBloggerCommand } from '../use-cases/blogger/users/ban-user-by-userId-by-blogger-use-case';
 import { findBannedUsersByBlogIdCommand } from '../use-cases/blogger/users/find-banned-users-by-blogId-use-case';
-import { PaginationType } from '../types and models/types';
+import { PaginationType } from '../types/types';
 import { CurrentUserId } from '../auth/decorators';
 
 @SkipThrottle()

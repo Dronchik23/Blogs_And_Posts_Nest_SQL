@@ -1,21 +1,14 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Blogs } from './blogs.entity';
-import { Users } from './users.entity';
 import { Comments } from './comments.entity';
 import { Likes } from './likes.entity';
-import {
-  BlogInputModel,
-  BlogPostInputModel,
-  BlogViewModel,
-} from '../types and models/models';
-import { LikeStatus, NewestLikesType } from '../types and models/types';
+import { BlogPostInputModel, BlogViewModel } from '../models/models';
+import { LikeStatus } from '../types/types';
 
 @Entity()
 export class Posts {

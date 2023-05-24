@@ -18,7 +18,7 @@ import {
   CommentViewModel,
   LikeInputModel,
   UserViewModel,
-} from '../types and models/models';
+} from '../models/models';
 import {
   CurrentUser,
   CurrentUserId,
@@ -28,7 +28,6 @@ import { CommentsQueryRepository } from '../query-repositorys/comments-query.rep
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteCommentCommand } from '../use-cases/comments/delete-comment-by-commentId-use-case';
 import { UpdateCommentCommand } from '../use-cases/comments/update -comment-by-commentId-and-userId-use-case';
-import { PostUpdateLikeStatusCommand } from '../use-cases/likes/post-update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommentUpdateLikeStatusCommand } from '../use-cases/likes/comment-update-like-status-use-case';
 

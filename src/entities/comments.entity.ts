@@ -1,23 +1,18 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Users } from './users.entity';
-import { Blogs } from './blogs.entity';
 import { Posts } from './posts.entity';
 import { Likes } from './likes.entity';
-import { LikeStatus } from '../types and models/types';
+import { LikeStatus } from '../types/types';
 import {
-  BlogPostInputModel,
-  BlogViewModel,
   CommentInputModel,
   PostViewModel,
   UserViewModel,
-} from '../types and models/models';
+} from '../models/models';
 
 @Entity()
 export class Comments {

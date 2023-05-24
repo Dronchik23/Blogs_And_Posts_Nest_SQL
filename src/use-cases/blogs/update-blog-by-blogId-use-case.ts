@@ -1,9 +1,6 @@
-import { BlogDBType } from '../../types and models/types';
 import { BlogsRepository } from '../../blogs/blog.repository';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { BlogsQueryRepository } from '../../query-repositorys/blogs-query.repository';
-import { ForbiddenException } from '@nestjs/common';
-import { BlogUpdateModel } from '../../types and models/models';
+import { BlogUpdateModel } from '../../models/models';
 
 export class UpdateBlogCommand {
   constructor(public blogId: string, public updateBlogDto: BlogUpdateModel) {}

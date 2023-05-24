@@ -2,7 +2,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 import { UsersRepository } from '../../sa/users/users-repository';
-import { UserInputModel, UserViewModel } from '../../types and models/models';
+import { UserInputModel, UserViewModel } from '../../models/models';
 import { EmailService } from '../../email/email.service';
 
 export class RegistrationUserCommand {

@@ -1,11 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import {
-  LikeInputModel,
-  LikeViewModel,
-  UserViewModel,
-} from '../types and models/models';
+import { LikeInputModel, LikeViewModel, UserViewModel } from '../models/models';
 import { Likes } from '../entities/likes.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -23,21 +19,24 @@ export class LikesRepository {
     user: UserViewModel,
     likeStatusDTO: LikeInputModel,
   ): Promise<LikeViewModel> {
-    debugger;
     const existingLike = await this.likeModel.find({
       where: [{ postId: postId, userId: user.id }],
     });
     if (existingLike.length > 0) {
       const like = existingLike[0];
-      console.log('like', like);
+
       like.status = likeStatusDTO.likeStatus;
       like.addedAt = new Date().toISOString();
       like.login = user.login;
+
       const updatedLike = await this.likeModel.save(like);
+
       return updatedLike;
     } else {
       const newLike = Likes.createPostLike(postId, user, likeStatusDTO);
+
       const createdLike = await this.likeModel.save(newLike);
+
       return createdLike;
     }
   }
@@ -52,18 +51,22 @@ export class LikesRepository {
 
     if (existingLike.length) {
       const like = existingLike[0];
+
       like.status = likeStatusDTO.likeStatus;
       like.addedAt = new Date().toISOString();
       like.login = user.login;
+
       return like;
     } else {
       const newLike = Likes.createCommentLike(commentId, user, likeStatusDTO);
+
       const createdLike = await this.likeModel.save(newLike);
+
       return createdLike;
     }
   }
 
   async deleteAllLikes() {
-    return await this.dataSource.query(`DELETE FROM likes CASCADE;`);
+    return await this.likeModel.delete({});
   }
 }
