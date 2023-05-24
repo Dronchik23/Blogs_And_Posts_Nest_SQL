@@ -223,7 +223,7 @@ export class CommentsQueryRepository {
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
-      if (user[0].isBanned === true) {
+      if (user.isBanned === true) {
         comment.myStatus = LikeStatus.None;
       } else {
         const result = await this.dataSource

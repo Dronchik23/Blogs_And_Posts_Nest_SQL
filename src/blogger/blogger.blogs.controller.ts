@@ -179,6 +179,7 @@ export class BloggerBlogsController {
     @Param('postId') postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<boolean> {
+    debugger;
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();
@@ -188,22 +189,21 @@ export class BloggerBlogsController {
         blogId,
         currentUserId,
       );
-
+    if (!blogOwner) {
+      throw new ForbiddenException();
+    }
     const post: PostViewModel =
       await this.postsQueryRepository.findPostByPostId(postId);
 
     if (post.blogId !== blogId) {
       throw new ForbiddenException();
     }
-
     if (!post) {
       throw new NotFoundException();
     }
-
     const isDeleted = await this.commandBus.execute(
       new DeletePostCommand(postId),
     );
-
     if (isDeleted) {
       return true;
     } else {
