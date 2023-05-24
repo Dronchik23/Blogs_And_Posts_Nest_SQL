@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 import { DeviceViewModel } from '../models/models';
 import { Devices } from '../entities/devices.entity';
 
@@ -10,9 +10,7 @@ export class DevicesRepository {
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Devices)
     private readonly deviceModel: Repository<Devices>,
-  ) {
-    return;
-  }
+  ) {}
 
   async createDevice(
     ip: string,
@@ -28,19 +26,21 @@ export class DevicesRepository {
       deviceId,
       userId,
     );
+
     const createdDevice = await this.deviceModel.save(newDevice);
+
     return new DeviceViewModel(createdDevice);
   }
 
   async deleteAllDevicesExcludeCurrent(userId: string, deviceId: string) {
-    await this.dataSource.query(
-      `DELETE FROM devices WHERE "userId" = $1 AND "deviceId" != $2;`,
-      [userId, deviceId],
-    );
+    const result = await this.deviceModel.delete({
+      deviceId: Not(deviceId),
+      userId: userId,
+    });
+    return result.affected > 0;
   }
 
   async deleteDeviceByDeviceId(deviceId: string) {
-    debugger;
     const result = await this.deviceModel.delete({ deviceId: deviceId });
 
     return result.affected > 0;
@@ -64,14 +64,15 @@ export class DevicesRepository {
     userId: string,
     lastActiveDate: string,
   ): Promise<any> {
-    const result = await this.dataSource.query(
-      `DELETE FROM devices WHERE "deviceId" = $1 AND "userId" = $2 AND "lastActiveDate" = $3 ;`,
-      [deviceId, userId, lastActiveDate],
-    );
-    return result[1];
+    const result = await this.deviceModel.delete({
+      deviceId: deviceId,
+      userId: userId,
+      lastActiveDate: lastActiveDate,
+    });
+    return result.affected > 0;
   }
 
   async deleteAllDevices() {
-    return await this.dataSource.query(`DELETE FROM devices CASCADE;`);
+    return await this.deviceModel.delete({});
   }
 }

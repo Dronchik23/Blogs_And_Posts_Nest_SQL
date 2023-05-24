@@ -51,14 +51,15 @@ export class DevicesQueryRepository {
     const result: DeviceDBType = await this.deviceModel.findOneBy({
       deviceId: deviceId,
     });
-
-    const device = new DeviceDBType(
-      result.ip,
-      result.title,
-      result.lastActiveDate,
-      result.deviceId,
-      result.userId,
-    );
-    return device;
+    if (result) {
+      const device = new DeviceDBType(
+        result.ip,
+        result.title,
+        result.lastActiveDate,
+        result.deviceId,
+        result.userId,
+      );
+      return device;
+    }
   }
 }
