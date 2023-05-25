@@ -74,7 +74,7 @@ export class SABlogsController {
     @Body() banBlogDTO: BanBlogInputModel,
   ): Promise<boolean> {
     return await this.commandBus.execute(
-      new BanBlogByBlogIdCommand(blogId, banBlogDTO.isBanned),
+      new BanBlogByBlogIdCommand(blogId, banBlogDTO),
     );
   }
 }

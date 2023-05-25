@@ -1,5 +1,6 @@
 import { Injectable, Scope } from '@nestjs/common';
 import {
+  BanBlogInputModel,
   BlogInputModel,
   BlogUpdateModel,
   BlogViewModel,
@@ -53,16 +54,16 @@ export class BlogsRepository {
 
   async changeBanStatusForBlog(
     blogId: string,
-    isBanned: boolean,
+    banBlogDTO: BanBlogInputModel,
     banDate: string,
   ) {
-    if (isBanned === false) {
+    if (banBlogDTO.isBanned === false) {
       banDate = null;
     } // if user unbanned - clear banDate
-    const result = await this.dataSource.query(
-      `UPDATE blogs SET "isBanned" = $1, "banDate" = $2 WHERE id = $3;`,
-      [isBanned, banDate, blogId],
-    );
-    return result.affectedRows > 0;
+    const result = await this.blogModel.update(blogId, {
+      isBanned: banBlogDTO.isBanned,
+      banDate: banDate,
+    });
+    return result.affected > 0;
   }
 }
