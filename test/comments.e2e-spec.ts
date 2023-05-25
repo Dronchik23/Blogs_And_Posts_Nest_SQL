@@ -349,12 +349,12 @@ describe('comments tests (e2e)', () => {
         comment = responseForComment.body;
         expect(comment).toBeDefined();
       });
-      it.skip('should not comment not existing post', async () => {
+      it('should not comment not existing post', async () => {
         await request(server)
           .get(`/comments/` + 100 + `/like-status`)
           .expect(404);
       });
-      it.skip('should not like post with incorrect input data', async () => {
+      it('should not like post with incorrect input data', async () => {
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -373,7 +373,7 @@ describe('comments tests (e2e)', () => {
             ...comment,
           });
       });
-      it.skip('should not like comment with incorrect authorization data', async () => {
+      it('should not like comment with incorrect authorization data', async () => {
         await request(server)
           .put(`/comments/${comment.id}/like-status`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -399,8 +399,6 @@ describe('comments tests (e2e)', () => {
           .get(`/comments/${comment.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
-
-        console.log(commentFoundedById.body, 'commentik');
 
         expect(commentFoundedById.body.likesInfo.myStatus).toEqual('Like');
         expect(commentFoundedById.body.likesInfo.likesCount).toEqual(1);

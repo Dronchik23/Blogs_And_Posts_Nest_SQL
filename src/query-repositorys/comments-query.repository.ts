@@ -1,6 +1,7 @@
 import {
   BlogDBType,
   CommentDBType,
+  LikeDBType,
   LikeStatus,
   PaginationType,
   PostDBType,
@@ -98,21 +99,23 @@ export class CommentsQueryRepository {
     sortDirection: string,
     userId?: string,
   ): Promise<PaginationType> {
-    const queryBuilder = await this.dataSource
-      .createQueryBuilder()
-      .select('*')
-      .from(Comments, 'comments')
+    const builder = await this.commentModel
+      .createQueryBuilder('comments')
       .where('comments."postId" = :postId', { postId })
       .andWhere(
-        '"userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
+        'comments."blogId" NOT IN (SELECT id FROM blogs WHERE "isBanned" = true)',
+      );
+
+    const comments: CommentDBType[] = await builder
+      .orderBy(
+        `comments.${sortBy}`,
+        sortDirection.toUpperCase() as SortDirection,
       )
-      .orderBy(`posts.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
       .take(pageSize)
-      .skip((pageNumber - 1) * pageSize);
+      .skip((pageNumber - 1) * pageSize)
+      .getMany();
 
-    const totalCount = await queryBuilder.getCount();
-
-    const comments: CommentDBType[] = await queryBuilder.getMany();
+    const totalCount = await builder.getCount();
 
     const commentsWithLikesInfo = await Promise.all(
       comments.map(async (comment) => {
@@ -219,6 +222,8 @@ export class CommentsQueryRepository {
 
     comment.dislikesCount = +dislikesCountResult.dislikesCount;
 
+    comment.myStatus = LikeStatus.None; // default status
+
     if (userId) {
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
@@ -226,7 +231,7 @@ export class CommentsQueryRepository {
       if (user.isBanned === true) {
         comment.myStatus = LikeStatus.None;
       } else {
-        const result = await this.dataSource
+        const result: LikeDBType[] = await this.dataSource
           .createQueryBuilder()
           .select('likes.status', 'status')
           .from(Likes, 'likes')
@@ -237,19 +242,18 @@ export class CommentsQueryRepository {
           .execute();
 
         if (result.length > 0) {
-          if (result[0].status === 'Like') {
-            comment.myStatus = LikeStatus.Like;
-          } else if (result[0].status === 'Dislike') {
-            comment.myStatus = LikeStatus.Dislike;
-          } else {
-            comment.myStatus = LikeStatus.None;
+          switch (result[0].status) {
+            case 'Like':
+              comment.myStatus = LikeStatus.Like;
+              break;
+            case 'Dislike':
+              comment.myStatus = LikeStatus.Dislike;
+              break;
           }
         } else {
           comment.myStatus = LikeStatus.None;
         }
       }
-    } else {
-      comment.myStatus = LikeStatus.None;
     }
 
     return {
@@ -269,7 +273,6 @@ export class CommentsQueryRepository {
     pageNumber: number,
     userId: string,
   ): Promise<PaginationType> {
-    debugger;
     const blogs: BlogDBType[] = await this.dataSource
       .createQueryBuilder()
       .select('*')

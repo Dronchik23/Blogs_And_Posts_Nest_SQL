@@ -48,7 +48,7 @@ export class LikesRepository {
     const existingLike = await this.likeModel.find({
       where: [{ commentId: commentId, userId: user.id }],
     });
-
+    debugger;
     if (existingLike.length) {
       const like = existingLike[0];
 
@@ -56,13 +56,11 @@ export class LikesRepository {
       like.addedAt = new Date().toISOString();
       like.login = user.login;
 
-      return like;
+      return await this.likeModel.save(like);
     } else {
       const newLike = Likes.createCommentLike(commentId, user, likeStatusDTO);
 
-      const createdLike = await this.likeModel.save(newLike);
-
-      return createdLike;
+      return await this.likeModel.save(newLike);
     }
   }
 

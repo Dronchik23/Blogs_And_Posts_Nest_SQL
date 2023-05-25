@@ -1,4 +1,5 @@
 import {
+  LikeDBType,
   LikeStatus,
   NewestLikesType,
   PaginationType,
@@ -117,7 +118,7 @@ export class PostsQueryRepository {
   ) {
     const builder = await this.postModel
       .createQueryBuilder('posts')
-      .where('posts."blogId = :blogId', { blogId })
+      .where('posts."blogId" = :blogId', { blogId })
       .orderBy(`posts.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
       .take(pageSize)
       .skip((pageNumber - 1) * pageSize);
@@ -194,14 +195,16 @@ export class PostsQueryRepository {
       .setParameter('status', 'Like')
       .getRawMany();
 
+    post.myStatus = LikeStatus.None; // default status
+
     if (userId) {
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
-      if (user[0].isBanned === true) {
+      if (user.isBanned === true) {
         post.myStatus = LikeStatus.None;
       } else {
-        const result = await this.dataSource
+        const result: LikeDBType[] = await this.dataSource
           .createQueryBuilder()
           .select('likes.status', 'status')
           .from(Likes, 'likes')
@@ -212,19 +215,18 @@ export class PostsQueryRepository {
           .execute();
 
         if (result.length > 0) {
-          if (result[0].status === 'Like') {
-            post.myStatus = LikeStatus.Like;
-          } else if (result[0].status === 'Dislike') {
-            post.myStatus = LikeStatus.Dislike;
-          } else {
-            post.myStatus = LikeStatus.None;
+          switch (result[0].status) {
+            case 'Like':
+              post.myStatus = LikeStatus.Like;
+              break;
+            case 'Dislike':
+              post.myStatus = LikeStatus.Dislike;
+              break;
           }
         } else {
           post.myStatus = LikeStatus.None;
         }
       }
-    } else {
-      post.myStatus = LikeStatus.None;
     }
 
     return {

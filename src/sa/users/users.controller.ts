@@ -95,7 +95,6 @@ export class UsersController {
     @Param('userId') userId: string,
     @Body() banUserDTO: BanUserInputModel,
   ): Promise<boolean> {
-    debugger;
     return await this.commandBus.execute(
       new BanUserByUserIdBySACommand(userId, banUserDTO),
     );
