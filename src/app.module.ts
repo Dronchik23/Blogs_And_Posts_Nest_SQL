@@ -210,10 +210,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     ...useCases,
     ...queryRepos,
     ...repositories,
-    {
+    /*    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    },
+    },*/
   ],
 })
 export class AppModule {}
