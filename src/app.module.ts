@@ -149,10 +149,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    ThrottlerModule.forRoot({
+    /*   ThrottlerModule.forRoot({
       ttl: 10,
       limit: 5,
-    }),
+    }),*/
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'db.thin.dev',
