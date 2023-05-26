@@ -76,7 +76,7 @@ export class BlogsQueryRepository {
       );
 
     if (searchNameTerm) {
-      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+      builder.andWhere('blogs.name LIKE :searchNameTerm', {
         searchNameTerm: `%${searchNameTerm}%`,
       });
     }
@@ -117,7 +117,7 @@ export class BlogsQueryRepository {
       .andWhere('NOT blogs."isBanned"');
 
     if (searchNameTerm) {
-      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+      builder.andWhere('blogs.name LIKE :searchNameTerm', {
         searchNameTerm: `%${searchNameTerm}%`,
       });
     }
@@ -185,7 +185,7 @@ export class BlogsQueryRepository {
     const builder = await this.blogModel.createQueryBuilder('blogs');
 
     if (searchNameTerm) {
-      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+      builder.andWhere('blogs.name LIKE :searchNameTerm', {
         searchNameTerm: `%${searchNameTerm}%`,
       });
     }
