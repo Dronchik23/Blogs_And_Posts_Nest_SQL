@@ -117,8 +117,9 @@ export class BlogsQueryRepository {
       .andWhere('NOT blogs."isBanned"');
 
     if (searchNameTerm) {
-      builder.andWhere('blogs.name LIKE :searchNameTerm', {
-        searchNameTerm: `%${searchNameTerm}%`,
+      const searchNameTermUpper = searchNameTerm.toUpperCase();
+      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+        searchNameTerm: `%${searchNameTermUpper}%`,
       });
     }
 
@@ -185,8 +186,9 @@ export class BlogsQueryRepository {
     const builder = await this.blogModel.createQueryBuilder('blogs');
 
     if (searchNameTerm) {
-      builder.andWhere('blogs.name LIKE :searchNameTerm', {
-        searchNameTerm: `%${searchNameTerm}%`,
+      const searchNameTermUpper = searchNameTerm.toUpperCase();
+      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
+        searchNameTerm: `%${searchNameTermUpper}%`,
       });
     }
 
