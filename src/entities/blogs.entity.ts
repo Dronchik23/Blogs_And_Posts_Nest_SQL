@@ -14,7 +14,7 @@ export class Blogs {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ collation: 'C' })
+  @Column({ collation: 'с' })
   name: string;
 
   @Column()

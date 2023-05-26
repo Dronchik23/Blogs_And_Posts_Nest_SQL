@@ -124,7 +124,10 @@ export class BlogsQueryRepository {
     }
 
     const blogs: BlogDBType[] = await builder
-      .orderBy(`blogs.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .orderBy(
+        `blogs.${sortBy} COLLATE "С"`,
+        sortDirection.toUpperCase() as SortDirection,
+      )
       .skip((pageNumber - 1) * pageSize)
       .take(pageSize)
       .getMany();
