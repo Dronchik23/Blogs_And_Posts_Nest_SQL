@@ -39,7 +39,7 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: [],
+        newestLikes: post.newestLikes,
       },
     }));
   };

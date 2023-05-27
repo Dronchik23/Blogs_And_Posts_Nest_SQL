@@ -74,7 +74,8 @@ export class PostDBType {
     public createdAt: string,
     public likesCount: number = 0,
     public dislikesCount: number = 0,
-    public myStatus: LikeStatus = LikeStatus.None, //public newestLikes: NewestLikesType[],
+    public myStatus: LikeStatus = LikeStatus.None,
+    public newestLikes?: NewestLikesType[],
   ) {}
 }
 export class CommentDBType {
