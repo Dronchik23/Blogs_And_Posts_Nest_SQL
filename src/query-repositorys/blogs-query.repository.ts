@@ -82,7 +82,10 @@ export class BlogsQueryRepository {
     }
 
     const blogs: BlogDBType[] = await builder
-      .orderBy(`blogs.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .orderBy(
+        `blogs.${sortBy} COLLATE "C"`,
+        sortDirection.toUpperCase() as SortDirection,
+      )
       .skip((pageNumber - 1) * pageSize)
       .take(pageSize)
       .getMany();
@@ -124,7 +127,10 @@ export class BlogsQueryRepository {
     }
 
     const blogs: BlogDBType[] = await builder
-      .orderBy(`blogs.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .orderBy(
+        `blogs.${sortBy} COLLATE "C"`,
+        sortDirection.toUpperCase() as SortDirection,
+      )
       .skip((pageNumber - 1) * pageSize)
       .take(pageSize)
       .getMany();
@@ -193,7 +199,10 @@ export class BlogsQueryRepository {
     }
 
     const blogs: BlogDBType[] = await builder
-      .orderBy(`blogs.${sortBy}`, sortDirection.toUpperCase() as SortDirection)
+      .orderBy(
+        `blogs.${sortBy} COLLATE "C"`,
+        sortDirection.toUpperCase() as SortDirection,
+      )
       .skip((pageNumber - 1) * pageSize)
       .take(pageSize)
       .getMany();
