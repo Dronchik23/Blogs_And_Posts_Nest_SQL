@@ -27,6 +27,7 @@ export class PostsQueryRepository {
   private fromPostDBTypeToPostViewModelWithPagination = (
     posts: PostDBType[],
   ): PostViewModel[] => {
+    debugger;
     return posts.map((post) => ({
       id: post.id,
       title: post.title,
@@ -39,7 +40,7 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: post.newestLikes,
+        newestLikes: post.extendedLikesInfo?.newestLikes ?? [],
       },
     }));
   };
@@ -101,7 +102,6 @@ export class PostsQueryRepository {
       const post = new PostViewModel(result);
 
       const a = await this.getLikesInfoForPost(post, userId);
-      console.log(a, 'postimus');
       return a;
 
       //return new PostViewModel(postWithLikesInfo);
@@ -127,12 +127,14 @@ export class PostsQueryRepository {
 
     const totalCount = await builder.getCount();
 
-    const posts: PostDBType[] = await builder.getMany();
-
+    const posts = await builder.getMany();
+    debugger;
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
     }
-    const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
+    console.log(posts, 'posts');
+    const mappedPosts: PostViewModel[] =
+      this.fromPostDBTypeToPostViewModelWithPagination(posts);
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
@@ -144,7 +146,6 @@ export class PostsQueryRepository {
   }
 
   private async getLikesInfoForPost(post: any, userId?: string) {
-    debugger;
     const likesCountResult = await this.dataSource
       .createQueryBuilder()
       .select('COUNT(*)', 'likesCount')
@@ -183,7 +184,7 @@ export class PostsQueryRepository {
 
     post.dislikesCount = +dislikesCountResult.dislikesCount;
 
-    const newestLikes = await this.likeModel
+    const newestLikes: LikeDBType[] = await this.likeModel
       .createQueryBuilder('likes')
       .where('likes."postId" = :postId', { postId: post.id })
       .andWhere('likes.status = :status', { status: LikeStatus.Like })
@@ -240,7 +241,7 @@ export class PostsQueryRepository {
         likesCount: post.likesCount,
         dislikesCount: post.dislikesCount,
         myStatus: post.myStatus,
-        newestLikes: newestLikes,
+        newestLikes: newestLikes || [],
       },
     };
   }

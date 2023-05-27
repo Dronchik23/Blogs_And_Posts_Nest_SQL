@@ -204,7 +204,6 @@ describe('blogs test (e2e)', () => {
           });
 
         post = responseForPost.body;
-        console.log('post', post);
         expect(post).toBeDefined();
       });
       it('should return 404 for not existing post', async () => {

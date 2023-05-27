@@ -47,7 +47,6 @@ export class BlogsController {
     @Query() query: PostPaginationQueryModel,
     @CurrentUserIdFromToken() currentUserId: string | null,
   ): Promise<PaginationType> {
-    debugger;
     const blog: BlogViewModel =
       await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
