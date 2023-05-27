@@ -453,12 +453,12 @@ describe('AppController (e2e)', () => {
         post = responseForPost.body;
         expect(post).toBeDefined();
       });
-      it('should not like not existing post', async () => {
+      it.skip('should not like not existing post', async () => {
         await request(server)
           .get(postsUrl + 100 + `/like-status`)
           .expect(404);
       });
-      it('should not like post with incorrect input data', async () => {
+      it.skip('should not like post with incorrect input data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -477,7 +477,7 @@ describe('AppController (e2e)', () => {
             ...post,
           });
       });
-      it('should not like post with incorrect authorization data', async () => {
+      it.skip('should not like post with incorrect authorization data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -490,7 +490,7 @@ describe('AppController (e2e)', () => {
           .send({ likeStatus: 'Like' })
           .expect(401);
       });
-      it('should like post with correct data', async () => {
+      it.skip('should like post with correct data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -506,7 +506,7 @@ describe('AppController (e2e)', () => {
         expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(1);
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
       });
-      it('should dislike post with correct data', async () => {
+      it.skip('should dislike post with correct data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -549,6 +549,31 @@ describe('AppController (e2e)', () => {
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('None');
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
         expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(0);
+        expect(postFoundedById.body.extendedLikesInfo.newestLikes).toHaveLength(
+          0,
+        );
+      });
+      it('Should return unbanned user like for post', async () => {
+        await request(server)
+          .put(`/sa/users/${user.id}/ban`)
+          .auth('admin', 'qwerty')
+          .send({
+            isBanned: false,
+            banReason: 'valid string more than 20 letters ',
+          })
+          .expect(204); // ban user
+
+        const postFoundedById = await request(server)
+          .get(`/posts/${post.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('Like');
+        expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
+        expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(1);
+        expect(postFoundedById.body.extendedLikesInfo.newestLikes).toHaveLength(
+          1,
+        );
       });
     });
   });

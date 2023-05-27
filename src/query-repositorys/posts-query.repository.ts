@@ -1,14 +1,13 @@
 import {
   LikeDBType,
   LikeStatus,
-  NewestLikesType,
   PaginationType,
   PostDBType,
   SortDirection,
   UserDBType,
 } from '../types/types';
 import { PostViewModel } from '../models/models';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -21,6 +20,7 @@ export class PostsQueryRepository {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Posts) private readonly postModel: Repository<Posts>,
+    @InjectRepository(Likes) private readonly likeModel: Repository<Likes>,
     private readonly usersQueryRepo: UsersQueryRepository,
   ) {}
 
@@ -142,6 +142,7 @@ export class PostsQueryRepository {
   }
 
   private async getLikesInfoForPost(post: any, userId?: string) {
+    debugger;
     const likesCountResult = await this.dataSource
       .createQueryBuilder()
       .select('COUNT(*)', 'likesCount')
@@ -180,20 +181,22 @@ export class PostsQueryRepository {
 
     post.dislikesCount = +dislikesCountResult.dislikesCount;
 
-    const newestLikes: NewestLikesType[] = await this.dataSource
-      .createQueryBuilder()
-      .select('*')
-      .from(Likes, 'likes')
-      .where('"postId" = :postId')
-      .andWhere('status = :status')
-      .andWhere(
-        '"userId" NOT IN (SELECT id FROM users WHERE "isBanned" = true)',
-      )
-      .orderBy('"addedAt"', 'DESC')
+    const newestLikes = await this.likeModel
+      .createQueryBuilder('likes')
+      .where('likes."postId" = :postId', { postId: post.id })
+      .andWhere('likes.status = :status', { status: LikeStatus.Like })
+      .andWhere((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('id')
+          .from(Users, 'users')
+          .where('users."isBanned" = true')
+          .getQuery();
+        return `"userId" NOT IN ${subQuery}`;
+      })
+      .orderBy('likes."addedAt"', 'DESC')
       .limit(3)
-      .setParameter('postId', post.id)
-      .setParameter('status', 'Like')
-      .getRawMany();
+      .getMany();
 
     post.myStatus = LikeStatus.None; // default status
 

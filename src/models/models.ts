@@ -62,7 +62,7 @@ export class UserPaginationQueryModel extends DefaultPaginationData {
     if (value === 'all') return null;
     return null;
   })
-  banStatus: string = null;
+  banStatus: string | boolean = null;
 }
 export class BlogPaginationQueryModel extends DefaultPaginationData {
   @IsOptional()
@@ -139,7 +139,7 @@ export class PostViewModel {
   blogName: string;
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
-  constructor(postFromDB: Posts) {
+  constructor(postFromDB: any) {
     this.id = postFromDB.id;
     this.title = postFromDB.title;
     this.shortDescription = postFromDB.shortDescription;
@@ -147,12 +147,7 @@ export class PostViewModel {
     this.blogName = postFromDB.blogName;
     this.blogId = postFromDB.blogId;
     this.createdAt = postFromDB.createdAt;
-    this.extendedLikesInfo = {
-      likesCount: postFromDB.likesCount,
-      dislikesCount: postFromDB.dislikesCount,
-      myStatus: postFromDB.myStatus,
-      newestLikes: [],
-    };
+    this.extendedLikesInfo = postFromDB.extendedLikesInfo;
   }
 }
 export class UserViewModel {

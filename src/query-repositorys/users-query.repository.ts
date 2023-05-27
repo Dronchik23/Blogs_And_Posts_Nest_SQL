@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { PaginationType, SortDirection, UserDBType } from '../types/types';
+import {
+  BanStatus,
+  PaginationType,
+  SortDirection,
+  UserDBType,
+} from '../types/types';
 import { UserViewModel } from '../models/models';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -65,8 +70,9 @@ export class UsersQueryRepository {
     sortBy: string,
     sortDirection: string,
     pageNumber: number,
-    banStatus: string,
+    banStatus: string | boolean,
   ): Promise<PaginationType> {
+    debugger;
     const builder = await this.dataSource
       .createQueryBuilder()
       .select('*')
@@ -78,14 +84,14 @@ export class UsersQueryRepository {
       });
     }
     if (searchEmailTerm) {
-      builder.andWhere('users.login ILIKE :searchEmailTerm', {
+      builder.andWhere('users.email ILIKE :searchEmailTerm', {
         searchEmailTerm: `%${searchEmailTerm}%`,
       });
     }
-    if (banStatus === 'banned') {
+    if (banStatus === true) {
       builder.andWhere('users."isBanned" = true');
     }
-    if (banStatus === 'notBanned') {
+    if (banStatus === 'false') {
       builder.andWhere('users."isBanned" = false');
     }
 

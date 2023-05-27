@@ -155,14 +155,16 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     }),*/
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'db.thin.dev',
+      /*host: 'db.thin.dev',
       port: 5432,
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
-      database: '01effe61-c4d3-4a9c-8886-812fcda96076',
+      database: '01effe61-c4d3-4a9c-8886-812fcda96076',*/
+      url: 'postgres://Dronchik23:LNDFEJKac6Q9@ep-plain-dew-291409.us-east-2.aws.neon.tech/fuckingBD',
       autoLoadEntities: true,
       //logging: true,
       synchronize: true,
+      ssl: true,
     }),
     TypeOrmModule.forFeature([Users, Blogs, Posts, Comments, Likes, Devices]),
     UsersModule,
