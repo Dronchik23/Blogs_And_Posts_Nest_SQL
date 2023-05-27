@@ -100,9 +100,11 @@ export class PostsQueryRepository {
 
       const post = new PostViewModel(result);
 
-      const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
+      const a = await this.getLikesInfoForPost(post, userId);
+      console.log(a, 'postimus');
+      return a;
 
-      return new PostViewModel(postWithLikesInfo);
+      //return new PostViewModel(postWithLikesInfo);
     } catch (e) {
       throw new NotFoundException();
     }

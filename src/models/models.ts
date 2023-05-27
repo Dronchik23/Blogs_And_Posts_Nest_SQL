@@ -147,7 +147,12 @@ export class PostViewModel {
     this.blogName = postFromDB.blogName;
     this.blogId = postFromDB.blogId;
     this.createdAt = postFromDB.createdAt;
-    this.extendedLikesInfo = postFromDB.extendedLikesInfo;
+    this.extendedLikesInfo = {
+      likesCount: postFromDB.likesCount,
+      dislikesCount: postFromDB.dislikesCount,
+      myStatus: postFromDB.myStatus,
+      newestLikes: postFromDB.newestLikes,
+    };
   }
 }
 export class UserViewModel {

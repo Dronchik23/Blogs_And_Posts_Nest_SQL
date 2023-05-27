@@ -62,6 +62,7 @@ export class BlogDBType {
     public banDate: string | null,
   ) {}
 }
+
 export class PostDBType {
   constructor(
     public id: string,
