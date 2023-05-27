@@ -223,6 +223,7 @@ describe('blogs test (e2e)', () => {
             expect(totalCount).toBe(1);
             expect(items).toHaveLength(1);
             expect(items[0].id).toBe(post.id);
+            expect(items[0].extendedLikesInfo.newestLikes).toBeDefined();
           });
       });
     });

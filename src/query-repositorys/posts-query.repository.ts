@@ -7,7 +7,7 @@ import {
   UserDBType,
 } from '../types/types';
 import { PostViewModel } from '../models/models';
-import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { UsersQueryRepository } from './users-query.repository';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
@@ -27,22 +27,18 @@ export class PostsQueryRepository {
   private fromPostDBTypeToPostViewModelWithPagination = (
     posts: PostDBType[],
   ): PostViewModel[] => {
-    debugger;
-    return posts.map((post) => ({
-      id: post.id,
-      title: post.title,
-      shortDescription: post.shortDescription,
-      content: post.content,
-      blogId: post.blogId,
-      blogName: post.blogName,
-      createdAt: post.createdAt,
-      extendedLikesInfo: {
-        likesCount: post.likesCount,
-        dislikesCount: post.dislikesCount,
-        myStatus: post.myStatus,
-        newestLikes: post.extendedLikesInfo?.newestLikes ?? [],
-      },
-    }));
+    return posts.map((post) => {
+      return {
+        id: post.id,
+        title: post.title,
+        shortDescription: post.shortDescription,
+        content: post.content,
+        blogId: post.blogId,
+        blogName: post.blogName,
+        createdAt: post.createdAt,
+        extendedLikesInfo: post.extendedLikesInfo,
+      };
+    });
   };
 
   async findAllPosts(
@@ -63,7 +59,7 @@ export class PostsQueryRepository {
 
     const totalCount = await queryBuilder.getCount();
 
-    const posts: PostDBType[] = await queryBuilder.getMany();
+    const posts: Posts[] = await queryBuilder.getMany();
 
     for (const post of posts) {
       await this.getLikesInfoForPost(post, userId);
@@ -99,12 +95,11 @@ export class PostsQueryRepository {
         throw new NotFoundException();
       }
 
-      const post = new PostViewModel(result);
+      const post: any = new PostViewModel(result);
 
-      const a = await this.getLikesInfoForPost(post, userId);
-      return a;
+      const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
 
-      //return new PostViewModel(postWithLikesInfo);
+      return new PostViewModel(postWithLikesInfo);
     } catch (e) {
       throw new NotFoundException();
     }
@@ -128,13 +123,15 @@ export class PostsQueryRepository {
     const totalCount = await builder.getCount();
 
     const posts = await builder.getMany();
-    debugger;
-    for (const post of posts) {
-      await this.getLikesInfoForPost(post, userId);
-    }
-    console.log(posts, 'posts');
+
+    const result: any = await Promise.all(
+      posts.map(async (post) => {
+        return await this.getLikesInfoForPost(post, userId);
+      }),
+    );
+
     const mappedPosts: PostViewModel[] =
-      this.fromPostDBTypeToPostViewModelWithPagination(posts);
+      this.fromPostDBTypeToPostViewModelWithPagination(result);
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
@@ -145,7 +142,9 @@ export class PostsQueryRepository {
     };
   }
 
-  private async getLikesInfoForPost(post: any, userId?: string) {
+  private async getLikesInfoForPost(post: Posts, userId?: string) {
+    const postCopy = post;
+
     const likesCountResult = await this.dataSource
       .createQueryBuilder()
       .select('COUNT(*)', 'likesCount')
@@ -163,7 +162,7 @@ export class PostsQueryRepository {
       })
       .getRawOne();
 
-    post.likesCount = +likesCountResult.likesCount;
+    postCopy.likesCount = +likesCountResult.likesCount;
 
     const dislikesCountResult = await this.dataSource
       .createQueryBuilder()
@@ -182,7 +181,7 @@ export class PostsQueryRepository {
       })
       .getRawOne();
 
-    post.dislikesCount = +dislikesCountResult.dislikesCount;
+    postCopy.dislikesCount = +dislikesCountResult.dislikesCount;
 
     const newestLikes: LikeDBType[] = await this.likeModel
       .createQueryBuilder('likes')
@@ -201,14 +200,14 @@ export class PostsQueryRepository {
       .limit(3)
       .getMany();
 
-    post.myStatus = LikeStatus.None; // default status
+    postCopy.myStatus = LikeStatus.None; // default status
 
     if (userId) {
       const user: UserDBType =
         await this.usersQueryRepo.findUserByUserIdWithDBType(userId);
 
       if (user.isBanned === true) {
-        post.myStatus = LikeStatus.None;
+        postCopy.myStatus = LikeStatus.None;
       } else {
         const result: LikeDBType[] = await this.dataSource
           .createQueryBuilder()
@@ -223,25 +222,25 @@ export class PostsQueryRepository {
         if (result.length > 0) {
           switch (result[0].status) {
             case 'Like':
-              post.myStatus = LikeStatus.Like;
+              postCopy.myStatus = LikeStatus.Like;
               break;
             case 'Dislike':
-              post.myStatus = LikeStatus.Dislike;
+              postCopy.myStatus = LikeStatus.Dislike;
               break;
           }
         } else {
-          post.myStatus = LikeStatus.None;
+          postCopy.myStatus = LikeStatus.None;
         }
       }
     }
 
     return {
-      ...post,
+      ...postCopy,
       extendedLikesInfo: {
-        likesCount: post.likesCount,
-        dislikesCount: post.dislikesCount,
-        myStatus: post.myStatus,
-        newestLikes: newestLikes || [],
+        likesCount: postCopy.likesCount,
+        dislikesCount: postCopy.dislikesCount,
+        myStatus: postCopy.myStatus,
+        newestLikes: newestLikes,
       },
     };
   }
