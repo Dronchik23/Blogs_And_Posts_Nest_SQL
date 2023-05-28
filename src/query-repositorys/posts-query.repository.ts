@@ -153,7 +153,7 @@ export class PostsQueryRepository {
         return resultPostView;
       }),
     );
-
+    console.log(resultPostView);
     /* const mappedPosts: PostViewModel[] =
       this.fromPostDBTypeToPostViewModelWithPagination(result);*/
 

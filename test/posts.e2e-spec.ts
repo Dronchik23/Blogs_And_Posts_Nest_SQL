@@ -458,12 +458,12 @@ describe('AppController (e2e)', () => {
         post = responseForPost.body;
         expect(post).toBeDefined();
       });
-      it.skip('should not like not existing post', async () => {
+      it('should not like not existing post', async () => {
         await request(server)
           .get(postsUrl + 100 + `/like-status`)
           .expect(404);
       });
-      it.skip('should not like post with incorrect input data', async () => {
+      it('should not like post with incorrect input data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -482,7 +482,7 @@ describe('AppController (e2e)', () => {
             ...post,
           });
       });
-      it.skip('should not like post with incorrect authorization data', async () => {
+      it('should not like post with incorrect authorization data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Basic ${accessToken}`)
@@ -495,7 +495,7 @@ describe('AppController (e2e)', () => {
           .send({ likeStatus: 'Like' })
           .expect(401);
       });
-      it.skip('should like post with correct data', async () => {
+      it('should like post with correct data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -511,7 +511,7 @@ describe('AppController (e2e)', () => {
         expect(postFoundedById.body.extendedLikesInfo.likesCount).toEqual(1);
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
       });
-      it.skip('should dislike post with correct data', async () => {
+      it('should dislike post with correct data', async () => {
         await request(server)
           .put(`/posts/${post.id}/like-status`)
           .set('Authorization', `Bearer ${accessToken}`)

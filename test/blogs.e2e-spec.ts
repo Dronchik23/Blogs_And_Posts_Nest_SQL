@@ -217,6 +217,7 @@ describe('blogs test (e2e)', () => {
           .get(url + `/${blog.id}/posts`)
           .expect((res) => {
             const { pagesCount, page, pageSize, totalCount, items } = res.body;
+            console.log(items, 'items');
             expect(pagesCount).toBe(1);
             expect(page).toBe(1);
             expect(pageSize).toBe(10);
