@@ -9,6 +9,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { Users } from '../../entities/users.entity';
+import { UserDBType } from '../../types/types';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersRepository {
@@ -98,8 +99,8 @@ export class UsersRepository {
       bloggerBanUserDTO.blogId = null;
     } // if user unbanned - clear banReason and banDate
 
-    const user: UserViewModel =
-      await this.usersQueryRepository.findUserByUserId(userId);
+    const user: UserDBType =
+      await this.usersQueryRepository.findUserByUserIdWithDBType(userId);
     if (!user) {
       throw new NotFoundException();
     }
@@ -108,7 +109,7 @@ export class UsersRepository {
       isBanned: bloggerBanUserDTO.isBanned,
       banReason: bloggerBanUserDTO.banReason,
       blogId: bloggerBanUserDTO.blogId,
-      banDate: user.banInfo.banDate,
+      banDate: user.banDate,
     });
 
     return result.affected > 0;

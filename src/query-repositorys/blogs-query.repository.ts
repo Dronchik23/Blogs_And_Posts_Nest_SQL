@@ -76,7 +76,7 @@ export class BlogsQueryRepository {
       );
 
     if (searchNameTerm) {
-      builder.andWhere('blogs.name LIKE :searchNameTerm', {
+      builder.andWhere('blogs.name ILIKE :searchNameTerm', {
         searchNameTerm: `%${searchNameTerm}%`,
       });
     }

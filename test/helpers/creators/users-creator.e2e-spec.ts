@@ -1,12 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
-import { UserViewModel } from '../../src/models/models';
-import { EmailAdapter } from '../../src/email/email.adapter';
-import { createApp } from '../../src/helpers/createApp';
-import { AppModule } from '../../src/app.module';
+import { UserViewModel } from '../../../src/models/models';
+import { EmailAdapter } from '../../../src/email/email.adapter';
+import { createApp } from '../../../src/helpers/createApp';
+import { AppModule } from '../../../src/app.module';
 
-describe('sa/users (e2e)', () => {
+describe('users creator (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
@@ -22,7 +22,6 @@ describe('sa/users (e2e)', () => {
     },
   };
 
-  const url = '/sa/users';
   const wipeAllData = '/testing/all-data';
 
   beforeAll(async () => {
@@ -43,7 +42,7 @@ describe('sa/users (e2e)', () => {
     await app.close();
   });
 
-  describe('creator', () => {
+  describe('users creator', () => {
     it('should create 10 users', async () => {
       await request(server).delete(wipeAllData);
 
