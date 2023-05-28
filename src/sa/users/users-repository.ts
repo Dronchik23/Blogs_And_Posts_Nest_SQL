@@ -96,7 +96,7 @@ export class UsersRepository {
     if (bloggerBanUserDTO.isBanned === false) {
       bloggerBanUserDTO.banReason = null;
       banDate = null;
-      // bloggerBanUserDTO.blogId = null;
+      bloggerBanUserDTO.blogId = null;
     } // if user unbanned - clear banReason and banDate
 
     const user: UserDBType =
@@ -108,9 +108,10 @@ export class UsersRepository {
     const result = await this.userModel.update(userId, {
       isBanned: bloggerBanUserDTO.isBanned,
       banReason: bloggerBanUserDTO.banReason,
-      // blogId: bloggerBanUserDTO.blogId,
+      blogId: bloggerBanUserDTO.blogId,
       banDate: banDate,
     });
+    console.log(result, 'result');
 
     return result.affected > 0;
   }
