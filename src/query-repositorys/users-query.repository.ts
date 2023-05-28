@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { PaginationType, SortDirection, UserDBType } from '../types/types';
 import { UserViewModel } from '../models/models';
-import { DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../entities/users.entity';
 
@@ -72,20 +72,27 @@ export class UsersQueryRepository {
       .select('*')
       .from(Users, 'users');
 
-    if (searchLoginTerm) {
-      builder.andWhere('users.login ILIKE :searchLoginTerm', {
-        searchLoginTerm: `%${searchLoginTerm}%`,
-      });
+    if (searchLoginTerm || searchEmailTerm) {
+      builder.andWhere(
+        new Brackets((qb) => {
+          if (searchLoginTerm) {
+            qb.orWhere('users.login ILIKE :searchLoginTerm', {
+              searchLoginTerm: `%${searchLoginTerm}%`,
+            });
+          }
+          if (searchEmailTerm) {
+            qb.orWhere('users.email ILIKE :searchEmailTerm', {
+              searchEmailTerm: `%${searchEmailTerm}%`,
+            });
+          }
+        }),
+      );
     }
-    if (searchEmailTerm) {
-      builder.andWhere('users.email ILIKE :searchEmailTerm', {
-        searchEmailTerm: `%${searchEmailTerm}%`,
-      });
-    }
+
     if (banStatus === true) {
       builder.andWhere('users."isBanned" = true');
     }
-    if (banStatus === 'false') {
+    if (banStatus === false) {
       builder.andWhere('users."isBanned" = false');
     }
 
@@ -102,7 +109,7 @@ export class UsersQueryRepository {
     const pagesCount = Math.ceil(totalCount / pageSize);
 
     return {
-      pagesCount: pagesCount === 0 ? 1 : pagesCount, // exclude 0
+      pagesCount: pagesCount === 0 ? 1 : pagesCount,
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
