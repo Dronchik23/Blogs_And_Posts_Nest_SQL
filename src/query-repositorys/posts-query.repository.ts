@@ -28,6 +28,7 @@ export class PostsQueryRepository {
     posts: PostDBType[],
   ): PostViewModel[] => {
     return posts.map((post) => {
+      debugger;
       return {
         id: post.id,
         title: post.title,
@@ -36,7 +37,12 @@ export class PostsQueryRepository {
         blogId: post.blogId,
         blogName: post.blogName,
         createdAt: post.createdAt,
-        extendedLikesInfo: post.extendedLikesInfo,
+        extendedLikesInfo: {
+          likesCount: post.likesCount,
+          dislikesCount: post.dislikesCount,
+          myStatus: post.myStatus,
+          newestLikes: post.newestLikes,
+        },
       };
     });
   };
@@ -61,11 +67,21 @@ export class PostsQueryRepository {
 
     const posts: Posts[] = await queryBuilder.getMany();
 
-    for (const post of posts) {
-      await this.getLikesInfoForPost(post, userId);
-    }
+    const resultWithLikes: PostDBType[] = await Promise.all(
+      posts.map(async (post) => {
+        return await this.getLikesInfoForPost(post, userId);
+      }),
+    );
 
-    const mappedPosts = this.fromPostDBTypeToPostViewModelWithPagination(posts);
+    const resultPostView: PostViewModel[] = await Promise.all(
+      resultWithLikes.map(async (post) => {
+        const resultPostView = await new PostViewModel(post);
+        return resultPostView;
+      }),
+    );
+
+    /*const mappedPosts =
+      this.fromPostDBTypeToPostViewModelWithPagination(result);*/
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -74,7 +90,7 @@ export class PostsQueryRepository {
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
-      items: mappedPosts,
+      items: resultPostView,
     };
   }
 
@@ -83,7 +99,7 @@ export class PostsQueryRepository {
     userId?: string,
   ): Promise<PostViewModel | null> {
     try {
-      const result = await this.postModel
+      const post: Posts = await this.postModel
         .createQueryBuilder('posts')
         .where('posts.id = :postId', { postId })
         .andWhere(
@@ -91,11 +107,11 @@ export class PostsQueryRepository {
         )
         .getOne();
 
-      if (!result) {
+      if (!post) {
         throw new NotFoundException();
       }
 
-      const post: any = new PostViewModel(result);
+      //const post: PostViewModel = new PostViewModel(result);
 
       const postWithLikesInfo = await this.getLikesInfoForPost(post, userId);
 
@@ -124,21 +140,29 @@ export class PostsQueryRepository {
 
     const posts = await builder.getMany();
 
-    const result: any = await Promise.all(
+    const resultWithLikes: PostDBType[] = await Promise.all(
       posts.map(async (post) => {
-        return await this.getLikesInfoForPost(post, userId);
+        const resultWithLikes = await this.getLikesInfoForPost(post, userId);
+        return resultWithLikes;
       }),
     );
 
-    const mappedPosts: PostViewModel[] =
-      this.fromPostDBTypeToPostViewModelWithPagination(result);
+    const resultPostView: PostViewModel[] = await Promise.all(
+      resultWithLikes.map(async (post) => {
+        const resultPostView = await new PostViewModel(post);
+        return resultPostView;
+      }),
+    );
+
+    /* const mappedPosts: PostViewModel[] =
+      this.fromPostDBTypeToPostViewModelWithPagination(result);*/
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
-      items: mappedPosts,
+      items: resultPostView,
     };
   }
 
@@ -233,15 +257,14 @@ export class PostsQueryRepository {
         }
       }
     }
+    debugger;
 
     return {
       ...postCopy,
-      extendedLikesInfo: {
-        likesCount: postCopy.likesCount,
-        dislikesCount: postCopy.dislikesCount,
-        myStatus: postCopy.myStatus,
-        newestLikes: newestLikes,
-      },
+      likesCount: postCopy.likesCount,
+      dislikesCount: postCopy.dislikesCount,
+      myStatus: postCopy.myStatus,
+      newestLikes: newestLikes,
     };
   }
 }

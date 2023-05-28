@@ -2,6 +2,7 @@ import {
   BlogOwnerInfoType,
   ExtendedLikesInfoType,
   LikeStatus,
+  PostDBType,
   PostInfoType,
   UserBanInfoType,
 } from '../types/types';
@@ -139,19 +140,19 @@ export class PostViewModel {
   blogName: string;
   createdAt: string;
   extendedLikesInfo: ExtendedLikesInfoType;
-  constructor(postFromDB: any) {
-    this.id = postFromDB.id;
-    this.title = postFromDB.title;
-    this.shortDescription = postFromDB.shortDescription;
-    this.content = postFromDB.content;
-    this.blogName = postFromDB.blogName;
-    this.blogId = postFromDB.blogId;
-    this.createdAt = postFromDB.createdAt;
+  constructor(postDB: PostDBType) {
+    this.id = postDB.id;
+    this.title = postDB.title;
+    this.shortDescription = postDB.shortDescription;
+    this.content = postDB.content;
+    this.blogName = postDB.blogName;
+    this.blogId = postDB.blogId;
+    this.createdAt = postDB.createdAt;
     this.extendedLikesInfo = {
-      likesCount: postFromDB.likesCount,
-      dislikesCount: postFromDB.dislikesCount,
-      myStatus: postFromDB.myStatus,
-      newestLikes: postFromDB.newestLikes,
+      likesCount: postDB.likesCount,
+      dislikesCount: postDB.dislikesCount,
+      myStatus: postDB.myStatus,
+      newestLikes: postDB.newestLikes,
     };
   }
 }

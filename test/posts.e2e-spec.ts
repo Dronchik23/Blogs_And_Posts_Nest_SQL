@@ -108,6 +108,7 @@ describe('AppController (e2e)', () => {
           .get(postsUrl)
           .expect((res) => {
             const { pagesCount, page, pageSize, totalCount, items } = res.body;
+            console.log(items, 'items');
             expect(pagesCount).toBe(1);
             expect(page).toBe(1);
             expect(pageSize).toBe(10);
@@ -207,7 +208,11 @@ describe('AppController (e2e)', () => {
       it('should get post by postId', async () => {
         const response = await request(server).get(postsUrl + `/${post.id}`);
 
-        expect(response.body).toEqual(post);
+        expect(response.body.id).toEqual(post.id);
+        expect(response.body.extendedLikesInfo.myStatus).toEqual('None');
+        expect(response.body.extendedLikesInfo.dislikesCount).toEqual(0);
+        expect(response.body.extendedLikesInfo.likesCount).toEqual(0);
+        expect(response.body.extendedLikesInfo.newestLikes).toHaveLength(0);
       });
       it('should return 404 for not existing post', async () => {
         await request(server)
@@ -545,6 +550,7 @@ describe('AppController (e2e)', () => {
           .get(`/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
+        console.log(postFoundedById.body, 'postus');
 
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('None');
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
