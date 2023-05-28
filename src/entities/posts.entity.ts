@@ -62,6 +62,9 @@ export class Posts {
     newPost.likesCount = 0;
     newPost.dislikesCount = 0;
     newPost.myStatus = LikeStatus.None;
-    return newPost;
+    return {
+      ...newPost,
+      newestLikes: [],
+    };
   }
 }

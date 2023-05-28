@@ -22,7 +22,9 @@ export class PostsRepository {
   ): Promise<PostViewModel> {
     const newPost = Posts.create(createPostDTO, blog);
     const createdPost = await this.postModel.save(newPost);
-    return new PostViewModel(createdPost);
+    const a = new PostViewModel(createdPost);
+    console.log(a, 'created post');
+    return a;
   }
 
   async updatePostByPostId(

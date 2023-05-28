@@ -1,10 +1,5 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import {
-  BanStatus,
-  PaginationType,
-  SortDirection,
-  UserDBType,
-} from '../types/types';
+import { PaginationType, SortDirection, UserDBType } from '../types/types';
 import { UserViewModel } from '../models/models';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -72,7 +67,6 @@ export class UsersQueryRepository {
     pageNumber: number,
     banStatus: string | boolean,
   ): Promise<PaginationType> {
-    debugger;
     const builder = await this.dataSource
       .createQueryBuilder()
       .select('*')
