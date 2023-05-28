@@ -2,7 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createApp } from '../src/helpers/createApp';
-import { UserInputModel } from '../src/models/models';
+import {
+  BanBlogInputModel,
+  BanUserInputModel,
+  UserInputModel,
+} from '../src/models/models';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { UsersQueryRepository } from '../src/query-repositorys/users-query.repository';
@@ -162,6 +166,12 @@ describe('blogger tests (e2e)', () => {
           email: `user2@gmail.com`,
         };
 
+        const banUserDto = {
+          isBanned: true,
+          banReason: 'valid string more than 20 letters',
+          blogId: blog.id,
+        };
+
         const responseForUser2 = await request(server)
           .post('/sa/users')
           .auth('admin', 'qwerty')
@@ -173,11 +183,7 @@ describe('blogger tests (e2e)', () => {
         await request(server)
           .put(url + `/${user2.id}/ban`)
           .set('Authorization', `Bearer ${accessToken}`)
-          .send({
-            isBanned: true,
-            banReason: 'valid string more than 20 letters ',
-            blogId: blog.id,
-          })
+          .send(banUserDto)
           .expect(204); // ban user2
 
         const response = await request(server)
@@ -185,22 +191,8 @@ describe('blogger tests (e2e)', () => {
           .auth('admin', 'qwerty');
         console.log('response.body', response.body);
         expect(response.body.banInfo.isBanned).toBeTruthy();
-
-        await request(server)
-          .put(url + `/${user2.id}/ban`)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .send({
-            isBanned: false,
-            banReason: 'valid string more than 20 letters ',
-            blogId: blog.id,
-          })
-          .expect(204); // ban user2
-
-        // const unBannedUser: UserDBType =
-        //   await usersQueryRepository.usersModel.findOne({
-        //     _id: new ObjectId(user2.id),
-        //   });
-        // expect(unBannedUser.banInfo.isBanned).toBeFalsy();
+        expect(response.body.banInfo.banReason).toEqual(banUserDto.banReason);
+        expect(response.body.banInfo.banDate).not.toBeNull();
       });
     });
     describe('get banned users by blogId tests', () => {
