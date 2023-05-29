@@ -225,7 +225,7 @@ describe('sa/quiz/questions tests (e2e)', () => {
         expect(question).toBeDefined();
       });
       it('should not update question that not exist', async () => {
-        const fakeQuestionId = 'gt57jk500';
+        const fakeQuestionId = '602afe92-7d97-4395-b1b9-6cf98b351bbe';
         await request(server)
           .put(url + `${fakeQuestionId}`)
           .auth('admin', 'qwerty')

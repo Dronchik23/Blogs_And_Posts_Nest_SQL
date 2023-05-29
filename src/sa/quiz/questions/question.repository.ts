@@ -27,7 +27,7 @@ export class QuestionRepository {
 
   async deleteQuestionByQuestionId(questionId: string) {
     try {
-      const question = await this.questionModel.findBy({ id: questionId });
+      const question = await this.questionModel.findOneBy({ id: questionId });
       if (!question) {
         throw new NotFoundException();
       }
@@ -44,8 +44,9 @@ export class QuestionRepository {
     updateQuestionDto: QuestionUpdateModel,
     updatedAt: string,
   ): Promise<boolean> {
+    debugger;
     try {
-      const question = await this.questionModel.findBy({ id: questionId });
+      const question = await this.questionModel.findOneBy({ id: questionId });
       if (!question) {
         throw new NotFoundException();
       }
