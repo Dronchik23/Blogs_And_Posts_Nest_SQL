@@ -17,9 +17,12 @@ export class PublishQuestionService
   constructor(private readonly questionRepository: QuestionRepository) {}
 
   async execute(command: PublishQuestionCommand): Promise<boolean> {
+    const updatedAt = new Date().toISOString();
+
     return await this.questionRepository.publishQuestion(
       command.questionId,
       command.publishQuestionDTO,
+      updatedAt,
     );
   }
 }

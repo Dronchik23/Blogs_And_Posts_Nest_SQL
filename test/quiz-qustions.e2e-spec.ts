@@ -192,7 +192,6 @@ describe('sa/quiz/questions tests (e2e)', () => {
           .expect(401);
       });
       it('should question with correct id', async () => {
-        debugger;
         await request(server)
           .delete(`${url}${question.id}`)
           .auth('admin', 'qwerty')
@@ -275,8 +274,10 @@ describe('sa/quiz/questions tests (e2e)', () => {
         const response = await request(server).get(url).auth('admin', 'qwerty');
 
         const updatedQuestion: QuestionViewModel = response.body.items[0];
+        console.log(updatedQuestion, 'updatedQuestion');
 
         expect(updatedQuestion.body).toEqual(updateQuestionDto.body);
+        expect(updatedQuestion.updatedAt).not.toBeNull();
         expect(updatedQuestion.correctAnswers).toEqual(
           updatedQuestion.correctAnswers,
         );
@@ -342,6 +343,7 @@ describe('sa/quiz/questions tests (e2e)', () => {
         const publishedQuestion: QuestionViewModel = response.body.items[0];
 
         expect(publishedQuestion.published).toBeTruthy();
+        expect(publishedQuestion.updatedAt).not.toBeNull();
       });
     });
   });

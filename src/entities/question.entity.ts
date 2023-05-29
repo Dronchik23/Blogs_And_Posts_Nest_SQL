@@ -38,7 +38,7 @@ export class Questions {
     newQuestion.body = dto.body;
     newQuestion.correctAnswers = dto.correctAnswers;
     newQuestion.published = false;
-    newQuestion.createdAt = new Date().toString();
+    newQuestion.createdAt = new Date().toISOString();
     newQuestion.updatedAt = null;
     return newQuestion;
   }

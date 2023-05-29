@@ -17,9 +17,12 @@ export class UpdateQuestionService
   constructor(private readonly questionRepository: QuestionRepository) {}
 
   async execute(command: UpdateQuestionCommand): Promise<boolean> {
+    const updatedAt = new Date().toISOString();
+
     return await this.questionRepository.updateQuestionByQuestionId(
       command.questionId,
       command.questionUpdateDTO,
+      updatedAt,
     );
   }
 }
