@@ -165,7 +165,6 @@ export class isCommentExistConstraint implements ValidatorConstraintInterface {
   ) {}
   async validate(commentId: string) {
     try {
-      console.log(commentId);
       const comment = await this.commentsQueryRepository.findCommentByCommentId(
         commentId,
       );

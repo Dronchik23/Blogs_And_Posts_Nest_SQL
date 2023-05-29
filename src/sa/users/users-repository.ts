@@ -111,7 +111,6 @@ export class UsersRepository {
       blogId: bloggerBanUserDTO.blogId,
       banDate: banDate,
     });
-    console.log(result, 'result');
 
     return result.affected > 0;
   }

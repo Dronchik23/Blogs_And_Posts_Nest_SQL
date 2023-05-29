@@ -62,7 +62,6 @@ export class BlogDBType {
     public banDate: string | null,
   ) {}
 }
-
 export class PostDBType {
   constructor(
     public id: string,
@@ -173,7 +172,6 @@ export class LikeDBType {
     public commentId?: string,
   ) {}
 }
-
 export class LikesInfoType {
   constructor(
     public likesCount: number = 0,
@@ -216,4 +214,12 @@ export class BearerJwtPayloadType {
 export class BlogOwnerInfoType {
   userId: string;
   userLogin: string;
+}
+export class QuestionDBType {
+  id: string;
+  body: string;
+  correctAnswers: string[];
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

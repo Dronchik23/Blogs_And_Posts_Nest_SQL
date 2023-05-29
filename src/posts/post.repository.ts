@@ -23,7 +23,6 @@ export class PostsRepository {
     const newPost = Posts.create(createPostDTO, blog);
     const createdPost = await this.postModel.save(newPost);
     const a = new PostViewModel(createdPost);
-    console.log(a, 'created post');
     return a;
   }
 

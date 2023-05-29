@@ -18,7 +18,7 @@ import {
   UserPaginationQueryModel,
   UserViewModel,
 } from '../../models/models';
-import { BasicAuthGuard, LogGuard } from '../../auth/strategys/basic-strategy';
+import { BasicAuthGuard } from '../../auth/strategys/basic-strategy';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { CommandBus } from '@nestjs/cqrs';
 import { DeleteUserCommand } from '../../use-cases/users/delete-user-by-id-use-case';
@@ -35,7 +35,6 @@ export class UsersController {
     private readonly commandBus: CommandBus,
   ) {}
 
-  @UseGuards(LogGuard)
   @UseGuards(BasicAuthGuard)
   @Get()
   async getAllUsers(

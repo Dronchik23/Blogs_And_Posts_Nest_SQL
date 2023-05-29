@@ -632,7 +632,6 @@ describe('blogger blogs tests (e2e)', () => {
 
         blog = responseForBlog.body;
         expect(blog).toBeDefined();
-        console.log('blog', blog);
       });
       it('should not create post with incorrect input data', async () => {
         await request(server)
@@ -801,7 +800,6 @@ describe('blogger blogs tests (e2e)', () => {
           .expect(201);
 
         const post2 = createResponseForPost.body;
-        console.log('post2', post2);
 
         expect(post2).toEqual({
           id: expect.any(String),
@@ -817,7 +815,6 @@ describe('blogger blogs tests (e2e)', () => {
         const postFoundedById = await request(server)
           .get(`/posts/${post2.id}`)
           .expect(200);
-        console.log(postFoundedById.body, 'somepost');
 
         expect(postFoundedById.body).toEqual(post2);
       });

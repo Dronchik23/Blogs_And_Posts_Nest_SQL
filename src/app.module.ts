@@ -70,9 +70,7 @@ import { CommentsQueryRepository } from './query-repositorys/comments-query.repo
 import { UsersQueryRepository } from './query-repositorys/users-query.repository';
 import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
 import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
-import * as process from 'process';
 import { CreateUserService } from './use-cases/users/create-user-by-super-admin-use-case';
-import { LogGuard } from './auth/strategys/basic-strategy';
 import { UsersModule } from './modules/users.module';
 import { BlogsModule } from './modules/blogs.module';
 import { CommentsModule } from './modules/comments.module';
@@ -88,6 +86,13 @@ import { Likes } from './entities/likes.entity';
 import { CommentUpdateLikeStatusService } from './use-cases/likes/comment-update-like-status-use-case';
 import { Devices } from './entities/devices.entity';
 import { Users } from './entities/users.entity';
+import { QuestionRepository } from './sa/quiz/questions/question.repository';
+import { CreateQuestionService } from './use-cases/questions/create-question-use-case';
+import { Questions } from './entities/question.entity';
+import { QuizQuestionsController } from './sa/quiz/questions/quiz-questions.controller';
+import { QuestionsQueryRepository } from './query-repositorys/questions-query.repository';
+import { DeleteQuestionService } from './use-cases/questions/delete-question-use-case';
+import { UpdateQuestionService } from './use-cases/questions/update-question-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -117,6 +122,9 @@ export const useCases = [
   BanUserByUserIdByBloggerService,
   FindBannedUsersByBlogIdService,
   CreateUserService,
+  CreateQuestionService,
+  DeleteQuestionService,
+  UpdateQuestionService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,
@@ -124,6 +132,7 @@ export const queryRepos = [
   UsersQueryRepository,
   CommentsQueryRepository,
   DevicesQueryRepository,
+  QuestionsQueryRepository,
 ];
 export const repositories = [
   LikesRepository,
@@ -134,6 +143,7 @@ export const repositories = [
   CommentsRepository,
   PostsRepository,
   TestingRepository,
+  QuestionRepository,
 ];
 export const services = [CustomJwtService, AppService, EmailService];
 export const constraints = [
@@ -155,18 +165,21 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     }),*/
     TypeOrmModule.forRoot({
       type: 'postgres',
-      /*host: 'db.thin.dev',
-      port: 5432,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: '01effe61-c4d3-4a9c-8886-812fcda96076',*/
       url: 'postgres://Dronchik23:LNDFEJKac6Q9@ep-plain-dew-291409.us-east-2.aws.neon.tech/fuckingBD',
       autoLoadEntities: true,
       //logging: true,
       synchronize: true,
       ssl: true,
     }),
-    TypeOrmModule.forFeature([Users, Blogs, Posts, Comments, Likes, Devices]),
+    TypeOrmModule.forFeature([
+      Users,
+      Blogs,
+      Posts,
+      Comments,
+      Likes,
+      Devices,
+      Questions,
+    ]),
     UsersModule,
     BlogsModule,
     PostsModule,
@@ -202,9 +215,9 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     BloggerUsersController,
     BloggerBlogsController,
     SABlogsController,
+    QuizQuestionsController,
   ],
   providers: [
-    LogGuard,
     EmailAdapter,
     ...strategies,
     ...constraints,

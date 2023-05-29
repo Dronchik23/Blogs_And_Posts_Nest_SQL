@@ -179,7 +179,6 @@ export class BloggerBlogsController {
     @Param('postId') postId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<boolean> {
-    debugger;
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
     if (!blog) {
       throw new NotFoundException();

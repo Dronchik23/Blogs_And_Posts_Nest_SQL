@@ -28,7 +28,6 @@ export class PostsQueryRepository {
     posts: PostDBType[],
   ): PostViewModel[] => {
     return posts.map((post) => {
-      debugger;
       return {
         id: post.id,
         title: post.title,
@@ -153,9 +152,6 @@ export class PostsQueryRepository {
         return resultPostView;
       }),
     );
-    console.log(resultPostView);
-    /* const mappedPosts: PostViewModel[] =
-      this.fromPostDBTypeToPostViewModelWithPagination(result);*/
 
     return {
       pagesCount: Math.ceil(totalCount / +pageSize),
@@ -257,7 +253,6 @@ export class PostsQueryRepository {
         }
       }
     }
-    debugger;
 
     return {
       ...postCopy,

@@ -35,7 +35,6 @@ export class RefreshTokenService
         lastActiveDate.toString(),
       );
     if (!device) return null;
-    console.log(device);
 
     const expiredRefreshToken = await this.tokensRepository.findBannedToken(
       command.refreshToken,

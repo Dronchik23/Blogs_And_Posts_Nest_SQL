@@ -161,7 +161,7 @@ describe('sa/users (e2e)', () => {
           .auth('admin', 'qwerty');
 
         user = responseForUser2.body;
-        console.log(user, 'user');
+
         expect(user.banInfo.isBanned).toBe(true);
 
         await request(server)

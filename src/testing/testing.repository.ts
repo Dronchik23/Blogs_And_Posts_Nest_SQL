@@ -20,6 +20,8 @@ DELETE FROM public.posts CASCADE;
 DELETE FROM public."refreshTokenBlackList" CASCADE;
 
 DELETE FROM public.users CASCADE;
+
+DELETE FROM public.questions CASCADE;
 `);
   }
 }

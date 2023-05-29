@@ -101,14 +101,12 @@ describe('AppController (e2e)', () => {
 
         post = responseForPost.body;
         expect(post).toBeDefined();
-        console.log('post', post);
       });
       it('should get all posts', async () => {
         await request(server)
           .get(postsUrl)
           .expect((res) => {
             const { pagesCount, page, pageSize, totalCount, items } = res.body;
-            console.log(items, 'items');
             expect(pagesCount).toBe(1);
             expect(page).toBe(1);
             expect(pageSize).toBe(10);
@@ -136,7 +134,6 @@ describe('AppController (e2e)', () => {
           .auth('admin', 'qwerty');
 
         const { items } = responseForBlog2.body;
-        console.log('items', items);
 
         const bannedBlog = items.find((item) => item.banInfo.isBanned);
 
@@ -202,7 +199,6 @@ describe('AppController (e2e)', () => {
           });
 
         post = responseForPost.body;
-        console.log('postik', post);
         expect(post).toBeDefined();
       });
       it('should get post by postId', async () => {
@@ -550,7 +546,6 @@ describe('AppController (e2e)', () => {
           .get(`/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
-        console.log(postFoundedById.body, 'postus');
 
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('None');
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);
@@ -573,7 +568,6 @@ describe('AppController (e2e)', () => {
           .get(`/posts/${post.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
-        console.log(postFoundedById.body, 'postus');
 
         expect(postFoundedById.body.extendedLikesInfo.myStatus).toEqual('Like');
         expect(postFoundedById.body.extendedLikesInfo.dislikesCount).toEqual(0);

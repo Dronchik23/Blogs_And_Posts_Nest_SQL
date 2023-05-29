@@ -189,7 +189,6 @@ describe('blogger tests (e2e)', () => {
         const response = await request(server)
           .get(`/sa/users/${user2.id}`)
           .auth('admin', 'qwerty');
-        console.log('response.body', response.body);
         expect(response.body.banInfo.isBanned).toBeTruthy();
         expect(response.body.banInfo.banReason).toEqual(banUserDto.banReason);
         expect(response.body.banInfo.banDate).not.toBeNull();
@@ -306,7 +305,6 @@ describe('blogger tests (e2e)', () => {
         const a = await request(server)
           .get(url + `/blog/${blog.id}`)
           .set('Authorization', `Bearer ${accessToken}`);
-        console.log(a.body.items);
 
         await request(server)
           .get(url + `/blog/${blog.id}`)

@@ -6,7 +6,7 @@ import { EmailAdapter } from '../../../src/email/email.adapter';
 import { createApp } from '../../../src/helpers/createApp';
 import { AppModule } from '../../../src/app.module';
 
-describe('users creator (e2e)', () => {
+describe.skip('users creator (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;

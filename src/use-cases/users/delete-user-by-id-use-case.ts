@@ -1,6 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { UsersRepository } from '../../sa/users/users-repository';
-import any = jasmine.any;
 
 export class DeleteUserCommand {
   constructor(public userId: string) {}

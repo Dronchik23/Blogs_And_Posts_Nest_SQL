@@ -48,7 +48,6 @@ export class LikesRepository {
     const existingLike = await this.likeModel.find({
       where: [{ commentId: commentId, userId: user.id }],
     });
-    debugger;
     if (existingLike.length) {
       const like = existingLike[0];
 

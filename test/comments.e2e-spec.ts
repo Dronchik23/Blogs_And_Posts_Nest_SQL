@@ -206,7 +206,6 @@ describe('comments tests (e2e)', () => {
         expect(comment).toBeDefined();
       });
       it('should not update comment with incorrect input data', async () => {
-        debugger;
         const reqWithIncorrectContent = await request(server)
           .put(`/comments/${comment.id}`)
           .set('Authorization', `Bearer ${accessToken}`)

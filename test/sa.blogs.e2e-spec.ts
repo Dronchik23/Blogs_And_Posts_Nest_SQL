@@ -64,7 +64,6 @@ describe('sa/blogs tests (e2e)', () => {
 
         user = responseForUser.body;
         expect(user).toBeDefined();
-        console.log('user', user);
 
         const loginUser = await request(server)
           .post('/auth/login')
@@ -75,7 +74,6 @@ describe('sa/blogs tests (e2e)', () => {
           });
 
         accessToken = loginUser.body.accessToken;
-        console.log('accessToken', accessToken);
 
         const responseForBlog = await request(server)
           .post('/blogger/blogs')
@@ -88,7 +86,6 @@ describe('sa/blogs tests (e2e)', () => {
 
         blog = responseForBlog.body;
         expect(blog).toBeDefined();
-        console.log('blog', blog);
       });
       it('should get all blogs', async () => {
         const response = await request(server)
@@ -214,7 +211,7 @@ describe('sa/blogs tests (e2e)', () => {
           .auth('admin', 'qwerty');
 
         const { items } = responseForBlog2.body;
-        console.log('items', items);
+
         const bannedBlog = items.find((item) => item.banInfo.isBanned);
 
         expect(responseForBlog2.body);
@@ -235,7 +232,7 @@ describe('sa/blogs tests (e2e)', () => {
           .auth('admin', 'qwerty');
 
         const { items } = responseForBlog2.body;
-        console.log('items', items);
+
         const bannedBlog = items.find((item) => item.banInfo.isBanned);
 
         expect(responseForBlog2.body);

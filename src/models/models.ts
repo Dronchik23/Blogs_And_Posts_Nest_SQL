@@ -7,6 +7,7 @@ import {
   UserBanInfoType,
 } from '../types/types';
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
@@ -29,6 +30,7 @@ import { Blogs } from '../entities/blogs.entity';
 import { Posts } from '../entities/posts.entity';
 import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
+import { Questions } from '../entities/question.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -76,6 +78,15 @@ export class CommentPaginationQueryModel extends DefaultPaginationData {
   searchLoginTerm: string | null = null;
 }
 export class PostPaginationQueryModel extends DefaultPaginationData {}
+export class QuestionPaginationQueryModel extends DefaultPaginationData {
+  @IsOptional()
+  @IsString()
+  bodySearchTerm: string | null = null;
+
+  @IsOptional()
+  @IsString()
+  publishedStatus: string | null = null;
+}
 
 export class DeviceViewModel {
   ip: string;
@@ -248,6 +259,15 @@ export class BlogInputModel {
   @Length(1, 100)
   websiteUrl: string;
 }
+export class QuestionInputModel {
+  @IsString()
+  @Length(10, 500)
+  @IsNotEmpty()
+  body: string;
+  @IsArray()
+  @IsNotEmpty()
+  correctAnswers: string[];
+}
 export class BlogPostInputModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)
@@ -281,6 +301,16 @@ export class BlogUpdateModel {
   @Length(1, 1000)
   @IsNotEmpty()
   websiteUrl: string;
+}
+export class QuestionUpdateModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @Length(10, 500)
+  @IsNotEmpty()
+  body: string;
+  @IsArray()
+  @IsNotEmpty()
+  correctAnswers: string[];
 }
 export class LoginInputModel {
   @IsString()
@@ -374,4 +404,20 @@ export class LikeViewModel {
   login: string;
   status: LikeStatus = LikeStatus.None;
   addedAt: string;
+}
+export class QuestionViewModel {
+  id: string;
+  body: string;
+  correctAnswers: string[];
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  constructor(questionDB: Questions) {
+    this.id = questionDB.id;
+    this.body = questionDB.body;
+    this.correctAnswers = questionDB.correctAnswers;
+    this.published = questionDB.published;
+    this.createdAt = questionDB.createdAt;
+    this.updatedAt = questionDB.updatedAt;
+  }
 }
