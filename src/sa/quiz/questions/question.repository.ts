@@ -26,14 +26,12 @@ export class QuestionRepository {
   }
 
   async deleteQuestionByQuestionId(questionId: string) {
-    /*
-    const question = await this.questionModel.findBy({ id: questionId });
-    if (!question) {
-      throw new NotFoundException();
-    }
-*/
-
     try {
+      const question = await this.questionModel.findBy({ id: questionId });
+      if (!question) {
+        throw new NotFoundException();
+      }
+
       const result = await this.questionModel.delete({ id: questionId });
       return result.affected > 0;
     } catch (e) {
@@ -46,12 +44,12 @@ export class QuestionRepository {
     updateQuestionDto: QuestionUpdateModel,
     updatedAt: string,
   ): Promise<boolean> {
-    const question = await this.questionModel.findBy({ id: questionId });
-    if (!question) {
-      throw new NotFoundException();
-    }
-
     try {
+      const question = await this.questionModel.findBy({ id: questionId });
+      if (!question) {
+        throw new NotFoundException();
+      }
+
       const result = await this.questionModel.update(questionId, {
         body: updateQuestionDto.body,
         correctAnswers: updateQuestionDto.correctAnswers,
