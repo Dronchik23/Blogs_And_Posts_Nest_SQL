@@ -16,7 +16,6 @@ describe('sa/quiz/questions tests (e2e)', () => {
 
   let app: INestApplication;
   let server: any;
-  let user: UserViewModel;
   let question: QuestionViewModel;
   const mokEmailAdapter = {
     async sendEmail(
@@ -29,9 +28,6 @@ describe('sa/quiz/questions tests (e2e)', () => {
   };
   const url = '/sa/quiz/questions/';
   const wipeAllData = '/testing/all-data';
-  const userAgent = {
-    'User-Agent': 'jest user-agent',
-  };
   const createQuestionDto: QuestionInputModel = {
     body: `questionmorethen10`,
     correctAnswers: ['answer1', 'answer2'],
@@ -284,6 +280,68 @@ describe('sa/quiz/questions tests (e2e)', () => {
         expect(updatedQuestion.correctAnswers).toEqual(
           updatedQuestion.correctAnswers,
         );
+      });
+    });
+    describe('publish question tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllData);
+
+        const createQuestionDto: QuestionInputModel = {
+          body: `questionmorethen10`,
+          correctAnswers: ['answer1', 'answer2'],
+        };
+
+        const createResponseForQuestion = await request(server)
+          .post(url)
+          .auth('admin', 'qwerty')
+          .send(createQuestionDto)
+          .expect(201);
+
+        question = createResponseForQuestion.body;
+        expect(question).toBeDefined();
+      });
+      it('should not update question that not exist', async () => {
+        const fakeQuestionId = '500';
+        await request(server)
+          .put(url + `${fakeQuestionId}/publish`)
+          .auth('admin', 'qwerty')
+          .send({ published: true })
+          .expect(404);
+      });
+      it('should not publish question with incorrect input data', async () => {
+        await request(server)
+          .put(url + `${question.id}/publish`)
+          .auth('admin', 'qwerty')
+          .send({
+            published: '',
+          })
+          .expect(400);
+      });
+      it('should not publish question with incorrect authorization data', async () => {
+        await request(server)
+          .put(url + `${question.id}/publish`)
+          .auth('admin', '')
+          .send({ published: true })
+          .expect(401);
+
+        await request(server)
+          .put(url + `${question.id}/publish`)
+          .auth('', 'qwerty')
+          .send({ published: true })
+          .expect(401);
+      });
+      it('should publish question with correct data', async () => {
+        await request(server)
+          .put(url + `${question.id}/publish`)
+          .auth('admin', 'qwerty')
+          .send({ published: true })
+          .expect(204);
+
+        const response = await request(server).get(url).auth('admin', 'qwerty');
+
+        const publishedQuestion: QuestionViewModel = response.body.items[0];
+
+        expect(publishedQuestion.published).toBeTruthy();
       });
     });
   });

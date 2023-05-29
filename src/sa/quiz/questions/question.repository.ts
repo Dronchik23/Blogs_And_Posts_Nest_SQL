@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import {
+  PublishQuestionModel,
   QuestionInputModel,
   QuestionUpdateModel,
   QuestionViewModel,
@@ -41,6 +42,20 @@ export class QuestionRepository {
       const result = await this.questionModel.update(questionId, {
         body: updateQuestionDto.body,
         correctAnswers: updateQuestionDto.correctAnswers,
+      });
+      return result.affected > 0;
+    } catch (e) {
+      throw new NotFoundException();
+    }
+  }
+
+  async publishQuestion(
+    questionId: string,
+    publishQuestionDTO: PublishQuestionModel,
+  ): Promise<boolean> {
+    try {
+      const result = await this.questionModel.update(questionId, {
+        published: publishQuestionDTO.published,
       });
       return result.affected > 0;
     } catch (e) {

@@ -312,6 +312,10 @@ export class QuestionUpdateModel {
   @IsNotEmpty()
   correctAnswers: string[];
 }
+export class PublishQuestionModel {
+  @IsBoolean()
+  published: boolean;
+}
 export class LoginInputModel {
   @IsString()
   @Matches(/^(?!\s*$).+/)

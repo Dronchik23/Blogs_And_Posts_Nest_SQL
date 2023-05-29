@@ -16,6 +16,7 @@ import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../../auth/strategys/basic-strategy';
 import {
   BanUserInputModel,
+  PublishQuestionModel,
   QuestionInputModel,
   QuestionPaginationQueryModel,
   QuestionUpdateModel,
@@ -28,6 +29,7 @@ import { QuestionsQueryRepository } from '../../../query-repositorys/questions-q
 import { DeleteQuestionCommand } from '../../../use-cases/questions/delete-question-use-case';
 import { BanUserByUserIdBySACommand } from '../../../use-cases/users/bun-user-by-userId-use-case';
 import { UpdateQuestionCommand } from '../../../use-cases/questions/update-question-use-case';
+import { PublishQuestionCommand } from '../../../use-cases/questions/publish-question-use-case';
 
 @SkipThrottle()
 @Controller({ path: 'sa/quiz/questions', scope: Scope.REQUEST })
@@ -89,6 +91,18 @@ export class QuizQuestionsController {
   ): Promise<boolean> {
     return await this.commandBus.execute(
       new UpdateQuestionCommand(questionId, updateQuestionDTO),
+    );
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put(':questionId/publish')
+  @HttpCode(204)
+  async publishQuestionBy(
+    @Param('questionId') questionId: string,
+    @Body() publishQuestionDTO: PublishQuestionModel,
+  ): Promise<boolean> {
+    return await this.commandBus.execute(
+      new PublishQuestionCommand(questionId, publishQuestionDTO),
     );
   }
 }

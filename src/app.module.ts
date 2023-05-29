@@ -93,6 +93,7 @@ import { QuizQuestionsController } from './sa/quiz/questions/quiz-questions.cont
 import { QuestionsQueryRepository } from './query-repositorys/questions-query.repository';
 import { DeleteQuestionService } from './use-cases/questions/delete-question-use-case';
 import { UpdateQuestionService } from './use-cases/questions/update-question-use-case';
+import { PublishQuestionService } from './use-cases/questions/publish-question-use-case';
 
 export const useCases = [
   CreateBlogService,
@@ -125,6 +126,7 @@ export const useCases = [
   CreateQuestionService,
   DeleteQuestionService,
   UpdateQuestionService,
+  PublishQuestionService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,
