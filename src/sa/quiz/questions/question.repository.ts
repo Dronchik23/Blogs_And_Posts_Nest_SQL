@@ -44,7 +44,6 @@ export class QuestionRepository {
     updateQuestionDto: QuestionUpdateModel,
     updatedAt: string,
   ): Promise<boolean> {
-    debugger;
     try {
       const question = await this.questionModel.findOneBy({ id: questionId });
       if (!question) {
@@ -68,6 +67,11 @@ export class QuestionRepository {
     updatedAt: string,
   ): Promise<boolean> {
     try {
+      const question = await this.questionModel.findOneBy({ id: questionId });
+      if (!question) {
+        throw new NotFoundException();
+      }
+
       const result = await this.questionModel.update(questionId, {
         published: publishQuestionDTO.published,
         updatedAt: updatedAt,
