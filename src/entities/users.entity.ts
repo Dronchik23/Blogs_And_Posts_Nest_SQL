@@ -49,6 +49,9 @@ export class Users {
   @Column({ default: null })
   blogId: string;
 
+  @Column({ default: null })
+  gameStatus: string;
+
   @OneToMany(() => Blogs, (b) => b.blogOwner)
   blogs: Blogs[];
 

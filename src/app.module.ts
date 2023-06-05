@@ -71,13 +71,6 @@ import { UsersQueryRepository } from './query-repositorys/users-query.repository
 import { DevicesQueryRepository } from './query-repositorys/devices-query.repository';
 import { PostsQueryRepository } from './query-repositorys/posts-query.repository';
 import { CreateUserService } from './use-cases/users/create-user-by-super-admin-use-case';
-import { UsersModule } from './modules/users.module';
-import { BlogsModule } from './modules/blogs.module';
-import { CommentsModule } from './modules/comments.module';
-import { LikesModule } from './modules/likes.module';
-import { PostsModule } from './modules/posts.module';
-import { DevicesModule } from './modules/devices.module';
-import { refreshTokenBlackListModule } from './modules/refreshTokenBlackList.module';
 import { Blogs } from './entities/blogs.entity';
 import { Posts } from './entities/posts.entity';
 import { TestingRepository } from './testing/testing.repository';
@@ -94,6 +87,13 @@ import { QuestionsQueryRepository } from './query-repositorys/questions-query.re
 import { DeleteQuestionService } from './use-cases/questions/delete-question-use-case';
 import { UpdateQuestionService } from './use-cases/questions/update-question-use-case';
 import { PublishQuestionService } from './use-cases/questions/publish-question-use-case';
+import { CreatePairService } from './use-cases/quiz-pair/create-quiz-pair-use-case';
+import { CreateQuizGameController } from './quiz/pairs-quiz.controller';
+import { QuizPairsRepository } from './quiz/pairs-quiz.repository';
+import { QuizPairs } from './entities/quiz-pairs.entity';
+import { PairsQuizQueryRepository } from './query-repositorys/pairs-quiz-query.repository';
+import { GameProgress } from './entities/game-progress.entity';
+import { RefreshTokenBlackList } from './entities/refreshTokenBlackList.entity';
 
 export const useCases = [
   CreateBlogService,
@@ -127,6 +127,7 @@ export const useCases = [
   DeleteQuestionService,
   UpdateQuestionService,
   PublishQuestionService,
+  CreatePairService,
 ];
 export const queryRepos = [
   BlogsQueryRepository,
@@ -135,6 +136,7 @@ export const queryRepos = [
   CommentsQueryRepository,
   DevicesQueryRepository,
   QuestionsQueryRepository,
+  PairsQuizQueryRepository,
 ];
 export const repositories = [
   LikesRepository,
@@ -146,6 +148,7 @@ export const repositories = [
   PostsRepository,
   TestingRepository,
   QuestionRepository,
+  QuizPairsRepository,
 ];
 export const services = [CustomJwtService, AppService, EmailService];
 export const constraints = [
@@ -161,10 +164,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    /*   ThrottlerModule.forRoot({
+    ThrottlerModule.forRoot({
       ttl: 10,
       limit: 5,
-    }),*/
+    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: 'postgres://Dronchik23:LNDFEJKac6Q9@ep-plain-dew-291409.us-east-2.aws.neon.tech/fuckingBD',
@@ -181,14 +184,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       Likes,
       Devices,
       Questions,
+      QuizPairs,
+      GameProgress,
+      RefreshTokenBlackList,
     ]),
-    UsersModule,
-    BlogsModule,
-    PostsModule,
-    CommentsModule,
-    LikesModule,
-    DevicesModule,
-    refreshTokenBlackListModule,
     MailerModule.forRoot({
       transport: {
         service: 'gmail',
@@ -218,6 +217,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     BloggerBlogsController,
     SABlogsController,
     QuizQuestionsController,
+    CreateQuizGameController,
   ],
   providers: [
     EmailAdapter,
@@ -227,10 +227,10 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
     ...useCases,
     ...queryRepos,
     ...repositories,
-    /*    {
+    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
-    },*/
+    },
   ],
 })
 export class AppModule {}

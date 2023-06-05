@@ -1,6 +1,8 @@
 import {
+  AnswerStatuses,
   BlogOwnerInfoType,
   ExtendedLikesInfoType,
+  GameStatuses,
   LikeStatus,
   PostDBType,
   PostInfoType,
@@ -31,6 +33,7 @@ import { Posts } from '../entities/posts.entity';
 import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/question.entity';
+import { QuizPairs } from '../entities/quiz-pairs.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -424,4 +427,43 @@ export class QuestionViewModel {
     this.createdAt = questionDB.createdAt;
     this.updatedAt = questionDB.updatedAt;
   }
+}
+export class PairViewModel {
+  id: string;
+  firstPlayerProgress: GamePlayerProgressViewModel;
+  secondPlayerProgress: GamePlayerProgressViewModel;
+  questions: any;
+  status: GameStatuses;
+  pairCreatedDate: string;
+  startGameDate: string;
+  finishGameDate: string;
+  constructor(
+    pairDB: QuizPairs,
+    questions: Questions[],
+    firstPlayerProgress,
+    secondPlayerProgress,
+  ) {
+    this.id = pairDB.id;
+    this.firstPlayerProgress = firstPlayerProgress;
+    this.secondPlayerProgress = secondPlayerProgress;
+    this.questions = questions;
+    this.status = pairDB.status;
+    this.pairCreatedDate = pairDB.pairCreatedDate;
+    this.startGameDate = pairDB.startGameDate;
+    this.finishGameDate = pairDB.finishGameDate;
+  }
+}
+export class GamePlayerProgressViewModel {
+  answers: AnswerViewModel;
+  player: PlayerViewModel;
+  score: number;
+}
+export class AnswerViewModel {
+  questionId: string;
+  answerStatus: AnswerStatuses;
+  addedAt: string;
+}
+export class PlayerViewModel {
+  id: string;
+  login: string;
 }

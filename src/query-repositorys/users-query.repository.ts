@@ -1,5 +1,10 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { PaginationType, SortDirection, UserDBType } from '../types/types';
+import {
+  GameStatuses,
+  PaginationType,
+  SortDirection,
+  UserDBType,
+} from '../types/types';
 import { UserViewModel } from '../models/models';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -228,6 +233,15 @@ export class UsersQueryRepository {
   async findUserByUserIdWithDBTypeBonus(userId: string): Promise<UserDBType> {
     const user = await this.userModel.findOneBy({
       id: userId,
+    });
+    if (user) {
+      return this.toUserDBType(user);
+    }
+  }
+
+  async findUserByGameStatus(status: GameStatuses): Promise<UserDBType> {
+    const user = await this.userModel.findOneBy({
+      gameStatus: status,
     });
     if (user) {
       return this.toUserDBType(user);

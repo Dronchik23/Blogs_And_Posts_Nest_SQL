@@ -30,6 +30,7 @@ import { DeleteCommentCommand } from '../use-cases/comments/delete-comment-by-co
 import { UpdateCommentCommand } from '../use-cases/comments/update -comment-by-commentId-and-userId-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommentUpdateLikeStatusCommand } from '../use-cases/likes/comment-update-like-status-use-case';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
 @Controller({ path: 'comments', scope: Scope.REQUEST })
@@ -51,7 +52,7 @@ export class CommentsController {
       commentId,
       currentUser.id,
     );
-    if (!comment) {
+    if (isNil(comment)) {
       throw new NotFoundException();
     }
 
@@ -73,7 +74,7 @@ export class CommentsController {
     const comment = await this.commentsQueryRepository.findCommentByCommentId(
       commentId,
     );
-    if (!comment) {
+    if (isNil(comment)) {
       throw new NotFoundException();
     }
 
@@ -112,7 +113,7 @@ export class CommentsController {
       commentId,
       currentUserId,
     );
-    if (!comment) {
+    if (isNil(comment)) {
       throw new NotFoundException();
     }
 

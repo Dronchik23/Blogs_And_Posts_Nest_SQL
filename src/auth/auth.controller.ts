@@ -35,6 +35,7 @@ import { NewPasswordCommand } from '../use-cases/auth/new-password-use-case';
 import { RegistrationConfirmationCommand } from '../use-cases/auth/registration-confirmation-use-case';
 import { LogoutCommand } from '../use-cases/auth/logout-use-case';
 import { RegistrationEmailResendingCommand } from '../use-cases/auth/registration-email-resending-use-case';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @Controller({ path: 'auth', scope: Scope.REQUEST })
 export class AuthController {
@@ -109,7 +110,7 @@ export class AuthController {
       await this.usersQueryRepository.findUserByPasswordRecoveryCode(
         newPasswordInputModelDto.recoveryCode,
       );
-    if (!user) {
+    if (isNil(user)) {
       return HttpStatus.NO_CONTENT;
     }
     await this.commandBus.execute(
@@ -124,7 +125,7 @@ export class AuthController {
     const result = await this.commandBus.execute(
       new RegistrationConfirmationCommand(codeInputModelDTO.code),
     );
-    if (!result) {
+    if (isNil(result)) {
       throw new BadRequestException();
     }
   }
@@ -195,7 +196,7 @@ export class AuthController {
         jwtPayload.refreshToken,
       ),
     );
-    if (!device) {
+    if (isNil(device)) {
       throw new UnauthorizedException();
     }
   }

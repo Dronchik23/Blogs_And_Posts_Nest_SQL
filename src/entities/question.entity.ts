@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { QuestionInputModel } from '../models/models';
+import { QuizPairs } from './quiz-pairs.entity';
 
 @Entity()
 export class Questions {
@@ -26,6 +27,9 @@ export class Questions {
 
   @Column({ default: null })
   updatedAt: string;
+
+  @ManyToOne(() => QuizPairs, (qp) => qp.questions)
+  quizPare?: QuizPairs;
 
   /*   @ManyToOne(() => Users, (u) => u.blogs)
     blogOwner: Users;

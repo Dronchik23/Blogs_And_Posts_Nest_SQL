@@ -1,16 +1,9 @@
-import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import {
-  BlogDBType,
-  PaginationType,
-  QuestionDBType,
-  SortDirection,
-  UserDBType,
-} from '../types/types';
-import { UserViewModel } from '../models/models';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Injectable, Scope } from '@nestjs/common';
+import { PaginationType, SortDirection } from '../types/types';
+import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/question.entity';
+import { QuestionViewModel } from '../models/models';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionsQueryRepository {
@@ -28,7 +21,6 @@ export class QuestionsQueryRepository {
     pageNumber: number,
     pageSize: number,
   ): Promise<PaginationType> {
-    debugger;
     const builder = await this.dataSource
       .createQueryBuilder()
       .select('*')
@@ -62,5 +54,13 @@ export class QuestionsQueryRepository {
       totalCount: totalCount,
       items: questions,
     };
+  }
+
+  async getFiveRandomQuestions(): Promise<QuestionViewModel[]> {
+    return await this.questionModel
+      .createQueryBuilder('question')
+      .orderBy('RANDOM()')
+      .take(5)
+      .getMany();
   }
 }

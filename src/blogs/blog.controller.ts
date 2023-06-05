@@ -18,6 +18,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { BlogsQueryRepository } from '../query-repositorys/blogs-query.repository';
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { PaginationType } from '../types/types';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
 @Controller({ path: 'blogs', scope: Scope.REQUEST })
@@ -49,7 +50,7 @@ export class BlogsController {
   ): Promise<PaginationType> {
     const blog: BlogViewModel =
       await this.blogsQueryRepository.findBlogByBlogId(blogId);
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     return await this.postsQueryRepository.findPostsByBlogId(
@@ -65,7 +66,7 @@ export class BlogsController {
   @Get(':id')
   async getBlogByBlogId(@Param('id') id: string): Promise<BlogViewModel> {
     const blog = await this.blogsQueryRepository.findBlogByBlogId(id);
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     return blog;

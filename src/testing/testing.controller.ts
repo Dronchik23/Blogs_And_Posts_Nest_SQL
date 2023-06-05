@@ -1,4 +1,4 @@
-import { Controller, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Delete, Get, HttpCode } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blog.repository';
 import { UsersRepository } from '../sa/users/users-repository';
 import { DevicesRepository } from '../devices/device.repository';
@@ -7,6 +7,10 @@ import { LikesRepository } from '../likes/like.repository';
 import { PostsRepository } from '../posts/post.repository';
 import { TokensRepository } from '../tokens/tokens.repository';
 import { TestingRepository } from './testing.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { QuizPairs } from '../entities/quiz-pairs.entity';
+import { Repository } from 'typeorm';
+import { Questions } from '../entities/question.entity';
 
 @Controller('testing')
 export class TestingController {
@@ -19,6 +23,8 @@ export class TestingController {
     private readonly likesRepository: LikesRepository,
     private readonly tokensRepository: TokensRepository,
     private readonly testingRepository: TestingRepository,
+    @InjectRepository(QuizPairs) private q: Repository<QuizPairs>,
+    @InjectRepository(Questions) private qs: Repository<Questions>,
   ) {}
 
   @Delete('all-data')

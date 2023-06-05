@@ -18,6 +18,7 @@ import { DeleteAllDevicesExcludeCurrentCommand } from '../use-cases/devices/dele
 import { DeleteDeviceByDeviceIdCommand } from '../use-cases/devices/delete-device-by-deviceId-use-case';
 import { DeviceDBType } from '../types/types';
 import { DeviceViewModel } from '../models/models';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
 @Controller({ path: 'security/devices', scope: Scope.REQUEST })
@@ -59,7 +60,7 @@ export class DevicesController {
   ) {
     const device: DeviceDBType =
       await this.devicesQueryService.findDeviceByDeviceId(deviceId);
-    if (!device) {
+    if (isNil(device)) {
       throw new NotFoundException();
     }
     if (currentUserId !== device.userId) {

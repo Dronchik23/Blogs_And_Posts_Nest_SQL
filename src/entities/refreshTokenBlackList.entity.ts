@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'refreshTokenBlackList' })
-export class refreshTokenBlackList {
+export class RefreshTokenBlackList {
   @PrimaryGeneratedColumn()
   id: string;
 

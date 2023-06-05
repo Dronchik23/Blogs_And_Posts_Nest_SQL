@@ -9,7 +9,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { Users } from '../../entities/users.entity';
-import { UserDBType } from '../../types/types';
+import { GameStatuses, UserDBType } from '../../types/types';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class UsersRepository {
@@ -132,5 +132,13 @@ export class UsersRepository {
     const newUser = Users.create(createUserDTO, passwordHash, confirmationCode);
     const createdUser = await this.userModel.save(newUser);
     return new UserViewModel(createdUser);
+  }
+
+  async updateGameStatus(gameStatus: GameStatuses, userId) {
+    const result = await this.userModel.update(userId, {
+      gameStatus: gameStatus,
+    });
+
+    return result.affected > 0;
   }
 }

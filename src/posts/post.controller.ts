@@ -31,6 +31,7 @@ import { CreateCommentCommand } from '../use-cases/comments/create-comment-use-c
 import { PostUpdateLikeStatusCommand } from '../use-cases/likes/post-update-like-status-use-case';
 import { SkipThrottle } from '@nestjs/throttler';
 import { PaginationType, UserDBType } from '../types/types';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
 @Controller({ path: 'posts', scope: Scope.REQUEST })
@@ -49,7 +50,7 @@ export class PostsController {
     @CurrentUserIdFromToken() CurrentUserId,
   ) {
     const post = await this.postsQueryRepository.findPostByPostId(id);
-    if (!post) {
+    if (isNil(post)) {
       throw new NotFoundException();
     }
 
@@ -80,7 +81,7 @@ export class PostsController {
     }
 
     const post = await this.postsQueryRepository.findPostByPostId(postId);
-    if (!post) {
+    if (isNil(post)) {
       throw new NotFoundException();
     }
 
@@ -128,7 +129,7 @@ export class PostsController {
       id,
       CurrentUserId,
     );
-    if (!post) {
+    if (isNil(post)) {
       throw new NotFoundException();
     }
     return post;
@@ -147,7 +148,7 @@ export class PostsController {
       currentUser.id,
     );
 
-    if (!post) {
+    if (isNil(post)) {
       throw new NotFoundException();
     }
 

@@ -3,6 +3,7 @@ import {
   BloggerUserViewModel,
   BlogViewModel,
   CommentViewModel,
+  GamePlayerProgressViewModel,
   PostViewModel,
   UserViewModel,
 } from '../models/models';
@@ -46,6 +47,15 @@ export enum BanStatus {
   banned = 'banned',
   notBanned = 'notBanned',
   all = 'all',
+}
+export enum GameStatuses {
+  PendingSecondPlayer = 'PendingSecondPlayer',
+  Active = 'Active',
+  Finished = 'Finished',
+}
+export enum AnswerStatuses {
+  Correct = 'Correct',
+  Incorrect = 'Incorrect',
 }
 // classes
 export class BlogDBType {
@@ -110,6 +120,7 @@ export class UserDBType {
     public banDate: string,
     public banReason: string,
     public blogId?: string,
+    public GameStatuses?: GameStatuses,
   ) {}
 }
 export class AccountDataType {
@@ -222,4 +233,14 @@ export class QuestionDBType {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+}
+export class PairDBType {
+  id: string;
+  questions: any;
+  status: GameStatuses;
+  pairCreatedDate: string;
+  startGameDate: string;
+  finishGameDate: string;
+  firstPlayerProgress?: GamePlayerProgressViewModel;
+  secondPlayerProgress?: GamePlayerProgressViewModel;
 }

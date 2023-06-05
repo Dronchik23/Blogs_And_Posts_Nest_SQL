@@ -37,6 +37,7 @@ import { UpdatePostCommand } from '../use-cases/posts/update-post-by-postId-and-
 import { PostsQueryRepository } from '../query-repositorys/posts-query.repository';
 import { CurrentUser, CurrentUserId } from '../auth/decorators';
 import { CommentsQueryRepository } from '../query-repositorys/comments-query.repository';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
 @Controller({ path: 'blogger/blogs', scope: Scope.REQUEST })
@@ -99,7 +100,7 @@ export class BloggerBlogsController {
     @CurrentUserId() currentUserId: string,
   ): Promise<PostViewModel> {
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     const blogOwner: any =
@@ -107,7 +108,7 @@ export class BloggerBlogsController {
         blogId,
         currentUserId,
       );
-    if (!blogOwner) {
+    if (isNil(blogOwner)) {
       throw new ForbiddenException();
     }
     const newPost = await this.commandBus.execute(
@@ -131,7 +132,7 @@ export class BloggerBlogsController {
     const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
       blogId,
     );
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     if (blog.blogOwnerId !== currentUserid) {
@@ -155,7 +156,7 @@ export class BloggerBlogsController {
     const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
       blogId,
     );
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     if (blog.blogOwnerId !== currentUserid) {
@@ -180,7 +181,7 @@ export class BloggerBlogsController {
     @CurrentUserId() currentUserId: string,
   ): Promise<boolean> {
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     const blogOwner: BlogViewModel =
@@ -188,7 +189,7 @@ export class BloggerBlogsController {
         blogId,
         currentUserId,
       );
-    if (!blogOwner) {
+    if (isNil(blogOwner)) {
       throw new ForbiddenException();
     }
     const post: PostViewModel =
@@ -197,7 +198,7 @@ export class BloggerBlogsController {
     if (post.blogId !== blogId) {
       throw new ForbiddenException();
     }
-    if (!post) {
+    if (isNil(post)) {
       throw new NotFoundException();
     }
     const isDeleted = await this.commandBus.execute(
@@ -220,7 +221,7 @@ export class BloggerBlogsController {
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
     const blog = await this.blogsQueryRepository.findBlogByBlogId(blogId);
-    if (!blog) {
+    if (isNil(blog)) {
       throw new NotFoundException();
     }
     const blogOwner: any =
@@ -228,12 +229,12 @@ export class BloggerBlogsController {
         blogId,
         currentUserId,
       );
-    if (!blogOwner) {
+    if (isNil(blogOwner)) {
       throw new ForbiddenException();
     }
 
     const post = await this.postsQueryRepository.findPostByPostId(postId);
-    if (!post) {
+    if (isNil(post)) {
       throw new NotFoundException();
     }
 
