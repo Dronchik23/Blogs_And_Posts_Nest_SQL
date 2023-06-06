@@ -239,12 +239,12 @@ export class UsersQueryRepository {
     }
   }
 
-  async findUserByGameStatus(status: GameStatuses): Promise<UserDBType> {
+  /*  async findUserByGameStatus(status: GameStatuses): Promise<UserDBType> {
     const user = await this.userModel.findOneBy({
       gameStatus: status,
     });
     if (user) {
       return this.toUserDBType(user);
     }
-  }
+  }*/
 }

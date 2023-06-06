@@ -15,7 +15,6 @@ import {
 import { SkipThrottle } from '@nestjs/throttler';
 import { BasicAuthGuard } from '../../../auth/strategys/basic-strategy';
 import {
-  BanUserInputModel,
   PublishQuestionModel,
   QuestionInputModel,
   QuestionPaginationQueryModel,
@@ -27,13 +26,12 @@ import { CreateQuestionCommand } from '../../../use-cases/questions/create-quest
 import { PaginationType } from '../../../types/types';
 import { QuestionsQueryRepository } from '../../../query-repositorys/questions-query.repository';
 import { DeleteQuestionCommand } from '../../../use-cases/questions/delete-question-use-case';
-import { BanUserByUserIdBySACommand } from '../../../use-cases/users/bun-user-by-userId-use-case';
 import { UpdateQuestionCommand } from '../../../use-cases/questions/update-question-use-case';
 import { PublishQuestionCommand } from '../../../use-cases/questions/publish-question-use-case';
 
 @SkipThrottle()
 @Controller({ path: 'sa/quiz/questions', scope: Scope.REQUEST })
-export class QuizQuestionsController {
+export class QuestionsController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly questionsQueryRepository: QuestionsQueryRepository,

@@ -234,7 +234,7 @@ export class QuestionDBType {
   createdAt: string;
   updatedAt: string;
 }
-export class PairDBType {
+export class GameDBType {
   id: string;
   questions: any;
   status: GameStatuses;
@@ -244,3 +244,8 @@ export class PairDBType {
   firstPlayerProgress?: GamePlayerProgressViewModel;
   secondPlayerProgress?: GamePlayerProgressViewModel;
 }
+/*export class GamePlayerProgressType {
+  answer: AnswerType,
+  player: string
+  score: number
+}*/

@@ -133,12 +133,4 @@ export class UsersRepository {
     const createdUser = await this.userModel.save(newUser);
     return new UserViewModel(createdUser);
   }
-
-  async updateGameStatus(gameStatus: GameStatuses, userId) {
-    const result = await this.userModel.update(userId, {
-      gameStatus: gameStatus,
-    });
-
-    return result.affected > 0;
-  }
 }

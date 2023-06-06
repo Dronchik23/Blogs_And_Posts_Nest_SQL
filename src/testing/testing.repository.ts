@@ -23,7 +23,7 @@ DELETE FROM public.users CASCADE;
 
 DELETE FROM public.questions CASCADE;
 
-DELETE FROM public."quizPairs" CASCADE;
+DELETE FROM public.games CASCADE;
 `);
   }
 }

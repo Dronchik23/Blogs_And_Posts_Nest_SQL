@@ -126,7 +126,7 @@ export class BloggerBlogsController {
   @HttpCode(204)
   async updateBlogByBlogId(
     @Param('blogId') blogId: string,
-    @Body() updateBlogDto: BlogUpdateModel,
+    @Body() updateBlogDTO: BlogUpdateModel,
     @CurrentUserId() currentUserid: string,
   ): Promise<void | boolean> {
     const blog = await this.blogsQueryRepository.findBlogByBlogIdWithBlogDBType(
@@ -139,7 +139,7 @@ export class BloggerBlogsController {
       throw new ForbiddenException();
     }
     const isUpdated = await this.commandBus.execute(
-      new UpdateBlogCommand(blogId, updateBlogDto),
+      new UpdateBlogCommand(blogId, updateBlogDTO),
     );
     if (!isUpdated) {
       throw new NotFoundException();

@@ -33,7 +33,8 @@ import { Posts } from '../entities/posts.entity';
 import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/question.entity';
-import { QuizPairs } from '../entities/quiz-pairs.entity';
+import { Games } from '../entities/games.entity';
+import { Players } from '../entities/players.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -428,33 +429,42 @@ export class QuestionViewModel {
     this.updatedAt = questionDB.updatedAt;
   }
 }
-export class PairViewModel {
+export class GameViewModel {
   id: string;
   firstPlayerProgress: GamePlayerProgressViewModel;
   secondPlayerProgress: GamePlayerProgressViewModel;
-  questions: any;
+  questions: Questions[];
   status: GameStatuses;
   pairCreatedDate: string;
   startGameDate: string;
   finishGameDate: string;
-  constructor(
-    pairDB: QuizPairs,
-    questions: Questions[],
-    firstPlayerProgress,
-    secondPlayerProgress,
-  ) {
-    this.id = pairDB.id;
-    this.firstPlayerProgress = firstPlayerProgress;
-    this.secondPlayerProgress = secondPlayerProgress;
-    this.questions = questions;
-    this.status = pairDB.status;
-    this.pairCreatedDate = pairDB.pairCreatedDate;
-    this.startGameDate = pairDB.startGameDate;
-    this.finishGameDate = pairDB.finishGameDate;
+  constructor(gameDB: Games, playerDB: Players, player2DB?: Players) {
+    this.id = gameDB.id;
+    this.firstPlayerProgress = {
+      answers: playerDB.gameProgress.answers,
+      player: {
+        id: playerDB.playerId,
+        login: playerDB.playerLogin,
+      },
+      score: playerDB.gameProgress.score,
+    };
+    this.secondPlayerProgress = {
+      answers: (player2DB.gameProgress.answers = null),
+      player: {
+        id: (player2DB.playerId = null),
+        login: (playerDB.playerLogin = null),
+      },
+      score: player2DB.gameProgress.score,
+    };
+    this.questions = gameDB.questions;
+    this.status = gameDB.status;
+    this.pairCreatedDate = gameDB.pairCreatedDate;
+    this.startGameDate = gameDB.startGameDate;
+    this.finishGameDate = gameDB.finishGameDate;
   }
 }
 export class GamePlayerProgressViewModel {
-  answers: AnswerViewModel;
+  answers: AnswerViewModel[];
   player: PlayerViewModel;
   score: number;
 }

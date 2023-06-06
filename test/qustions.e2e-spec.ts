@@ -1,17 +1,12 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { createApp } from '../src/helpers/createApp';
-import {
-  QuestionInputModel,
-  QuestionViewModel,
-  UserInputModel,
-  UserViewModel,
-} from '../src/models/models';
+import { QuestionInputModel, QuestionViewModel } from '../src/models/models';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 
-describe('sa/quiz/questions tests (e2e)', () => {
+describe('sa/game/questions tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
@@ -55,7 +50,7 @@ describe('sa/quiz/questions tests (e2e)', () => {
     await app.close();
   });
 
-  describe('sa/quiz/questions', () => {
+  describe('sa/game/questions', () => {
     describe('get question tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);

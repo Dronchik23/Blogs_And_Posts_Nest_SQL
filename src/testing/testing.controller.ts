@@ -8,7 +8,7 @@ import { PostsRepository } from '../posts/post.repository';
 import { TokensRepository } from '../tokens/tokens.repository';
 import { TestingRepository } from './testing.repository';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QuizPairs } from '../entities/quiz-pairs.entity';
+import { Games } from '../entities/games.entity';
 import { Repository } from 'typeorm';
 import { Questions } from '../entities/question.entity';
 
@@ -23,7 +23,7 @@ export class TestingController {
     private readonly likesRepository: LikesRepository,
     private readonly tokensRepository: TokensRepository,
     private readonly testingRepository: TestingRepository,
-    @InjectRepository(QuizPairs) private q: Repository<QuizPairs>,
+    @InjectRepository(Games) private q: Repository<Games>,
     @InjectRepository(Questions) private qs: Repository<Questions>,
   ) {}
 
