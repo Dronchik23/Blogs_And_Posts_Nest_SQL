@@ -1,22 +1,23 @@
-import { Injectable, NotFoundException, Scope } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
+import { DataSource, Repository } from 'typeorm';
+import { GameProgresses } from '../entities/game-progresses.entity';
+import { Players } from '../entities/players.entity';
 import {
   GameViewModel,
   QuestionViewModel,
   UserViewModel,
 } from '../models/models';
-import { GameProgresses } from '../entities/game-progresses.entity';
-import { Players } from '../entities/players.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Games)
     private readonly gameModel: Repository<Games>,
+    @InjectRepository(GameProgresses)
     private readonly gameProgressModel: Repository<GameProgresses>,
+    @InjectRepository(Players)
     private readonly playersModel: Repository<Players>,
   ) {}
 

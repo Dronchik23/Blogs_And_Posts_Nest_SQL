@@ -3,7 +3,7 @@ import { AnswerStatuses } from '../types/types';
 import { Games } from './games.entity';
 import { GameProgresses } from './game-progresses.entity';
 
-@Entity({ name: 'answers' })
+@Entity()
 export class Answers {
   @PrimaryGeneratedColumn('uuid')
   id: string;

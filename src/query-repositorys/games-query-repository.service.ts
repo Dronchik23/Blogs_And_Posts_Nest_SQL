@@ -31,7 +31,7 @@ export class GamesQueryRepository {
     try {
       const game = await this.gameModel.findOneBy({ id: pairId });
       return game;
-      //return game ? this.gameDBTypePairViewModel(game) : null;
+      //return games ? this.gameDBTypePairViewModel(games) : null;
     } catch (error) {
       throw new NotFoundException();
     }
@@ -53,7 +53,7 @@ export class GamesQueryRepository {
     try {
       const player: Players = await this.playerModel.findOne({
         where: {
-          // player.gameProgress.game.id: currentUserId,
+          // player.gameProgress.games.id: currentUserId,
         },
       });
       /*     const gameProgress: GameProgresses = await this.gameProgressModel.findOne(
@@ -66,7 +66,7 @@ export class GamesQueryRepository {
 
       return;
 
-      // return game ? this.gameDBTypePairViewModel(game) : null;
+      // return games ? this.gameDBTypePairViewModel(games) : null;
     } catch (error) {
       console.log(error, 'error');
     }

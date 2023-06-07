@@ -10,7 +10,7 @@ import { TestingRepository } from './testing.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Games } from '../entities/games.entity';
 import { Repository } from 'typeorm';
-import { Questions } from '../entities/question.entity';
+import { Questions } from '../entities/questions.entity';
 
 @Controller('testing')
 export class TestingController {

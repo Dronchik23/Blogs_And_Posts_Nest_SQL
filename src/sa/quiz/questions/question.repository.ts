@@ -7,7 +7,7 @@ import {
   QuestionUpdateModel,
   QuestionViewModel,
 } from '../../../models/models';
-import { Questions } from '../../../entities/question.entity';
+import { Questions } from '../../../entities/questions.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionRepository {

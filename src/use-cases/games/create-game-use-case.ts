@@ -4,7 +4,7 @@ import {
   QuestionViewModel,
   UserViewModel,
 } from '../../models/models';
-import { GamesRepository } from '../../game/pairs-quiz.repository';
+import { GamesRepository } from '../../games/pairs-quiz.repository';
 import { GameStatuses } from '../../types/types';
 import { UsersQueryRepository } from '../../query-repositorys/users-query.repository';
 import { UsersRepository } from '../../sa/users/users-repository';

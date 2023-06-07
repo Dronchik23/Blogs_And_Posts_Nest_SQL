@@ -32,7 +32,7 @@ import { Blogs } from '../entities/blogs.entity';
 import { Posts } from '../entities/posts.entity';
 import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
-import { Questions } from '../entities/question.entity';
+import { Questions } from '../entities/questions.entity';
 import { Games } from '../entities/games.entity';
 import { Players } from '../entities/players.entity';
 

@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AnswerViewModel, GameViewModel } from '../../models/models';
-import { GamesRepository } from '../../game/pairs-quiz.repository';
+import { GamesRepository } from '../../games/pairs-quiz.repository';
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
 import { QuestionsQueryRepository } from '../../query-repositorys/questions-query.repository';
 
@@ -19,28 +19,28 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   async execute(command: SendAnswerCommand): Promise<any> {
     let player2Answer: string;
 
-    /*    function processAnswers(game: GameViewModel) {
-      const currentQuestion = game.questions[0]; // Получаем текущий вопрос из массива вопросов
+    /*    function processAnswers(games: GameViewModel) {
+      const currentQuestion = games.questions[0]; // Получаем текущий вопрос из массива вопросов
 
       if (currentQuestion.answer === command.player1Answer) {
         // Ответ первого игрока на текущий вопрос правильный
-        game.firstPlayerProgress.score++; // Увеличиваем счет первого игрока
+        games.firstPlayerProgress.score++; // Увеличиваем счет первого игрока
       }
 
-      const player2Answer = game.secondPlayerProgress.answers[0];
+      const player2Answer = games.secondPlayerProgress.answers[0];
 
       if (currentQuestion.answer === player2Answer) {
         // Ответ второго игрока на текущий вопрос правильный
-        game.secondPlayerProgress.score++; // Увеличиваем счет второго игрока
+        games.secondPlayerProgress.score++; // Увеличиваем счет второго игрока
       }
 
       if (command.player1Answer !== null && player2Answer !== null) {
         // Если пришли оба ответа
-        game.questions.shift(); // Удаляем текущий вопрос из массива вопросов
+        games.questions.shift(); // Удаляем текущий вопрос из массива вопросов
 
-        if (game.questions.length > 0) {
+        if (games.questions.length > 0) {
           // Если еще есть вопросы, устанавливаем следующий вопрос как текущий
-          setCurrentQuestion(game.questions[0]);
+          setCurrentQuestion(games.questions[0]);
         } else {
           // Если вопросы закончились, завершаем игру
           finishGame();

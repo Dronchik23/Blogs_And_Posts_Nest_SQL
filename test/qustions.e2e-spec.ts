@@ -6,7 +6,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { EmailAdapter } from '../src/email/email.adapter';
 
-describe('sa/game/questions tests (e2e)', () => {
+describe('sa/games/questions tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
@@ -50,7 +50,7 @@ describe('sa/game/questions tests (e2e)', () => {
     await app.close();
   });
 
-  describe('sa/game/questions', () => {
+  describe('sa/games/questions', () => {
     describe('get question tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);

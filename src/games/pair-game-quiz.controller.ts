@@ -21,7 +21,7 @@ import { Games } from '../entities/games.entity';
 import { SendAnswerCommand } from '../use-cases/games/send-answer-use-case';
 
 @SkipThrottle()
-@Controller({ path: 'pair-game-quiz/pairs', scope: Scope.DEFAULT })
+@Controller({ path: 'pair-games-quiz/pairs', scope: Scope.DEFAULT })
 export class CreateGameController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -73,12 +73,12 @@ export class CreateGameController {
       pairId,
     );
 
-    /*    if (isNil(game)) {
+    /*    if (isNil(games)) {
       throw new NotFoundException();
     }
-    if (game.gameProgress. !== currentUserId) {
+    if (games.gameProgress. !== currentUserId) {
       throw new ForbiddenException();
     }
-    return game;*/
+    return games;*/
   }
 }

@@ -14,7 +14,7 @@ import { createApp } from '../src/helpers/createApp';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { AppModule } from '../src/app.module';
 
-describe('pair-game-game tests (e2e)', () => {
+describe('pair-games-games tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
@@ -32,9 +32,9 @@ describe('pair-game-game tests (e2e)', () => {
     },
   };
   const questionsUrl = '/sa/quiz/questions';
-  const gameCreateUrl = '/pair-game-quiz/pairs/connection';
-  const gameUrl = '/pair-game-quiz/pairs';
-  const currentGameUrl = '/pair-game-quiz/pairs/my-current';
+  const gameCreateUrl = '/pair-games-quiz/pairs/connection';
+  const gameUrl = '/pair-games-quiz/pairs';
+  const currentGameUrl = '/pair-games-quiz/pairs/my-current';
   const wipeAllData = '/testing/all-data';
   const userAgent = {
     'User-Agent': 'jest user-agent',
@@ -63,8 +63,8 @@ describe('pair-game-game tests (e2e)', () => {
     await app.close();
   });
 
-  describe('sa/game/questions', () => {
-    describe('get game by gameId tests', () => {
+  describe('sa/games/questions', () => {
+    describe('get games by gameId tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
         const createUserDto: UserInputModel = {
@@ -119,7 +119,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(game.id).toBeDefined();
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
       });
-      it('should get game by pairId', async () => {
+      it('should get games by pairId', async () => {
         const responseForGame = await request(server)
           .get(gameUrl + `/${game.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -134,7 +134,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(game.startGameDate).toBeDefined();
         expect(game.finishGameDate).toBeDefined();
       });
-      it('should send 403 if user try to get alien game', async () => {
+      it('should send 403 if user try to get alien games', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -165,7 +165,7 @@ describe('pair-game-game tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(403);
       });
-      it.skip('should not get game by bad pairId', async () => {
+      it.skip('should not get games by bad pairId', async () => {
         const badPairId = 4;
         return await request(server)
           .get(gameUrl + `/${badPairId}`)
@@ -173,7 +173,7 @@ describe('pair-game-game tests (e2e)', () => {
           .expect(400);
       });
     });
-    describe('get current game tests', () => {
+    describe('get current games tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -229,7 +229,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(game.id).toBeDefined();
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
       });
-      it('should get current game', async () => {
+      it('should get current games', async () => {
         const responseForGame = await request(server)
           .get(currentGameUrl)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -245,7 +245,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(game.finishGameDate).toBeNull();
       });
     });
-    describe('create game game for one player tests', () => {
+    describe('create games games for one player tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -291,7 +291,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
       });
-      it('should create game for one player with correct input data', async () => {
+      it('should create games for one player with correct input data', async () => {
         const createResponseForPair = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -306,7 +306,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(game.startGameDate).toBeNull();
         expect(game.finishGameDate).toBeNull();
       });
-      it.skip('should not create game with incorrect authorization data', async () => {
+      it.skip('should not create games with incorrect authorization data', async () => {
         await request(server)
           .post(gameCreateUrl)
           .set('', `Bearer ${accessToken}`)
@@ -325,7 +325,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(401);*/
       });
     });
-    describe('create game game for two players tests', () => {
+    describe('create games games for two players tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -371,7 +371,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
       });
-      it('should create game for two players with correct input data', async () => {
+      it('should create games for two players with correct input data', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -425,7 +425,7 @@ describe('pair-game-game tests (e2e)', () => {
         expect(pair2.startGameDate).toBeDefined();
         expect(pair2.finishGameDate).toBeNull();
       });
-      it.skip('should not create game with incorrect authorization data', async () => {
+      it.skip('should not create games with incorrect authorization data', async () => {
         await request(server)
           .post(gameCreateUrl)
           .set('', `Bearer ${accessToken}`)

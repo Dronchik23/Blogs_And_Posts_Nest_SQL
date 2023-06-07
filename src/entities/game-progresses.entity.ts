@@ -6,7 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameStatuses, LikeStatus, UserDBType } from '../types/types';
-import { Questions } from './question.entity';
+import { Questions } from './questions.entity';
 import {
   GameViewModel,
   QuestionViewModel,

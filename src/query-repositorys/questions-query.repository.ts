@@ -2,7 +2,7 @@ import { Injectable, Scope } from '@nestjs/common';
 import { PaginationType, SortDirection } from '../types/types';
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { Questions } from '../entities/question.entity';
+import { Questions } from '../entities/questions.entity';
 import { QuestionViewModel } from '../models/models';
 
 @Injectable({ scope: Scope.DEFAULT })
