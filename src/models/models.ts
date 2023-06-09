@@ -438,23 +438,31 @@ export class GameViewModel {
   pairCreatedDate: string;
   startGameDate: string;
   finishGameDate: string;
-  constructor(gameDB: Games, playerDB: Players, player2DB?: Players) {
+  constructor(gameDB: Games) {
     this.id = gameDB.id;
     this.firstPlayerProgress = {
-      answers: playerDB.gameProgress.answers,
+      answers: gameDB.gameProgress.answers.map((a) => ({
+        questionId: a.firstPlayerQuestionId,
+        answerStatus: a.firstPlayerAnswerStatus,
+        addedAt: a.firstPlayerAddedAt,
+      })),
       player: {
-        id: playerDB.playerId,
-        login: playerDB.playerLogin,
+        id: gameDB.gameProgress.players.firstPlayerId,
+        login: gameDB.gameProgress.players.firstPlayerLogin,
       },
-      score: playerDB.gameProgress.score,
+      score: gameDB.gameProgress.firstPlayerScore,
     };
     this.secondPlayerProgress = {
-      answers: (player2DB.gameProgress.answers = null),
+      answers: gameDB.gameProgress.answers.map((a) => ({
+        questionId: a.secondPlayerQuestionId,
+        answerStatus: a.secondPlayerAnswerStatus,
+        addedAt: a.secondPlayerAddedAt,
+      })),
       player: {
-        id: (player2DB.playerId = null),
-        login: (playerDB.playerLogin = null),
+        id: gameDB.gameProgress.players.secondPlayerId,
+        login: gameDB.gameProgress.players.secondPlayerLogin,
       },
-      score: player2DB.gameProgress.score,
+      score: gameDB.gameProgress.secondPlayerScore,
     };
     this.questions = gameDB.questions;
     this.status = gameDB.status;
@@ -466,7 +474,7 @@ export class GameViewModel {
 export class GamePlayerProgressViewModel {
   answers: AnswerViewModel[];
   player: PlayerViewModel;
-  score: number;
+  score: any;
 }
 export class AnswerViewModel {
   questionId: string;
@@ -474,6 +482,6 @@ export class AnswerViewModel {
   addedAt: string;
 }
 export class PlayerViewModel {
-  id: string;
-  login: string;
+  id: any;
+  login: any;
 }

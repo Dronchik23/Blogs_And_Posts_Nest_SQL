@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -19,6 +18,7 @@ import { CreateGameCommand } from '../use-cases/games/create-game-use-case';
 import { GamesQueryRepository } from '../query-repositorys/games-query-repository.service';
 import { Games } from '../entities/games.entity';
 import { SendAnswerCommand } from '../use-cases/games/send-answer-use-case';
+import { GameStatuses } from '../types/types';
 
 @SkipThrottle()
 @Controller({ path: 'pair-games-quiz/pairs', scope: Scope.DEFAULT })
@@ -37,7 +37,7 @@ export class CreateGameController {
     return await this.commandBus.execute(new CreateGameCommand(currentUser));
   }
 
-  @UseGuards(BearerAuthGuard)
+  /*  @UseGuards(BearerAuthGuard)
   @Post('/my-current/answers')
   @HttpCode(200)
   async sendAnswer(
@@ -47,10 +47,13 @@ export class CreateGameController {
     const game: GameViewModel = await this.gamesQueryRepository.findCurrentGame(
       currentUserId,
     );
+    if (!game || game.status !== GameStatuses.Active) {
+      throw new NotFoundException();
+    }
     return await this.commandBus.execute(
-      new SendAnswerCommand(sendAnswerDTO, game),
+      new SendAnswerCommand(sendAnswerDTO, game.id),
     );
-  }
+  }*/
 
   @UseGuards(BearerAuthGuard)
   @Get('/my-current')

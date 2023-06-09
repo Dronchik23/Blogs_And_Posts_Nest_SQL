@@ -89,14 +89,14 @@ import { UpdateQuestionService } from './use-cases/questions/update-question-use
 import { PublishQuestionService } from './use-cases/questions/publish-question-use-case';
 import { CreateGameService } from './use-cases/games/create-game-use-case';
 import { Games } from './entities/games.entity';
-import { RefreshTokenBlackList } from './entities/refreshTokenBlackList.entity';
+import { RefreshTokenBlackList } from './entities/refresh-token-black-list.entity';
 import { CreateGameController } from './games/pair-game-quiz.controller';
 import { SendAnswerService } from './use-cases/games/send-answer-use-case';
-import { Answers } from './entities/answers.entity';
 import { GamesRepository } from './games/pairs-quiz.repository';
 import { GamesQueryRepository } from './query-repositorys/games-query-repository.service';
-import { GameProgresses } from './entities/game-progresses.entity';
 import { Players } from './entities/players.entity';
+import { Answers } from './entities/answers';
+import { GameProgresses } from './entities/game-progresses';
 
 export const useCases = [
   CreateBlogService,
@@ -190,9 +190,9 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       Questions,
       Games,
       RefreshTokenBlackList,
-      Answers,
       GameProgresses,
       Players,
+      Answers,
     ]),
     MailerModule.forRoot({
       transport: {

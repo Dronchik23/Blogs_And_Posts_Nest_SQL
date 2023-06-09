@@ -1,13 +1,6 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { QuestionInputModel } from '../models/models';
 import { Games } from './games.entity';
-import { Answers } from './answers.entity';
 
 @Entity()
 export class Questions {
