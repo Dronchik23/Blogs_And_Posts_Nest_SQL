@@ -23,7 +23,13 @@ DELETE FROM public.users CASCADE;
 
 DELETE FROM public.questions CASCADE;
 
+DELETE FROM public.players CASCADE;
+
+DELETE FROM public."gameProgresses" CASCADE;
+
 DELETE FROM public.games CASCADE;
+
+DELETE FROM public.answers CASCADE;
 `);
   }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -9,7 +10,11 @@ import {
   Scope,
   UseGuards,
 } from '@nestjs/common';
-import { GameViewModel, UserViewModel } from '../models/models';
+import {
+  AnswerInputModel,
+  GameViewModel,
+  UserViewModel,
+} from '../models/models';
 import { SkipThrottle } from '@nestjs/throttler';
 import { CommandBus } from '@nestjs/cqrs';
 import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
@@ -19,6 +24,7 @@ import { GamesQueryRepository } from '../query-repositorys/games-query-repositor
 import { Games } from '../entities/games.entity';
 import { SendAnswerCommand } from '../use-cases/games/send-answer-use-case';
 import { GameStatuses } from '../types/types';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
 @Controller({ path: 'pair-games-quiz/pairs', scope: Scope.DEFAULT })
@@ -34,35 +40,29 @@ export class CreateGameController {
   async createGame(
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<GameViewModel> {
-    return await this.commandBus.execute(new CreateGameCommand(currentUser));
+    const game = await this.commandBus.execute(
+      new CreateGameCommand(currentUser),
+    );
+    return game;
   }
 
-  /*  @UseGuards(BearerAuthGuard)
+  @UseGuards(BearerAuthGuard)
   @Post('/my-current/answers')
   @HttpCode(200)
   async sendAnswer(
-    @Body() sendAnswerDTO: string,
+    @Body() sendAnswerDTO: AnswerInputModel,
     @CurrentUserId() currentUserId,
   ): Promise<GameViewModel> {
-    const game: GameViewModel = await this.gamesQueryRepository.findCurrentGame(
-      currentUserId,
-    );
-    if (!game || game.status !== GameStatuses.Active) {
-      throw new NotFoundException();
-    }
     return await this.commandBus.execute(
-      new SendAnswerCommand(sendAnswerDTO, game.id),
+      new SendAnswerCommand(sendAnswerDTO, currentUserId),
     );
-  }*/
+  }
 
   @UseGuards(BearerAuthGuard)
   @Get('/my-current')
   @HttpCode(200)
   async getCurrentGame(@CurrentUserId() currentUserId): Promise<GameViewModel> {
-    const game: GameViewModel = await this.gamesQueryRepository.findCurrentGame(
-      currentUserId,
-    );
-    return game;
+    return await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
   }
 
   @UseGuards(BearerAuthGuard)
@@ -72,16 +72,15 @@ export class CreateGameController {
     @Param('pairId') pairId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
-    const game: Games = await this.gamesQueryRepository.findPairByPairId(
-      pairId,
-    );
-
-    /*    if (isNil(games)) {
+    return await this.gamesQueryRepository.findGameByGameId(pairId);
+    /*   if (isNil(game)) {
       throw new NotFoundException();
     }
-    if (games.gameProgress. !== currentUserId) {
+    if (
+      game.gameProgress.firstPlayerScore !== currentUserId ||
+      game.gameProgress.players.secondPlayerId !== currentUserId
+    ) {
       throw new ForbiddenException();
-    }
-    return games;*/
+    }*/
   }
 }

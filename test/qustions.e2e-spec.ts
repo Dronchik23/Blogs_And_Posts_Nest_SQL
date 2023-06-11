@@ -269,7 +269,6 @@ describe('sa/games/questions tests (e2e)', () => {
         const response = await request(server).get(url).auth('admin', 'qwerty');
 
         const updatedQuestion: QuestionViewModel = response.body.items[0];
-        console.log(updatedQuestion, 'updatedQuestion');
 
         expect(updatedQuestion.body).toEqual(updateQuestionDto.body);
         expect(updatedQuestion.updatedAt).not.toBeNull();

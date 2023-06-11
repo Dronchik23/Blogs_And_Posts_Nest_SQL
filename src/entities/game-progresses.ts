@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import { Answers } from './answers';
 import { Players } from './players.entity';
+import { UserViewModel } from '../models/models';
+import { Games } from './games.entity';
 
 @Entity({ name: 'gameProgresses' })
 export class GameProgresses {
@@ -20,21 +22,23 @@ export class GameProgresses {
   @Column({ nullable: true })
   secondPlayerScore: number;
 
-  @OneToOne(() => Players)
+  @Column({ nullable: true })
+  gameId: string;
+
+  @OneToOne(() => Games, (g) => g.gameProgress)
   @JoinColumn()
+  game: Games;
+
+  @OneToOne(() => Players, (p) => p.gameProgress)
   players: Players;
 
-  @OneToMany(() => Answers, (a) => a.gameProgress.answers, {
-    eager: true,
-  })
+  @OneToMany(() => Answers, (a) => a.gameProgress.answers)
   answers: Answers[];
 
-  static create(firstPlayerId: string) {
-    const gameProgress = new GameProgresses();
-    gameProgress.players.firstPlayerId = firstPlayerId;
-    gameProgress.firstPlayerScore = 0;
-    gameProgress.secondPlayerScore = 0;
-    gameProgress.answers = [];
-    return gameProgress;
+  static create() {
+    const newGameProgress = new GameProgresses();
+    newGameProgress.firstPlayerScore = 0;
+    newGameProgress.secondPlayerScore = 0;
+    return newGameProgress;
   }
 }

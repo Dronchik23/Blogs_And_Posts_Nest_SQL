@@ -1,37 +1,38 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { GameStatuses, GameDBType } from '../types/types';
 import { GameViewModel } from '../models/models';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
 import { Players } from '../entities/players.entity';
+import { GameProgresses } from '../entities/game-progresses';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesQueryRepository {
   constructor(
+    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Games) private readonly gameModel: Repository<Games>,
     @InjectRepository(Players)
     private readonly playerModel: Repository<Players>,
   ) {}
 
-  private gameDBTypePairViewModel(pair: GameDBType): GameViewModel {
+  private gameDBTypePairViewModel(game: any): GameViewModel {
     return {
-      id: pair.id,
-      firstPlayerProgress: pair.firstPlayerProgress,
-      secondPlayerProgress: pair.secondPlayerProgress,
-      questions: pair.questions,
-      status: pair.status,
-      pairCreatedDate: pair.pairCreatedDate,
-      startGameDate: pair.startGameDate,
-      finishGameDate: pair.finishGameDate,
+      id: game.id,
+      firstPlayerProgress: game.firstPlayerProgress,
+      secondPlayerProgress: game.secondPlayerProgress,
+      questions: game.questions,
+      status: game.status,
+      pairCreatedDate: game.pairCreatedDate,
+      startGameDate: game.startGameDate,
+      finishGameDate: game.finishGameDate,
     };
   }
 
-  async findPairByPairId(pairId: string): Promise<Games> {
+  async findGameByGameId(gameId: string): Promise<GameViewModel> {
     try {
-      const game = await this.gameModel.findOneBy({ id: pairId });
-      return game;
-      //return games ? this.gameDBTypePairViewModel(games) : null;
+      const game = await this.gameModel.findOneBy({ id: gameId });
+      return game ? this.gameDBTypePairViewModel(game) : null;
     } catch (error) {
       throw new NotFoundException();
     }
@@ -49,26 +50,28 @@ export class GamesQueryRepository {
     }
   }
 
-  async findCurrentGame(currentUserId: string): Promise<GameViewModel> {
+  async findGameByPlayerId(currentUserId: string): Promise<any> {
     try {
-      const player: Players = await this.playerModel.findOne({
-        where: {
-          // player.gameProgress.games.id: currentUserId,
-        },
-      });
-      /*     const gameProgress: GameProgresses = await this.gameProgressModel.findOne(
-        {
-          where: {
-            player: currentUserId,
-          },
-        },
-      );*/
+      console.log(currentUserId);
+      const result = await this.dataSource
+        .createQueryBuilder()
+        .select('*')
+        .from(Players, 'players')
+        .where('players."firstPlayerId" = :currentUserId', { currentUserId })
+        .leftJoin(
+          GameProgresses,
+          'progress',
+          'progress.id = players."gameProgressId"',
+        )
+        .leftJoin(Games, 'games', 'games.id = progress."gameId"')
+        .getRawOne();
 
-      return;
+      const game = result;
+      console.log('game repo', game);
 
-      // return games ? this.gameDBTypePairViewModel(games) : null;
+      return game ? this.gameDBTypePairViewModel(game) : null;
     } catch (error) {
-      console.log(error, 'error');
+      throw new NotFoundException();
     }
   }
 }

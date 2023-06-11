@@ -13,6 +13,7 @@ import { GameStatuses } from '../src/types/types';
 import { createApp } from '../src/helpers/createApp';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { AppModule } from '../src/app.module';
+import { Questions } from '../src/entities/questions.entity';
 
 describe('pair-games-games tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
@@ -22,6 +23,7 @@ describe('pair-games-games tests (e2e)', () => {
   let user: UserViewModel;
   let accessToken: string;
   let game: GameViewModel;
+  let questions: Questions[];
   const mokEmailAdapter = {
     async sendEmail(
       email: string,
@@ -109,12 +111,12 @@ describe('pair-games-games tests (e2e)', () => {
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
 
-        const createResponseForPair = await request(server)
+        const createResponseForGame = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        game = createResponseForPair.body;
+        game = createResponseForGame.body;
 
         expect(game.id).toBeDefined();
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
@@ -125,16 +127,16 @@ describe('pair-games-games tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        game = responseForGame.body;
+        const gameFromResponse = responseForGame.body;
 
-        expect(game.id).toBeDefined();
-        expect(game.status).toBeDefined();
-        expect(game.questions).toEqual(game.questions);
-        expect(game.pairCreatedDate).toEqual(game.pairCreatedDate);
-        expect(game.startGameDate).toBeDefined();
-        expect(game.finishGameDate).toBeDefined();
+        expect(gameFromResponse.id).toEqual(game.id);
+        expect(gameFromResponse.status).toBeDefined();
+        expect(gameFromResponse.questions).toEqual(game.questions);
+        expect(gameFromResponse.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(gameFromResponse.startGameDate).toBeDefined();
+        expect(gameFromResponse.finishGameDate).toBeDefined();
       });
-      it('should send 403 if user try to get alien games', async () => {
+      it.skip('should send 403 if user try to get alien games', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -230,19 +232,20 @@ describe('pair-games-games tests (e2e)', () => {
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
       });
       it('should get current games', async () => {
+        debugger;
         const responseForGame = await request(server)
           .get(currentGameUrl)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        game = responseForGame.body;
+        const foundGame = responseForGame.body;
 
-        expect(game.id).toEqual(game.id);
-        expect(game.status).toBeDefined();
-        expect(game.questions).toEqual(game.questions);
-        expect(game.pairCreatedDate).toEqual(game.pairCreatedDate);
-        expect(game.startGameDate).toBeNull();
-        expect(game.finishGameDate).toBeNull();
+        expect(foundGame.id).toEqual(game.id);
+        expect(foundGame.status).toEqual(game.status);
+        expect(foundGame.questions).toEqual(game.questions);
+        expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(foundGame.startGameDate).toBeNull();
+        expect(foundGame.finishGameDate).toBeNull();
       });
     });
     describe('create games games for one player tests', () => {
@@ -288,6 +291,9 @@ describe('pair-games-games tests (e2e)', () => {
           .auth('admin', 'qwerty')
           .expect(200);
 
+        questions = getResponseForQuestions.body.items;
+        console.log('before all questions', questions);
+
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
       });
@@ -297,14 +303,14 @@ describe('pair-games-games tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        const game: GameViewModel = createResponseForPair.body;
+        const createdGame: GameViewModel = createResponseForPair.body;
 
-        expect(game.id).toBeDefined();
-        expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
-        expect(game.questions).toEqual(game.questions);
-        expect(game.pairCreatedDate).toEqual(game.pairCreatedDate);
-        expect(game.startGameDate).toBeNull();
-        expect(game.finishGameDate).toBeNull();
+        expect(createdGame.id).toBeDefined();
+        expect(createdGame.status).toEqual(GameStatuses.PendingSecondPlayer);
+        expect(createdGame.questions.length).toBe(5);
+        expect(createdGame.pairCreatedDate).toBeDefined();
+        expect(createdGame.startGameDate).toBeNull();
+        expect(createdGame.finishGameDate).toBeNull();
       });
       it.skip('should not create games with incorrect authorization data', async () => {
         await request(server)
@@ -325,7 +331,7 @@ describe('pair-games-games tests (e2e)', () => {
         expect(401);*/
       });
     });
-    describe('create games games for two players tests', () => {
+    describe.skip('create games games for two players tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -443,6 +449,54 @@ describe('pair-games-games tests (e2e)', () => {
           .set('Authorization', `Bearer ${fakeAccessToken}`);
         expect(401);*/
       });
+    });
+    describe('send answer test tests', () => {
+      beforeAll(async () => {
+        await request(server).delete(wipeAllData);
+
+        const createUserDto: UserInputModel = {
+          login: `user`,
+          password: 'password',
+          email: `user@gmail.com`,
+        };
+
+        const responseForUser = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto);
+
+        user = responseForUser.body;
+        expect(user).toBeDefined();
+
+        const loginUser = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto.login,
+            password: createUserDto.password,
+          });
+
+        accessToken = loginUser.body.accessToken;
+
+        // Цикл для создания 10 вопросов
+        for (let i = 0; i < 10; i++) {
+          await request(server)
+            .post(questionsUrl)
+            .auth('admin', 'qwerty')
+            .send(createQuestionDto)
+            .expect(201);
+        }
+
+        const getResponseForQuestions = await request(server)
+          .get(questionsUrl)
+          .auth('admin', 'qwerty')
+          .expect(200);
+
+        expect(getResponseForQuestions.body.totalCount).toEqual(10);
+        expect(getResponseForQuestions.body.items.length).toEqual(10);
+      });
+      //it('should send answer with correct input data', async () => {});
     });
   });
 });

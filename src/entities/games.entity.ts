@@ -30,8 +30,7 @@ export class Games {
   @Column({ nullable: true })
   finishGameDate: string;
 
-  @OneToOne(() => GameProgresses)
-  @JoinColumn()
+  @OneToOne(() => GameProgresses, (g) => g.game, { eager: true })
   gameProgress: GameProgresses;
 
   @OneToMany(() => Questions, (q) => q.game, { eager: true })
@@ -51,43 +50,8 @@ export class Games {
     newGame.questions = questions;
     newGame.status = GameStatuses.PendingSecondPlayer;
     newGame.gameProgress = gameProgress;
-    newGame.gameProgress.firstPlayerScore = 0;
-    newGame.gameProgress.secondPlayerScore = 0;
-    newGame.gameProgress.players = {
-      firstPlayerId: players.firstPlayerId,
-      firstPlayerLogin: players.firstPlayerLogin,
-      secondPlayerId: players.secondPlayerId,
-      secondPlayerLogin: players.secondPlayerLogin,
-    };
-    newGame.gameProgress.players.firstPlayerId = players.firstPlayerId;
-    newGame.gameProgress.players.firstPlayerLogin = players.firstPlayerLogin;
+    newGame.gameProgress.players = players;
     newGame.gameProgress.answers = [];
     return newGame;
   }
-
-  /*  static create(
-    questions: QuestionViewModel[],
-    firstPlayer: UserViewModel,
-    startGameDate: string | null,
-    secondPair?: Games,
-  ) {
-    const newGame = new Games();
-    newGame.pairCreatedDate = new Date().toISOString();
-    newGame.startGameDate = startGameDate;
-    newGame.finishGameDate = null;
-    newGame.questions = questions;
-    newGame.gameProgress. = firstPlayer.id;
-    newGame.gameProgress. = firstPlayer.login;
-    if (!secondPair) {
-      newGame.secondPlayerId = null;
-      newGame.secondPlayerLogin = null;
-      newGame.status = GameStatuses.PendingSecondPlayer;
-      return newGame;
-    } else {
-      newGame.secondPlayerId = secondPair.firsPlayerId;
-      newGame.secondPlayerLogin = secondPair.firsPlayerLogin;
-      newGame.status = GameStatuses.Active;
-      return newGame;
-    }
-  }*/
 }

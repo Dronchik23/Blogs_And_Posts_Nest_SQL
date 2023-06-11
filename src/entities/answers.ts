@@ -14,6 +14,9 @@ export class Answers {
   firstPlayerQuestionId: string;
 
   @Column({ nullable: true })
+  gameProgressId: string;
+
+  @Column({ nullable: true })
   firstPlayerAddedAt: string;
 
   @Column({ enum: AnswerStatuses, nullable: true })

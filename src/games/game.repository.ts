@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Players } from '../entities/players.entity';
 import { QuestionViewModel, UserViewModel } from '../models/models';
 import { GameStatuses } from '../types/types';
+import { GameProgresses } from '../entities/game-progresses';
+import { Answers } from '../entities/answers';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesRepository {
@@ -13,26 +15,42 @@ export class GamesRepository {
     private readonly gameModel: Repository<Games>,
     @InjectRepository(Players)
     private readonly playersModel: Repository<Players>,
+    @InjectRepository(GameProgresses)
+    private readonly gameProgressModel: Repository<GameProgresses>,
+    @InjectRepository(Answers)
+    private readonly answersProgressModel: Repository<Answers>,
   ) {}
 
   async createGame(
     questions: QuestionViewModel[],
-    firstUser: UserViewModel,
+    user: UserViewModel,
     startGameDate: string | null,
     secondPair?: Games,
   ): Promise<any> {
-    //const newGp = GameProgresses.create(randomUUID());
-    // const gp = await this.gameProgressModel.create(newGp);
-    /*    const newGame: Games = Games.create(
+    const newGameProgress = GameProgresses.create();
+    const createdGameProgress = await this.gameProgressModel.save(
+      newGameProgress,
+    );
+    const newPlayers = Players.create(user, createdGameProgress.id);
+    const createdPlayers = await this.playersModel.save(newPlayers);
+
+    const newAnswers = new Answers();
+    const createdAnswers = await this.answersProgressModel.save(newAnswers);
+
+    const createdGame = Games.create(
       questions,
-      startGameDate,
-      secondPair,
-    );*/
-    //const newGamesProgress = GameProgresses.create();
-    // const newPlayer: Players = Players.create(firstUser);
-    //const createdGame = await this.gameModel.save(newGame);
-    //const createdPlayer = await this.playersModel.save(newPlayer);
-    //return new GameViewModel(createdGame);
+      createdGameProgress,
+      createdPlayers,
+      createdAnswers,
+    );
+
+    const savedGame = await this.gameModel.save(createdGame);
+
+    await this.gameProgressModel.update(createdGameProgress.id, {
+      gameId: savedGame.id,
+    }); // add gameId to gameProgress
+
+    return savedGame;
   }
 
   async finishGame(gameId: string) {

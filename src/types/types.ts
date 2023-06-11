@@ -5,6 +5,7 @@ import {
   CommentViewModel,
   GamePlayerProgressViewModel,
   PostViewModel,
+  QuestionViewModel,
   UserViewModel,
 } from '../models/models';
 
@@ -21,7 +22,8 @@ export type PaginationType = {
     | CommentViewModel[]
     | BloggerCommentViewModel[]
     | DeviceDBType[]
-    | BloggerUserViewModel[];
+    | BloggerUserViewModel[]
+    | QuestionViewModel[];
 };
 export type TokenType = {
   accessToken: string;

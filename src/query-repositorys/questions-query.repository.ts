@@ -13,6 +13,19 @@ export class QuestionsQueryRepository {
     private readonly questionModel: Repository<Questions>,
   ) {}
 
+  private fromQuestionDBTypeToQuestionViewModelWithPagination(
+    questions: Questions[],
+  ): QuestionViewModel[] {
+    return questions.map((question) => ({
+      id: question.id,
+      body: question.body,
+      correctAnswers: question.correctAnswers,
+      published: question.published,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+    }));
+  }
+
   async getAllQuestions(
     bodySearchTerm: string,
     publishedStatus: string,
@@ -43,7 +56,8 @@ export class QuestionsQueryRepository {
 
     const totalCount: number = await builder.getCount();
 
-    //const mappedUsers = this.fromUserDBTypeToUserViewModelWithPagination(users);
+    const mappedQuestions =
+      this.fromQuestionDBTypeToQuestionViewModelWithPagination(questions);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -52,7 +66,7 @@ export class QuestionsQueryRepository {
       page: +pageNumber,
       pageSize: +pageSize,
       totalCount: totalCount,
-      items: questions,
+      items: mappedQuestions,
     };
   }
 

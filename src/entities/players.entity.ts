@@ -1,14 +1,22 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { UserViewModel } from '../models/models';
+import { GameProgresses } from './game-progresses';
 
 @Entity()
 export class Players {
   @PrimaryGeneratedColumn('uuid')
-  _id?: string;
+  id?: string;
 
-  @Column({ nullable: true })
+  @Column()
   firstPlayerId: string;
 
-  @Column({ nullable: true })
+  @Column()
   firstPlayerLogin: string;
 
   @Column({ nullable: true })
@@ -17,10 +25,20 @@ export class Players {
   @Column({ nullable: true })
   secondPlayerLogin: string;
 
-  /*  static create(user: UserViewModel) {
+  @Column({ nullable: true })
+  gameProgressId: string;
+
+  @OneToOne(() => GameProgresses, (g) => g.players)
+  @JoinColumn()
+  gameProgress: GameProgresses;
+
+  static create(user: UserViewModel, gameProgressId: string) {
     const newPlayer = new Players();
-    newPlayer.playerId = user.id;
-    newPlayer.playerLogin = user.login;
+    newPlayer.firstPlayerId = user.id;
+    newPlayer.firstPlayerLogin = user.login;
+    newPlayer.secondPlayerId = null;
+    newPlayer.secondPlayerLogin = null;
+    newPlayer.gameProgressId = gameProgressId;
     return newPlayer;
-  }*/
+  }
 }

@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 
 export const CurrentUserId = createParamDecorator(
   (data: unknown, context: ExecutionContext) => {
-    console.log('CurrentUserId');
     const request = context.switchToHttp().getRequest();
     return request.user.id;
   },

@@ -29,12 +29,10 @@ import {
 } from '../validator';
 import { Transform, Type } from 'class-transformer';
 import { Blogs } from '../entities/blogs.entity';
-import { Posts } from '../entities/posts.entity';
 import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/questions.entity';
 import { Games } from '../entities/games.entity';
-import { Players } from '../entities/players.entity';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -363,6 +361,12 @@ export class CodeInputModel {
   @IsUUID()
   @IsCodeAlreadyConfirmed()
   code: string;
+}
+export class AnswerInputModel {
+  @IsString()
+  @Matches(/^(?!\s*$).+/)
+  @IsNotEmpty()
+  answer: string;
 }
 export class CommentUpdateModel {
   @IsString()
