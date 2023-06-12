@@ -30,6 +30,9 @@ export class Games {
   @Column({ nullable: true })
   finishGameDate: string;
 
+  @Column({ nullable: true, type: 'uuid' })
+  gameProgressId: string;
+
   @OneToOne(() => GameProgresses, (g) => g.game, { eager: true })
   gameProgress: GameProgresses;
 
@@ -38,7 +41,7 @@ export class Games {
 
   static create(
     questions: QuestionViewModel[],
-    gameProgress: GameProgresses,
+    gameProgressId: string,
     players: Players,
     answers: Answers,
     startGameDate?: string | null,
@@ -49,9 +52,7 @@ export class Games {
     newGame.finishGameDate = null;
     newGame.questions = questions;
     newGame.status = GameStatuses.PendingSecondPlayer;
-    newGame.gameProgress = gameProgress;
-    newGame.gameProgress.players = players;
-    newGame.gameProgress.answers = [];
+    newGame.gameProgressId = gameProgressId;
     return newGame;
   }
 }

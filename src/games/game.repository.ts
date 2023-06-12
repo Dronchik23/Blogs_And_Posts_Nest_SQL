@@ -39,7 +39,7 @@ export class GamesRepository {
 
     const createdGame = Games.create(
       questions,
-      createdGameProgress,
+      createdGameProgress.id,
       createdPlayers,
       createdAnswers,
     );

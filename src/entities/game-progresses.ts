@@ -22,7 +22,7 @@ export class GameProgresses {
   @Column({ nullable: true })
   secondPlayerScore: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'uuid' })
   gameId: string;
 
   @OneToOne(() => Games, (g) => g.gameProgress)

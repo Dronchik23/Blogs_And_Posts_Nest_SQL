@@ -13,19 +13,19 @@ export class Players {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
 
-  @Column()
+  @Column({ nullable: true, type: 'uuid' })
   firstPlayerId: string;
 
-  @Column()
+  @Column({ nullable: true })
   firstPlayerLogin: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'uuid' })
   secondPlayerId: string;
 
   @Column({ nullable: true })
   secondPlayerLogin: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'uuid' })
   gameProgressId: string;
 
   @OneToOne(() => GameProgresses, (g) => g.players)

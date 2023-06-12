@@ -52,18 +52,11 @@ export class GamesQueryRepository {
 
   async findGameByPlayerId(currentUserId: string): Promise<any> {
     try {
-      console.log(currentUserId);
-      const result = await this.dataSource
-        .createQueryBuilder()
-        .select('*')
-        .from(Players, 'players')
-        .where('players."firstPlayerId" = :currentUserId', { currentUserId })
-        .leftJoin(
-          GameProgresses,
-          'progress',
-          'progress.id = players."gameProgressId"',
-        )
-        .leftJoin(Games, 'games', 'games.id = progress."gameId"')
+      debugger;
+      const result = await this.playerModel
+        .createQueryBuilder('p')
+        .where('p."firstPlayerId" = :currentUserId', { currentUserId })
+        .andWhere('p."gameProgressId" IN (SELECT "gameProgressId" FROM games)')
         .getRawOne();
 
       const game = result;
@@ -71,6 +64,7 @@ export class GamesQueryRepository {
 
       return game ? this.gameDBTypePairViewModel(game) : null;
     } catch (error) {
+      console.log('error', error);
       throw new NotFoundException();
     }
   }
