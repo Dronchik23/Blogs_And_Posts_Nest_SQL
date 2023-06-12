@@ -23,6 +23,7 @@ export class QuestionsQueryRepository {
       published: question.published,
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
+      gameId: question.gameId,
     }));
   }
 

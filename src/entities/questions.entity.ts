@@ -22,7 +22,10 @@ export class Questions {
   @Column({ default: null })
   updatedAt: string;
 
-  @ManyToOne(() => Games, (qp) => qp.questions)
+  @Column({ nullable: true, type: 'uuid' })
+  gameId: string;
+
+  @ManyToOne(() => Games, (qp) => qp.questions, { eager: true })
   game?: Games;
 
   static create(dto: QuestionInputModel) {

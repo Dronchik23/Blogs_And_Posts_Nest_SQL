@@ -6,6 +6,8 @@ import { DataSource, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
 import { Players } from '../entities/players.entity';
 import { GameProgresses } from '../entities/game-progresses';
+import { Questions } from '../entities/questions.entity';
+import { Answers } from '../entities/answers';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesQueryRepository {
@@ -18,7 +20,7 @@ export class GamesQueryRepository {
 
   private gameDBTypePairViewModel(game: any): GameViewModel {
     return {
-      id: game.id,
+      id: game.gameId,
       firstPlayerProgress: game.firstPlayerProgress,
       secondPlayerProgress: game.secondPlayerProgress,
       questions: game.questions,
@@ -52,16 +54,36 @@ export class GamesQueryRepository {
 
   async findGameByPlayerId(currentUserId: string): Promise<any> {
     try {
-      debugger;
-      const result = await this.playerModel
-        .createQueryBuilder('p')
-        .where('p."firstPlayerId" = :currentUserId', { currentUserId })
-        .andWhere('p."gameProgressId" IN (SELECT "gameProgressId" FROM games)')
-        .getRawOne();
+      const game = await this.dataSource
+        .createQueryBuilder()
+        .select([
+          'players."firstPlayerId"',
+          'players."secondPlayerId"',
+          'players."firstPlayerLogin"',
+          'players."secondPlayerLogin"',
+          'progress."firstPlayerScore"',
+          'progress."secondPlayerScore"',
+          'progress."gameId"',
+          'games."status"',
+          'games."pairCreatedDate"',
+          'games."startGameDate"',
+          'games."finishGameDate"',
+          'questions."id" as questionId',
+          'questions."body"',
+        ])
+        .from(Players, 'players')
+        .where('players."firstPlayerId" = :currentUserId', { currentUserId })
+        .innerJoin(
+          GameProgresses,
+          'progress',
+          'progress.id = players."gameProgressId"',
+        )
+        .innerJoin(Games, 'games', 'games.id = progress.gameId')
+        .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
+        .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
+        .getRawMany();
 
-      const game = result;
-      console.log('game repo', game);
-
+      console.log('result', game);
       return game ? this.gameDBTypePairViewModel(game) : null;
     } catch (error) {
       console.log('error', error);

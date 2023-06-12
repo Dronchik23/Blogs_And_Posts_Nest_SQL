@@ -19,7 +19,7 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
-
+one-module-init.ts
 # IDEs and editors
 /.idea
 .project

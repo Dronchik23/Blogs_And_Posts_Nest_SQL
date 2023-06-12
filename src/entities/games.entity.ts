@@ -36,7 +36,7 @@ export class Games {
   @OneToOne(() => GameProgresses, (g) => g.game, { eager: true })
   gameProgress: GameProgresses;
 
-  @OneToMany(() => Questions, (q) => q.game, { eager: true })
+  @OneToMany(() => Questions, (q) => q.game)
   questions: Questions[];
 
   static create(
@@ -50,7 +50,17 @@ export class Games {
     newGame.pairCreatedDate = new Date().toISOString();
     newGame.startGameDate = startGameDate;
     newGame.finishGameDate = null;
-    newGame.questions = questions;
+    newGame.questions = questions.map((q) => {
+      return {
+        id: q.id,
+        body: q.body,
+        correctAnswers: q.correctAnswers,
+        published: q.published,
+        createdAt: q.createdAt,
+        updatedAt: q.updatedAt,
+        gameId: q.gameId,
+      };
+    });
     newGame.status = GameStatuses.PendingSecondPlayer;
     newGame.gameProgressId = gameProgressId;
     return newGame;

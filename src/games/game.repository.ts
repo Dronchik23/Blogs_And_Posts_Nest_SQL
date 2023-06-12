@@ -7,12 +7,15 @@ import { QuestionViewModel, UserViewModel } from '../models/models';
 import { GameStatuses } from '../types/types';
 import { GameProgresses } from '../entities/game-progresses';
 import { Answers } from '../entities/answers';
+import { Questions } from '../entities/questions.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesRepository {
   constructor(
     @InjectRepository(Games)
     private readonly gameModel: Repository<Games>,
+    @InjectRepository(Questions)
+    private readonly questionModel: Repository<Questions>,
     @InjectRepository(Players)
     private readonly playersModel: Repository<Players>,
     @InjectRepository(GameProgresses)
@@ -49,6 +52,10 @@ export class GamesRepository {
     await this.gameProgressModel.update(createdGameProgress.id, {
       gameId: savedGame.id,
     }); // add gameId to gameProgress
+
+    await this.questionModel.update(savedGame.id, {
+      gameId: savedGame.id,
+    });
 
     return savedGame;
   }

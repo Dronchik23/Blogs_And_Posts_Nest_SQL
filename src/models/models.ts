@@ -424,6 +424,7 @@ export class QuestionViewModel {
   published: boolean;
   createdAt: string;
   updatedAt: string;
+  gameId: string;
   constructor(questionDB: Questions) {
     this.id = questionDB.id;
     this.body = questionDB.body;
@@ -431,6 +432,7 @@ export class QuestionViewModel {
     this.published = questionDB.published;
     this.createdAt = questionDB.createdAt;
     this.updatedAt = questionDB.updatedAt;
+    this.gameId = questionDB.gameId;
   }
 }
 export class GameViewModel {
