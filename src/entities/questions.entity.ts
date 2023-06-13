@@ -25,7 +25,7 @@ export class Questions {
   @Column({ nullable: true, type: 'uuid' })
   gameId: string;
 
-  @ManyToOne(() => Games, (qp) => qp.questions, { eager: true })
+  @ManyToOne(() => Games, (qp) => qp.questions)
   game?: Games;
 
   static create(dto: QuestionInputModel) {

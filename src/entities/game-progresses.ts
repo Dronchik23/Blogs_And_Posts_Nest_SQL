@@ -29,10 +29,10 @@ export class GameProgresses {
   @JoinColumn()
   game: Games;
 
-  @OneToOne(() => Players, (p) => p.gameProgress)
+  @OneToOne(() => Players, (p) => p.gameProgress, { eager: true })
   players: Players;
 
-  @OneToMany(() => Answers, (a) => a.gameProgress.answers)
+  @OneToMany(() => Answers, (a) => a.gameProgress, { eager: true })
   answers: Answers[];
 
   static create() {

@@ -439,7 +439,7 @@ export class GameViewModel {
   id: string;
   firstPlayerProgress: GamePlayerProgressViewModel;
   secondPlayerProgress: GamePlayerProgressViewModel;
-  questions: Questions[];
+  questions: QuestionGameViewModel[];
   status: GameStatuses;
   pairCreatedDate: string;
   startGameDate: string;
@@ -490,4 +490,8 @@ export class AnswerViewModel {
 export class PlayerViewModel {
   id: any;
   login: any;
+}
+export class QuestionGameViewModel {
+  id: string;
+  body: string;
 }

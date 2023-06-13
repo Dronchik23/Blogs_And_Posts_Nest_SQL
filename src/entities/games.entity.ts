@@ -36,7 +36,7 @@ export class Games {
   @OneToOne(() => GameProgresses, (g) => g.game, { eager: true })
   gameProgress: GameProgresses;
 
-  @OneToMany(() => Questions, (q) => q.game)
+  @OneToMany(() => Questions, (q) => q.game, { eager: true })
   questions: Questions[];
 
   static create(
