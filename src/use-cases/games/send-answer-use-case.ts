@@ -9,7 +9,11 @@ import { Users } from '../../entities/users.entity';
 import { GameProgresses } from '../../entities/game-progresses';
 import { Answers } from '../../entities/answers';
 import { Players } from '../../entities/players.entity';
-import { AnswerInputModel, GameViewModel } from '../../models/models';
+import {
+  AnswerInputModel,
+  GameViewModel,
+  QuestionViewModel,
+} from '../../models/models';
 import { GameStatuses } from '../../types/types';
 import { uuid } from 'uuidv4';
 import { Questions } from '../../entities/questions.entity';
@@ -38,85 +42,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     private readonly gamesQueryRepository: GamesQueryRepository,
     private readonly questionsQueryRepository: QuestionsQueryRepository,
   ) {}
-  // async onModuleInit() {
-  //   const user = {
-  //     id: 'ed20bc60-99a0-4845-bb3b-55e2fefaeb1a',
-  //     login: 'wdwd93e',
-  //     email: '834ryru@mail.com',
-  //     createdAt: 'buidb3828219',
-  //     banInfo: 'banned',
-  //   };
-  //   const questions =
-  //     await this.questionsQueryRepository.getFiveRandomQuestions();
-  //   const date = new Date().toISOString();
-  //
-  //   const gameProgress = new GameProgresses();
-  //   gameProgress.firstPlayerScore = 0;
-  //   gameProgress.secondPlayerScore = 0;
-  //
-  //   const createdGameProgress: GameProgresses = await this.FGPRepository.save(
-  //     gameProgress,
-  //   );
-  //
-  //   const player = new Players();
-  //   player.firstPlayerId = user.id;
-  //   player.firstPlayerLogin = user.login;
-  //   player.secondPlayerId = uuid();
-  //   player.secondPlayerLogin = 'wendowedi3';
-  //   player.gameProgressId = gameProgress.id;
-  //   const createdPlayer = await this.playerModel.save(player);
-  //
-  //   const answers = new Answers();
-  //   const createdAnswers = await this.fRepository.save(answers);
-  //
-  //   const createdGame = Games.create(
-  //     questions,
-  //     createdGameProgress.id,
-  //     createdPlayer,
-  //     createdAnswers,
-  //   );
-  //
-  //   const savedGame = await this.gameModule.save(createdGame);
-  //   const playerId = player.firstPlayerId;
-  //   //const gameProgressId = players.gameProgressId;
-  //
-  //   /*const game = await this.gameModule
-  //     .createQueryBuilder('g')
-  //     .where('g."gameProgressId" = :gameProgressId', { gameProgressId })
-  //     .getOne();*/
-  //
-  //   /*    const game = await this.gameModule.findOne({
-  //     where: {
-  //       gameProgressId: players.gameProgressId,
-  //     },
-  //   });*/
-  //
-  //   //const gameId = game.id;
-  //   console.log('game', result);
-  //
-  //   /*   const questionsArr = await this.questionModule
-  //     .createQueryBuilder('q')
-  //     .where('q."gameId" = :gameId', { gameId })
-  //     .getMany();
-  //
-  //   console.log('resultsssss', questionsArr);*/
-  //
-  //   /*   const result = await this.dataSource
-  //     .createQueryBuilder()
-  //     .select('*')
-  //     .from(Players, 'players')
-  //     .where('players."firstPlayerId" = :playerId', { playerId })
-  //     .leftJoin(
-  //       GameProgresses,
-  //       'progress',
-  //       'progress.id = players."gameProgressId"',
-  //     )
-  //     .leftJoin(Games, 'games', 'games.id = progress.gameId')
-  //     //.where('players."firstPlayerId" = :playerId', { playerId })
-  //     .getRawOne();
-  //
-  //   console.log('result', { result });*/
-  // }
 
   async execute(command: SendAnswerCommand): Promise<any> {
     const game: GameViewModel =
@@ -124,5 +49,8 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     if (!game || game.status !== GameStatuses.Active) {
       throw new NotFoundException();
     }
+    const currentQuestion = game.questions[0];
+
+    //if(command.sendAnswerDTO.answer === currentQuestion.answers)
   }
 }

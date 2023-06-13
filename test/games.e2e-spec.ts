@@ -331,7 +331,7 @@ describe('pair-games-games tests (e2e)', () => {
         expect(401);*/
       });
     });
-    describe.skip('create games games for two players tests', () => {
+    describe('create games games for two players tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -496,7 +496,21 @@ describe('pair-games-games tests (e2e)', () => {
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
       });
-      //it('should send answer with correct input data', async () => {});
+      it('should send answer with correct input data', async () => {
+        const createResponseForPair = await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const createdGame: GameViewModel = createResponseForPair.body;
+
+        expect(createdGame.id).toBeDefined();
+        expect(createdGame.status).toEqual(GameStatuses.PendingSecondPlayer);
+        expect(createdGame.questions.length).toBe(5);
+        expect(createdGame.pairCreatedDate).toBeDefined();
+        expect(createdGame.startGameDate).toBeNull();
+        expect(createdGame.finishGameDate).toBeNull();
+      });
     });
   });
 });

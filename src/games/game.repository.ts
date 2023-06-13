@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Games } from '../entities/games.entity';
 import { Repository } from 'typeorm';
 import { Players } from '../entities/players.entity';
-import { QuestionViewModel, UserViewModel } from '../models/models';
+import {
+  GameViewModel,
+  QuestionViewModel,
+  UserViewModel,
+} from '../models/models';
 import { GameStatuses } from '../types/types';
 import { GameProgresses } from '../entities/game-progresses';
 import { Answers } from '../entities/answers';
@@ -24,11 +28,9 @@ export class GamesRepository {
     private readonly answersProgressModel: Repository<Answers>,
   ) {}
 
-  async createGame(
+  async createGameWithOnePlayer(
     questions: QuestionViewModel[],
     user: UserViewModel,
-    startGameDate: string | null,
-    secondPair?: Games,
   ): Promise<any> {
     const newGameProgress = GameProgresses.create();
     const createdGameProgress = await this.gameProgressModel.save(
@@ -58,6 +60,33 @@ export class GamesRepository {
     });
 
     return savedGame;
+  }
+
+  async createGameWithTwoPlayers(
+    user: UserViewModel,
+    game: Games,
+  ): Promise<GameViewModel> {
+    const startGameDate = new Date().toISOString();
+
+    const updateGamePromise = this.gameModel.update(game.id, {
+      id: game.id,
+      status: GameStatuses.Active,
+      startGameDate: startGameDate,
+    });
+
+    const updatePlayersPromise = this.playersModel.update(
+      game.gameProgress.players.id,
+      {
+        secondPlayerId: user.id,
+        secondPlayerLogin: user.login,
+      },
+    );
+
+    const result = await Promise.all([updateGamePromise, updatePlayersPromise]);
+
+    const modifiedGame = await this.gameModel.findOneBy({ id: game.id });
+
+    return new GameViewModel(modifiedGame);
   }
 
   async finishGame(gameId: string) {

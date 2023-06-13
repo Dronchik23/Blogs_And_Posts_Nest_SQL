@@ -23,7 +23,6 @@ export class GamesQueryRepository {
   ) {}
 
   private gameDBTypePairViewModel(game: Games): GameViewModel {
-    debugger;
     return {
       id: game.id,
       firstPlayerProgress: {
@@ -111,7 +110,6 @@ export class GamesQueryRepository {
   async findGameByGameId(gameId: string): Promise<GameViewModel> {
     try {
       const game = await this.gameModel.findOneBy({ id: gameId });
-      console.log('game', game);
       return game ? this.gameDBTypePairViewModel(game) : null;
     } catch (error) {
       throw new NotFoundException();

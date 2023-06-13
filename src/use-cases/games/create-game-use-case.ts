@@ -28,30 +28,23 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
-    const gameStatus = GameStatuses.PendingSecondPlayer;
-
-    let startGameDate = new Date().toISOString();
-
     const questions: QuestionViewModel[] =
       await this.questionsQueryRepository.getFiveRandomQuestions();
 
-    const secondPair: Games =
-      await this.gamesQueryRepository.findPairByGameStatus(gameStatus);
+    const activeGame: Games =
+      await this.gamesQueryRepository.findPairByGameStatus(
+        GameStatuses.PendingSecondPlayer,
+      );
 
-    if (isNil(secondPair)) {
-      startGameDate = null;
-
-      return await this.gamesRepository.createGame(
+    if (isNil(activeGame)) {
+      return await this.gamesRepository.createGameWithOnePlayer(
         questions,
         command.user,
-        startGameDate,
       );
     } else {
-      return await this.gamesRepository.createGame(
-        questions,
+      return await this.gamesRepository.createGameWithTwoPlayers(
         command.user,
-        startGameDate,
-        secondPair,
+        activeGame,
       );
     }
   }
