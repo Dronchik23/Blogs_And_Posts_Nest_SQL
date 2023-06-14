@@ -112,6 +112,6 @@ export class QuestionsQueryRepository {
       .take(5)
       .getMany();
 
-    return this.fromQuestionDBTypeToQuestionViewModelArray(rawQuestions);
+    return this.fromRawSQLQuestionTypeToQuestionViewModelArray(rawQuestions);
   }
 }
