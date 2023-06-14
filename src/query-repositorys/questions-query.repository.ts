@@ -4,6 +4,7 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Questions } from '../entities/questions.entity';
 import { QuestionViewModel } from '../models/models';
+import { CorrectAnswers } from '../entities/correct-answers.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionsQueryRepository {
@@ -13,13 +14,30 @@ export class QuestionsQueryRepository {
     private readonly questionModel: Repository<Questions>,
   ) {}
 
-  private fromQuestionDBTypeToQuestionViewModelWithPagination(
+  private fromQuestionDBTypeToQuestionViewModelArray(
     questions: Questions[],
   ): QuestionViewModel[] {
     return questions.map((question) => ({
       id: question.id,
       body: question.body,
-      correctAnswers: question.correctAnswers,
+      correctAnswers: [
+        question.correctAnswers.answer1,
+        question.correctAnswers.answer2,
+      ],
+      published: question.published,
+      createdAt: question.createdAt,
+      updatedAt: question.updatedAt,
+      gameId: question.gameId,
+    }));
+  }
+
+  private fromRawSQLQuestionTypeToQuestionViewModelArray(
+    questions: any,
+  ): QuestionViewModel[] {
+    return questions.map((question) => ({
+      id: question.id,
+      body: question.body,
+      correctAnswers: [questions.answer1, questions.answer2],
       published: question.published,
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -37,8 +55,22 @@ export class QuestionsQueryRepository {
   ): Promise<PaginationType> {
     const builder = await this.dataSource
       .createQueryBuilder()
-      .select('*')
-      .from(Questions, 'questions');
+      .select([
+        'questions.id as id',
+        'questions.body as body',
+        'questions.published as published',
+        'questions."createdAt"',
+        'questions."updatedAt"',
+        'questions."gameId"',
+        'answers."answer1"',
+        'answers."answer2"',
+      ])
+      .from(Questions, 'questions')
+      .leftJoin(
+        CorrectAnswers,
+        'answers',
+        'answers."questionsId" = questions.id',
+      );
 
     if (bodySearchTerm) {
       builder.andWhere('questions.body ILIKE :bodySearchTerm', {
@@ -55,10 +87,12 @@ export class QuestionsQueryRepository {
       .take(pageSize)
       .getRawMany();
 
+    console.log('qrepo questions', questions);
+
     const totalCount: number = await builder.getCount();
 
     const mappedQuestions =
-      this.fromQuestionDBTypeToQuestionViewModelWithPagination(questions);
+      this.fromRawSQLQuestionTypeToQuestionViewModelArray(questions);
 
     const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -72,10 +106,12 @@ export class QuestionsQueryRepository {
   }
 
   async getFiveRandomQuestions(): Promise<QuestionViewModel[]> {
-    return await this.questionModel
+    const rawQuestions = await this.questionModel
       .createQueryBuilder('question')
       .orderBy('RANDOM()')
       .take(5)
       .getMany();
+
+    return this.fromQuestionDBTypeToQuestionViewModelArray(rawQuestions);
   }
 }

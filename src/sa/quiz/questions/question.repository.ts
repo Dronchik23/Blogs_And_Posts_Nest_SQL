@@ -8,6 +8,7 @@ import {
   QuestionViewModel,
 } from '../../../models/models';
 import { Questions } from '../../../entities/questions.entity';
+import { CorrectAnswers } from '../../../entities/correct-answers.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionRepository {
@@ -15,14 +16,36 @@ export class QuestionRepository {
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Questions)
     private readonly questionModel: Repository<Questions>,
+    @InjectRepository(CorrectAnswers)
+    private readonly correctAnswersModel: Repository<CorrectAnswers>,
   ) {}
 
   async createQuestion(
     createQuestionDTO: QuestionInputModel,
   ): Promise<QuestionViewModel> {
-    const newQuestion = Questions.create(createQuestionDTO);
+    const answers = ['answer1', 'answer2'];
+    const newCorrectAnswers = CorrectAnswers.create(answers);
+    const createdCorrectAnswers = await this.correctAnswersModel.save(
+      newCorrectAnswers,
+    );
+    const newQuestion = Questions.create(
+      createQuestionDTO,
+      createdCorrectAnswers.id,
+    );
     const createdQuestion = await this.questionModel.save(newQuestion);
-    return new QuestionViewModel(createdQuestion);
+
+    await this.correctAnswersModel.update(createdCorrectAnswers.id, {
+      questionsId: createdQuestion.id,
+    });
+
+    const questionWithCorrectAnswers = await this.questionModel.findOneBy({
+      id: createdQuestion.id,
+    });
+
+    return new QuestionViewModel(
+      questionWithCorrectAnswers,
+      createdCorrectAnswers,
+    );
   }
 
   async deleteQuestionByQuestionId(questionId: string) {
@@ -52,7 +75,11 @@ export class QuestionRepository {
 
       const result = await this.questionModel.update(questionId, {
         body: updateQuestionDto.body,
-        correctAnswers: updateQuestionDto.correctAnswers,
+        correctAnswers: {
+          questionsId: questionId,
+          answer1: '1',
+          answer2: '2',
+        },
         updatedAt: updatedAt,
       });
       return result.affected > 0;

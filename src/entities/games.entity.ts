@@ -12,6 +12,7 @@ import { QuestionViewModel } from '../models/models';
 import { GameProgresses } from './game-progresses';
 import { Players } from './players.entity';
 import { Answers } from './answers';
+import { CorrectAnswers } from './correct-answers.entity';
 
 @Entity()
 export class Games {
@@ -44,13 +45,15 @@ export class Games {
     gameProgressId: string,
     players: Players,
     answers: Answers,
+    correctAnswers: CorrectAnswers,
     startGameDate?: string | null,
   ) {
+    debugger;
     const newGame = new Games();
     newGame.pairCreatedDate = new Date().toISOString();
     newGame.startGameDate = startGameDate;
     newGame.finishGameDate = null;
-    newGame.questions = questions.map((q) => {
+    /*newGame.questions = questions.map((q) => {
       return {
         id: q.id,
         body: q.body,
@@ -60,7 +63,7 @@ export class Games {
         updatedAt: q.updatedAt,
         gameId: q.gameId,
       };
-    });
+    });*/
     newGame.status = GameStatuses.PendingSecondPlayer;
     newGame.gameProgressId = gameProgressId;
     return newGame;

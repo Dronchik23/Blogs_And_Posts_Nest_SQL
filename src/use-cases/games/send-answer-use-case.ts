@@ -24,7 +24,9 @@ export class SendAnswerCommand {
 }
 
 @CommandHandler(SendAnswerCommand)
-export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
+export class SendAnswerService
+  implements ICommandHandler<SendAnswerCommand>, OnModuleInit
+{
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Games)
@@ -43,9 +45,18 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     private readonly questionsQueryRepository: QuestionsQueryRepository,
   ) {}
 
+  onModuleInit() {
+    const test = {
+      a: '1',
+      b: '2',
+    };
+    const keys = Object.keys(test);
+    console.log(keys);
+  }
+
   async execute(command: SendAnswerCommand): Promise<any> {
     const game: GameViewModel =
-      await this.gamesQueryRepository.findGameByGameId(command.userId);
+      await this.gamesQueryRepository.findGameByPlayerId(command.userId);
     if (!game || game.status !== GameStatuses.Active) {
       throw new NotFoundException();
     }

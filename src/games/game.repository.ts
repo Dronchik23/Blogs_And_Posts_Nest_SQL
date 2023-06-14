@@ -12,6 +12,7 @@ import { GameStatuses } from '../types/types';
 import { GameProgresses } from '../entities/game-progresses';
 import { Answers } from '../entities/answers';
 import { Questions } from '../entities/questions.entity';
+import { CorrectAnswers } from '../entities/correct-answers.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesRepository {
@@ -25,7 +26,9 @@ export class GamesRepository {
     @InjectRepository(GameProgresses)
     private readonly gameProgressModel: Repository<GameProgresses>,
     @InjectRepository(Answers)
-    private readonly answersProgressModel: Repository<Answers>,
+    private readonly answerModel: Repository<Answers>,
+    @InjectRepository(CorrectAnswers)
+    private readonly correctAnswerModel: Repository<CorrectAnswers>,
   ) {}
 
   async createGameWithOnePlayer(
@@ -40,13 +43,19 @@ export class GamesRepository {
     const createdPlayers = await this.playersModel.save(newPlayers);
 
     const newAnswers = new Answers();
-    const createdAnswers = await this.answersProgressModel.save(newAnswers);
+    const createdAnswers = await this.answerModel.save(newAnswers);
+
+    const newCorrectAnswers = new CorrectAnswers();
+    const createdCorrectAnswers = await this.correctAnswerModel.save(
+      newCorrectAnswers,
+    );
 
     const createdGame = Games.create(
       questions,
       createdGameProgress.id,
       createdPlayers,
       createdAnswers,
+      createdCorrectAnswers,
     );
 
     const savedGame = await this.gameModel.save(createdGame);
@@ -57,7 +66,7 @@ export class GamesRepository {
 
     await this.questionModel.update(savedGame.id, {
       gameId: savedGame.id,
-    });
+    }); // add gameId to questions
 
     return savedGame;
   }
@@ -108,7 +117,7 @@ export class GamesRepository {
   /*  async saveAnswer(gameId: string, answer: string) {
     //const newAnswer: Answers = Answers.create(answer);
 
-    const createdAnswer = await this.answersModel.save(newAnswer);
+    const createdAnswer = await this.answerModel.save(newAnswer);
     return createdAnswer;
     //return new AnswerViewModel(createdAnswer);
   }*/

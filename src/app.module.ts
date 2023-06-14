@@ -97,6 +97,7 @@ import { GamesQueryRepository } from './query-repositorys/games-query-repository
 import { Players } from './entities/players.entity';
 import { Answers } from './entities/answers';
 import { GameProgresses } from './entities/game-progresses';
+import { CorrectAnswers } from './entities/correct-answers.entity';
 
 export const useCases = [
   CreateBlogService,
@@ -193,6 +194,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       GameProgresses,
       Players,
       Answers,
+      CorrectAnswers,
     ]),
     MailerModule.forRoot({
       transport: {
