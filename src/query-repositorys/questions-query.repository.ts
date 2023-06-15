@@ -87,8 +87,6 @@ export class QuestionsQueryRepository {
       .take(pageSize)
       .getRawMany();
 
-    console.log('qrepo questions', questions);
-
     const totalCount: number = await builder.getCount();
 
     const mappedQuestions =

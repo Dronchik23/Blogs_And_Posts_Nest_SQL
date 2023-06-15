@@ -14,7 +14,11 @@ import {
   GameViewModel,
   QuestionViewModel,
 } from '../../models/models';
-import { GameStatuses } from '../../types/types';
+import {
+  AnswerStatuses,
+  GameStatuses,
+  QuestionDBType,
+} from '../../types/types';
 import { uuid } from 'uuidv4';
 import { Questions } from '../../entities/questions.entity';
 import { Likes } from '../../entities/likes.entity';
@@ -24,9 +28,7 @@ export class SendAnswerCommand {
 }
 
 @CommandHandler(SendAnswerCommand)
-export class SendAnswerService
-  implements ICommandHandler<SendAnswerCommand>, OnModuleInit
-{
+export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   constructor(
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Games)
@@ -36,32 +38,104 @@ export class SendAnswerService
     @InjectRepository(Users)
     private readonly uRepository: Repository<Users>,
     @InjectRepository(Answers)
-    private readonly fRepository: Repository<Answers>,
+    private readonly answersModel: Repository<Answers>,
     @InjectRepository(GameProgresses)
-    private readonly FGPRepository: Repository<GameProgresses>,
+    private readonly gameProgressesModel: Repository<GameProgresses>,
     @InjectRepository(Players)
     private readonly playerModel: Repository<Players>,
     private readonly gamesQueryRepository: GamesQueryRepository,
-    private readonly questionsQueryRepository: QuestionsQueryRepository,
   ) {}
 
-  onModuleInit() {
-    const test = {
-      a: '1',
-      b: '2',
-    };
-    const keys = Object.keys(test);
-    console.log(keys);
-  }
-
   async execute(command: SendAnswerCommand): Promise<any> {
-    const game: GameViewModel =
-      await this.gamesQueryRepository.findGameByPlayerId(command.userId);
-    if (!game || game.status !== GameStatuses.Active) {
+    debugger;
+    const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
+      command.userId,
+    );
+    const game = rawGame[0];
+
+    if (!game || game.status !== 'Active') {
       throw new NotFoundException();
     }
-    const currentQuestion = game.questions[0];
 
-    //if(command.sendAnswerDTO.answer === currentQuestion.answers)
+    const allCurrentQuestions = await this.questionModule.findBy({
+      gameId: game.id,
+    });
+
+    const currentQuestion = allCurrentQuestions[0];
+    const questionDBType: Questions = await this.questionModule.findOneBy({
+      id: currentQuestion.id,
+    });
+
+    const isAnswerCorrect =
+      command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer1 ||
+      command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer2;
+    debugger;
+    if (isAnswerCorrect) {
+      const playerScoreKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerScore'
+          : 'secondPlayerScore';
+
+      await this.gameProgressesModel.update(
+        { id: game.gameProgressId },
+        { [playerScoreKey]: game[playerScoreKey] + 1 },
+      );
+
+      const playerQuestionIdKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerQuestionId'
+          : 'secondPlayerQuestionId';
+      const playerAnswerStatusKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerAnswerStatus'
+          : 'secondPlayerAnswerStatus';
+      const playerAddedAtKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerAddedAt'
+          : 'secondPlayerAddedAt';
+
+      await this.answersModel.update(
+        { gameProgressId: game.gameProgressId },
+        {
+          [playerQuestionIdKey]: currentQuestion.id,
+          [playerAnswerStatusKey]: AnswerStatuses.Correct,
+          [playerAddedAtKey]: new Date().toISOString(),
+        },
+      );
+    } else {
+      const playerScoreKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerScore'
+          : 'secondPlayerScore';
+
+      await this.gameProgressesModel.update(
+        { id: game.gameProgressId },
+        {
+          [playerScoreKey]: game[playerScoreKey] - 1,
+        },
+      );
+
+      const playerQuestionIdKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerQuestionId'
+          : 'secondPlayerQuestionId';
+      const playerAnswerStatusKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerAnswerStatus'
+          : 'secondPlayerAnswerStatus';
+      const playerAddedAtKey =
+        game.firstPlayerId === command.userId
+          ? 'firstPlayerAddedAt'
+          : 'secondPlayerAddedAt';
+
+      await this.answersModel.update(
+        { gameProgressId: game.gameProgressId },
+        {
+          [playerQuestionIdKey]: currentQuestion.id,
+          [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
+          [playerAddedAtKey]: new Date().toISOString(),
+        },
+      );
+    }
   }
 }

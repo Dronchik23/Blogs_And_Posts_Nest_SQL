@@ -28,7 +28,6 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
-    debugger;
     const questions: QuestionViewModel[] =
       await this.questionsQueryRepository.getFiveRandomQuestions();
 

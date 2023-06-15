@@ -40,10 +40,7 @@ export class CreateGameController {
   async createGame(
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<GameViewModel> {
-    const game = await this.commandBus.execute(
-      new CreateGameCommand(currentUser),
-    );
-    return game;
+    return await this.commandBus.execute(new CreateGameCommand(currentUser));
   }
 
   @UseGuards(BearerAuthGuard)

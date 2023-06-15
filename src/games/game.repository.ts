@@ -42,7 +42,7 @@ export class GamesRepository {
     const newPlayers = Players.create(user, createdGameProgress.id);
     const createdPlayers = await this.playersModel.save(newPlayers);
 
-    const newAnswers = new Answers();
+    const newAnswers = Answers.create(createdGameProgress.id);
     const createdAnswers = await this.answerModel.save(newAnswers);
 
     const newCorrectAnswers = new CorrectAnswers();
@@ -51,7 +51,6 @@ export class GamesRepository {
     );
 
     const createdGame = Games.create(
-      questions,
       createdGameProgress.id,
       createdPlayers,
       createdAnswers,
@@ -64,9 +63,13 @@ export class GamesRepository {
       gameId: savedGame.id,
     }); // add gameId to gameProgress
 
-    await this.questionModel.update(savedGame.id, {
-      gameId: savedGame.id,
-    }); // add gameId to questions
+    const questionIds = questions.map((question) => question.id);
+
+    await Promise.all(
+      questionIds.map((questionId) =>
+        this.questionModel.update({ id: questionId }, { gameId: savedGame.id }),
+      ),
+    ); // add gameId to questions
 
     return savedGame;
   }
@@ -91,7 +94,7 @@ export class GamesRepository {
       },
     );
 
-    const result = await Promise.all([updateGamePromise, updatePlayersPromise]);
+    await Promise.all([updateGamePromise, updatePlayersPromise]);
 
     const modifiedGame = await this.gameModel.findOneBy({ id: game.id });
 

@@ -31,11 +31,9 @@ export class Answers {
   @ManyToOne(() => GameProgresses, (progress) => progress.answers)
   gameProgress: GameProgresses;
 
-  /*  static create(questionId: string, answerStatus: AnswerStatuses) {
-      const newAnswer = new Answers();
-      newAnswer.answerStatus = answerStatus;
-      newAnswer.questionId = questionId;
-      newAnswer.addedAt = new Date().toISOString();
-      return newAnswer;
-    }*/
+  static create(gameProgressId: string) {
+    const newAnswer = new Answers();
+    newAnswer.gameProgressId = gameProgressId;
+    return newAnswer;
+  }
 }

@@ -64,8 +64,9 @@ export class GamesQueryRepository {
 
   private RawSQLGameDBTypePairViewModel(rawGame: any[]): GameViewModel {
     const game = rawGame[0];
+    console.log('game before map', game);
     return {
-      id: game.gameId,
+      id: game.id,
       firstPlayerProgress: {
         answers: [
           {
@@ -139,12 +140,13 @@ export class GamesQueryRepository {
           'players."secondPlayerLogin"',
           'progress."firstPlayerScore"',
           'progress."secondPlayerScore"',
-          'progress."gameId"',
+          'progress."id" as "gameProgressId"',
+          'games."id"',
           'games."status"',
           'games."pairCreatedDate"',
           'games."startGameDate"',
           'games."finishGameDate"',
-          'questions."id" as questionId',
+          'questions."id" as "questionId"',
           'questions."body"',
           'answers."firstPlayerAnswerStatus"',
           'answers."firstPlayerQuestionId"',
@@ -166,6 +168,51 @@ export class GamesQueryRepository {
         .getRawMany();
 
       return game ? this.RawSQLGameDBTypePairViewModel(game) : null;
+    } catch (error) {
+      console.log('error', error);
+      throw new NotFoundException();
+    }
+  }
+  async findRawSQLGameByPlayerId(currentUserId: string): Promise<any> {
+    try {
+      return await this.dataSource
+        .createQueryBuilder()
+        .select([
+          'players."firstPlayerId"',
+          'players."secondPlayerId"',
+          'players."firstPlayerLogin"',
+          'players."secondPlayerLogin"',
+          'progress."firstPlayerScore"',
+          'progress."secondPlayerScore"',
+          'progress.id as "gameProgressId"',
+          'games."id"',
+          'games."status"',
+          'games."pairCreatedDate"',
+          'games."startGameDate"',
+          'games."finishGameDate"',
+          'questions.id as "questionId"',
+          'questions."body"',
+          'answers."firstPlayerAnswerStatus"',
+          'answers."firstPlayerQuestionId"',
+          'answers."firstPlayerAddedAt"',
+          'answers."secondPlayerAnswerStatus"',
+          'answers."secondPlayerQuestionId"',
+          'answers."secondPlayerAddedAt"',
+        ])
+        .from(Players, 'players')
+        .where(
+          'players."firstPlayerId" = :currentUserId OR players."secondPlayerId" = :currentUserId',
+          { currentUserId },
+        )
+        .innerJoin(
+          GameProgresses,
+          'progress',
+          'progress.id = players."gameProgressId"',
+        )
+        .innerJoin(Games, 'games', 'games.id = progress.gameId')
+        .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
+        .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
+        .getRawMany();
     } catch (error) {
       console.log('error', error);
       throw new NotFoundException();

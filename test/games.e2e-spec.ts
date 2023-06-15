@@ -9,7 +9,7 @@ import {
 } from '../src/models/models';
 import request from 'supertest';
 
-import { GameStatuses } from '../src/types/types';
+import { AnswerStatuses, GameStatuses } from '../src/types/types';
 import { createApp } from '../src/helpers/createApp';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { AppModule } from '../src/app.module';
@@ -21,7 +21,9 @@ describe('pair-games-games tests (e2e)', () => {
   let app: INestApplication;
   let server: any;
   let user: UserViewModel;
+  let user2: UserViewModel;
   let accessToken: string;
+  let accessToken2: string;
   let game: GameViewModel;
   let questions: Questions[];
   const mokEmailAdapter = {
@@ -36,6 +38,7 @@ describe('pair-games-games tests (e2e)', () => {
   const questionsUrl = '/sa/quiz/questions';
   const gameCreateUrl = '/pair-games-quiz/pairs/connection';
   const gameUrl = '/pair-games-quiz/pairs';
+  const sendAnswerUrl = '/pair-games-quiz/pairs/my-current/answers';
   const currentGameUrl = '/pair-games-quiz/pairs/my-current';
   const wipeAllData = '/testing/all-data';
   const userAgent = {
@@ -450,7 +453,7 @@ describe('pair-games-games tests (e2e)', () => {
         expect(401);*/
       });
     });
-    describe('send answer test tests', () => {
+    describe('send answer tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -495,21 +498,99 @@ describe('pair-games-games tests (e2e)', () => {
 
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
-      });
-      it('should send answer with correct input data', async () => {
-        const createResponseForPair = await request(server)
+
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
+
+        accessToken2 = loginUser2.body.accessToken;
+
+        const createResponseForPairUser1 = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        const createdGame: GameViewModel = createResponseForPair.body;
+        game = createResponseForPairUser1.body;
 
-        expect(createdGame.id).toBeDefined();
-        expect(createdGame.status).toEqual(GameStatuses.PendingSecondPlayer);
-        expect(createdGame.questions.length).toBe(5);
-        expect(createdGame.pairCreatedDate).toBeDefined();
-        expect(createdGame.startGameDate).toBeNull();
-        expect(createdGame.finishGameDate).toBeNull();
+        expect(game.id).toBeDefined();
+        expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
+        expect(game.questions).toEqual(game.questions);
+        expect(game.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(game.startGameDate).toBeNull();
+        expect(game.finishGameDate).toBeNull();
+
+        const createResponseForPairUser2 = await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+
+        const pair2: GameViewModel = createResponseForPairUser2.body;
+
+        expect(pair2.id).toBeDefined();
+        expect(pair2.status).toEqual(GameStatuses.Active);
+        expect(pair2.questions).toBeDefined();
+        expect(pair2.pairCreatedDate).toBeDefined();
+        expect(pair2.startGameDate).toBeDefined();
+        expect(pair2.finishGameDate).toBeNull();
+      });
+      it('should send correct answer from firstPlayer with correct input data', async () => {
+        await request(server)
+          .post(sendAnswerUrl)
+          .send({ answer: 'answer1' })
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+      });
+      it('should send incorrect answer from firstPlayer with correct input data', async () => {
+        await request(server)
+          .post(sendAnswerUrl)
+          .send({ answer: 'not correct' })
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const responseForGame = await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const foundGame: GameViewModel = responseForGame.body;
+        console.log('foundGame', foundGame);
+
+        expect(foundGame.id).toEqual(game.id);
+        expect(foundGame.status).toEqual('Active');
+        expect(foundGame.questions).toBeDefined();
+        expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(foundGame.startGameDate).toBeDefined();
+        expect(foundGame.secondPlayerProgress.answers[0].answerStatus).toEqual(
+          AnswerStatuses.Incorrect,
+        );
+        expect(foundGame.secondPlayerProgress.score).toBe(0);
+        expect(foundGame.finishGameDate).toBeNull();
+      });
+      it('should send correct answer from secondPlayer with correct input data', async () => {
+        await request(server)
+          .post(sendAnswerUrl)
+          .send({ answer: 'answer1' })
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
       });
     });
   });

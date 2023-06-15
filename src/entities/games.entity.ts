@@ -41,29 +41,16 @@ export class Games {
   questions: Questions[];
 
   static create(
-    questions: QuestionViewModel[],
     gameProgressId: string,
     players: Players,
     answers: Answers,
     correctAnswers: CorrectAnswers,
     startGameDate?: string | null,
   ) {
-    debugger;
     const newGame = new Games();
     newGame.pairCreatedDate = new Date().toISOString();
     newGame.startGameDate = startGameDate;
     newGame.finishGameDate = null;
-    /*newGame.questions = questions.map((q) => {
-      return {
-        id: q.id,
-        body: q.body,
-        correctAnswers: q.correctAnswers,
-        published: q.published,
-        createdAt: q.createdAt,
-        updatedAt: q.updatedAt,
-        gameId: q.gameId,
-      };
-    });*/
     newGame.status = GameStatuses.PendingSecondPlayer;
     newGame.gameProgressId = gameProgressId;
     return newGame;
