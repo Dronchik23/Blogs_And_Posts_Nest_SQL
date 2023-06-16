@@ -47,7 +47,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   ) {}
 
   async execute(command: SendAnswerCommand): Promise<any> {
-    debugger;
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
       command.userId,
     );
@@ -69,7 +68,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const isAnswerCorrect =
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer1 ||
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer2;
-    debugger;
     if (isAnswerCorrect) {
       const playerScoreKey =
         game.firstPlayerId === command.userId

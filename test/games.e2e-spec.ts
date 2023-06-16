@@ -241,7 +241,6 @@ describe('pair-games-games tests (e2e)', () => {
           .expect(200);
 
         const foundGame = responseForGame.body;
-        console.log('game test', foundGame);
 
         expect(foundGame.id).toEqual(game.id);
         expect(foundGame.status).toEqual(game.status);
@@ -295,7 +294,6 @@ describe('pair-games-games tests (e2e)', () => {
           .expect(200);
 
         questions = getResponseForQuestions.body.items;
-        console.log('before all questions', questions);
 
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
@@ -572,14 +570,13 @@ describe('pair-games-games tests (e2e)', () => {
           .expect(200);
 
         const foundGame: GameViewModel = responseForGame.body;
-        console.log('foundGame', foundGame);
 
         expect(foundGame.id).toEqual(game.id);
         expect(foundGame.status).toEqual('Active');
         expect(foundGame.questions).toBeDefined();
         expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
         expect(foundGame.startGameDate).toBeDefined();
-        expect(foundGame.secondPlayerProgress.answers[0].answerStatus).toEqual(
+        expect(foundGame.firstPlayerProgress.answers[0].answerStatus).toEqual(
           AnswerStatuses.Incorrect,
         );
         expect(foundGame.secondPlayerProgress.score).toBe(0);
@@ -589,6 +586,13 @@ describe('pair-games-games tests (e2e)', () => {
         await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'answer1' })
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+      });
+      it('should send incorrect answer from secondPlayer with correct input data', async () => {
+        await request(server)
+          .post(sendAnswerUrl)
+          .send({ answer: 'not correct' })
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(200);
       });

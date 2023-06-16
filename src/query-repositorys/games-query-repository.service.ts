@@ -64,7 +64,6 @@ export class GamesQueryRepository {
 
   private RawSQLGameDBTypePairViewModel(rawGame: any[]): GameViewModel {
     const game = rawGame[0];
-    console.log('game before map', game);
     return {
       id: game.id,
       firstPlayerProgress: {
