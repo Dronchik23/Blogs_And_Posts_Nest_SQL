@@ -34,6 +34,7 @@ import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/questions.entity';
 import { Games } from '../entities/games.entity';
 import { CorrectAnswers } from '../entities/correct-answers.entity';
+import { Answers } from '../entities/answers';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -490,6 +491,26 @@ export class AnswerViewModel {
   questionId: string;
   answerStatus: AnswerStatuses;
   addedAt: string;
+}
+export class FirstPlayerAnswerViewModel {
+  questionId: string;
+  answerStatus: AnswerStatuses;
+  addedAt: string;
+  constructor(answerDB: Answers) {
+    this.questionId = answerDB.firstPlayerQuestionId;
+    this.answerStatus = answerDB.firstPlayerAnswerStatus;
+    this.addedAt = answerDB.firstPlayerAddedAt;
+  }
+}
+export class SecondPlayerAnswerViewModel {
+  questionId: string;
+  answerStatus: AnswerStatuses;
+  addedAt: string;
+  constructor(answerDB: Answers) {
+    this.questionId = answerDB.secondPlayerQuestionId;
+    this.answerStatus = answerDB.secondPlayerAnswerStatus;
+    this.addedAt = answerDB.secondPlayerAddedAt;
+  }
 }
 export class PlayerViewModel {
   id: any;

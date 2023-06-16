@@ -1,10 +1,6 @@
 import { Injectable, NotFoundException, Scope } from '@nestjs/common';
-import { GameStatuses, GameDBType } from '../types/types';
-import {
-  AnswerViewModel,
-  GameViewModel,
-  PlayerViewModel,
-} from '../models/models';
+import { GameStatuses } from '../types/types';
+import { GameViewModel } from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';

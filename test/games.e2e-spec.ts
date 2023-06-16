@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import {
+  AnswerViewModel,
   GameViewModel,
   QuestionInputModel,
   UserInputModel,
@@ -551,18 +552,48 @@ describe('pair-games-games tests (e2e)', () => {
         expect(pair2.finishGameDate).toBeNull();
       });
       it('should send correct answer from firstPlayer with correct input data', async () => {
-        await request(server)
+        const answerRequest = await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'answer1' })
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
+
+        const answer: AnswerViewModel = answerRequest.body;
+
+        expect(answer.questionId).toBeDefined();
+        expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
+        expect(answer.addedAt).toBeDefined();
+
+        const responseForGame = await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const foundGame: GameViewModel = responseForGame.body;
+
+        expect(foundGame.id).toEqual(game.id);
+        expect(foundGame.status).toEqual('Active');
+        expect(foundGame.questions).toBeDefined();
+        expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(foundGame.startGameDate).toBeDefined();
+        expect(foundGame.firstPlayerProgress.answers[0].answerStatus).toEqual(
+          AnswerStatuses.Correct,
+        );
+        expect(foundGame.firstPlayerProgress.score).toBe(1);
+        expect(foundGame.finishGameDate).toBeNull();
       });
       it('should send incorrect answer from firstPlayer with correct input data', async () => {
-        await request(server)
+        const answerRequest = await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'not correct' })
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
+
+        const answer: AnswerViewModel = answerRequest.body;
+
+        expect(answer.questionId).toBeDefined();
+        expect(answer.answerStatus).toEqual(AnswerStatuses.Incorrect);
+        expect(answer.addedAt).toBeDefined();
 
         const responseForGame = await request(server)
           .get(currentGameUrl)
@@ -579,22 +610,70 @@ describe('pair-games-games tests (e2e)', () => {
         expect(foundGame.firstPlayerProgress.answers[0].answerStatus).toEqual(
           AnswerStatuses.Incorrect,
         );
-        expect(foundGame.secondPlayerProgress.score).toBe(0);
+        expect(foundGame.firstPlayerProgress.score).toBe(0);
         expect(foundGame.finishGameDate).toBeNull();
       });
       it('should send correct answer from secondPlayer with correct input data', async () => {
-        await request(server)
+        const answerRequest = await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'answer1' })
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(200);
+
+        const answer: AnswerViewModel = answerRequest.body;
+
+        expect(answer.questionId).toBeDefined();
+        expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
+        expect(answer.addedAt).toBeDefined();
+
+        const responseForGame = await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const foundGame: GameViewModel = responseForGame.body;
+
+        expect(foundGame.id).toEqual(game.id);
+        expect(foundGame.status).toEqual('Active');
+        expect(foundGame.questions).toBeDefined();
+        expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(foundGame.startGameDate).toBeDefined();
+        expect(foundGame.secondPlayerProgress.answers[0].answerStatus).toEqual(
+          AnswerStatuses.Correct,
+        );
+        expect(foundGame.secondPlayerProgress.score).toBe(1);
+        expect(foundGame.finishGameDate).toBeNull();
       });
       it('should send incorrect answer from secondPlayer with correct input data', async () => {
-        await request(server)
+        const answerRequest = await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'not correct' })
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(200);
+
+        const answer: AnswerViewModel = answerRequest.body;
+
+        expect(answer.questionId).toBeDefined();
+        expect(answer.answerStatus).toEqual(AnswerStatuses.Incorrect);
+        expect(answer.addedAt).toBeDefined();
+
+        const responseForGame = await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const foundGame: GameViewModel = responseForGame.body;
+
+        expect(foundGame.id).toEqual(game.id);
+        expect(foundGame.status).toEqual('Active');
+        expect(foundGame.questions).toBeDefined();
+        expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(foundGame.startGameDate).toBeDefined();
+        expect(foundGame.secondPlayerProgress.answers[0].answerStatus).toEqual(
+          AnswerStatuses.Incorrect,
+        );
+        expect(foundGame.secondPlayerProgress.score).toBe(0);
+        expect(foundGame.finishGameDate).toBeNull();
       });
     });
   });

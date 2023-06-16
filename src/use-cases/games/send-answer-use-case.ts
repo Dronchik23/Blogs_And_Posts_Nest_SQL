@@ -11,8 +11,11 @@ import { Answers } from '../../entities/answers';
 import { Players } from '../../entities/players.entity';
 import {
   AnswerInputModel,
+  AnswerViewModel,
+  FirstPlayerAnswerViewModel,
   GameViewModel,
   QuestionViewModel,
+  SecondPlayerAnswerViewModel,
 } from '../../models/models';
 import {
   AnswerStatuses,
@@ -47,6 +50,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   ) {}
 
   async execute(command: SendAnswerCommand): Promise<any> {
+    debugger;
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
       command.userId,
     );
@@ -68,6 +72,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const isAnswerCorrect =
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer1 ||
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer2;
+
     if (isAnswerCorrect) {
       const playerScoreKey =
         game.firstPlayerId === command.userId
@@ -93,15 +98,28 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           : 'secondPlayerAddedAt';
 
       await this.answersModel.update(
-        { gameProgressId: game.gameProgressId },
+        {
+          gameProgressId: game.gameProgressId,
+        },
         {
           [playerQuestionIdKey]: currentQuestion.id,
           [playerAnswerStatusKey]: AnswerStatuses.Correct,
           [playerAddedAtKey]: new Date().toISOString(),
         },
       );
+
+      const answer = await this.answersModel.findOneBy({
+        gameProgressId: game.gameProgressId,
+      });
+
+      const answerViewModel =
+        game.firstPlayerId === command.userId
+          ? new FirstPlayerAnswerViewModel(answer)
+          : new SecondPlayerAnswerViewModel(answer);
+
+      return answerViewModel;
     } else {
-      const playerScoreKey =
+      /*      const playerScoreKey =
         game.firstPlayerId === command.userId
           ? 'firstPlayerScore'
           : 'secondPlayerScore';
@@ -111,7 +129,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
         {
           [playerScoreKey]: game[playerScoreKey] - 1,
         },
-      );
+      );*/
 
       const playerQuestionIdKey =
         game.firstPlayerId === command.userId
@@ -127,13 +145,26 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           : 'secondPlayerAddedAt';
 
       await this.answersModel.update(
-        { gameProgressId: game.gameProgressId },
+        {
+          gameProgressId: game.gameProgressId,
+        },
         {
           [playerQuestionIdKey]: currentQuestion.id,
           [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
           [playerAddedAtKey]: new Date().toISOString(),
         },
       );
+
+      const answer = await this.answersModel.findOneBy({
+        gameProgressId: game.gameProgressId,
+      });
+
+      const answerViewModel =
+        game.firstPlayerId === command.userId
+          ? new FirstPlayerAnswerViewModel(answer)
+          : new SecondPlayerAnswerViewModel(answer);
+
+      return answerViewModel;
     }
   }
 }
