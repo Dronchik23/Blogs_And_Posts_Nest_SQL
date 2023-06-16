@@ -31,9 +31,8 @@ export class Answers {
   @ManyToOne(() => GameProgresses, (progress) => progress.answers)
   gameProgress: GameProgresses;
 
-  static create(gameProgressId: string) {
+  static create() {
     const newAnswer = new Answers();
-    newAnswer.gameProgressId = gameProgressId;
     return newAnswer;
   }
 }

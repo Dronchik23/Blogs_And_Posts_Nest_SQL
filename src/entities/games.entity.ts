@@ -1,18 +1,14 @@
 import {
   Column,
   Entity,
-  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { GameStatuses } from '../types/types';
 import { Questions } from './questions.entity';
-import { QuestionViewModel } from '../models/models';
 import { GameProgresses } from './game-progresses';
 import { Players } from './players.entity';
-import { Answers } from './answers';
-import { CorrectAnswers } from './correct-answers.entity';
 
 @Entity()
 export class Games {
@@ -43,8 +39,7 @@ export class Games {
   static create(
     gameProgressId: string,
     players: Players,
-    answers: Answers,
-    correctAnswers: CorrectAnswers,
+    //answers: Answers,
     startGameDate?: string | null,
   ) {
     const newGame = new Games();

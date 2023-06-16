@@ -42,20 +42,10 @@ export class GamesRepository {
     const newPlayers = Players.create(user, createdGameProgress.id);
     const createdPlayers = await this.playersModel.save(newPlayers);
 
-    const newAnswers = Answers.create(createdGameProgress.id);
-    const createdAnswers = await this.answerModel.save(newAnswers);
-
     const newCorrectAnswers = new CorrectAnswers();
-    const createdCorrectAnswers = await this.correctAnswerModel.save(
-      newCorrectAnswers,
-    );
+    await this.correctAnswerModel.save(newCorrectAnswers);
 
-    const createdGame = Games.create(
-      createdGameProgress.id,
-      createdPlayers,
-      createdAnswers,
-      createdCorrectAnswers,
-    );
+    const createdGame = Games.create(createdGameProgress.id, createdPlayers);
 
     const savedGame = await this.gameModel.save(createdGame);
 

@@ -1,8 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
-import { QuestionsQueryRepository } from '../../query-repositorys/questions-query.repository';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { NotFoundException, OnModuleInit } from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../../entities/games.entity';
 import { Users } from '../../entities/users.entity';
@@ -11,20 +10,11 @@ import { Answers } from '../../entities/answers';
 import { Players } from '../../entities/players.entity';
 import {
   AnswerInputModel,
-  AnswerViewModel,
   FirstPlayerAnswerViewModel,
-  GameViewModel,
-  QuestionViewModel,
   SecondPlayerAnswerViewModel,
 } from '../../models/models';
-import {
-  AnswerStatuses,
-  GameStatuses,
-  QuestionDBType,
-} from '../../types/types';
-import { uuid } from 'uuidv4';
+import { AnswerStatuses } from '../../types/types';
 import { Questions } from '../../entities/questions.entity';
-import { Likes } from '../../entities/likes.entity';
 
 export class SendAnswerCommand {
   constructor(public sendAnswerDTO: AnswerInputModel, public userId: string) {}
@@ -51,20 +41,37 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
   async execute(command: SendAnswerCommand): Promise<any> {
     debugger;
+    let currentQuestion;
+
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
       command.userId,
     );
     const game = rawGame[0];
 
     if (!game || game.status !== 'Active') {
-      throw new NotFoundException();
+      throw new ForbiddenException();
     }
 
-    const allCurrentQuestions = await this.questionModule.findBy({
+    const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
       gameId: game.id,
     });
 
-    const currentQuestion = allCurrentQuestions[0];
+    const playerAnswers: Answers[] = await this.answersModel.findBy({
+      gameProgressId: game.gameProgressId,
+    });
+
+    const answeredQuestionCount = playerAnswers.length;
+
+    if (answeredQuestionCount > allCurrentQuestions.length) {
+      throw new ForbiddenException();
+    }
+
+    if (answeredQuestionCount < allCurrentQuestions.length) {
+      currentQuestion = allCurrentQuestions[answeredQuestionCount];
+    } else {
+      throw new ForbiddenException();
+    }
+
     const questionDBType: Questions = await this.questionModule.findOneBy({
       id: currentQuestion.id,
     });
@@ -97,16 +104,12 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           ? 'firstPlayerAddedAt'
           : 'secondPlayerAddedAt';
 
-      await this.answersModel.update(
-        {
-          gameProgressId: game.gameProgressId,
-        },
-        {
-          [playerQuestionIdKey]: currentQuestion.id,
-          [playerAnswerStatusKey]: AnswerStatuses.Correct,
-          [playerAddedAtKey]: new Date().toISOString(),
-        },
-      );
+      await this.answersModel.save({
+        gameProgressId: game.gameProgressId,
+        [playerQuestionIdKey]: currentQuestion.id,
+        [playerAnswerStatusKey]: AnswerStatuses.Correct,
+        [playerAddedAtKey]: new Date().toISOString(),
+      });
 
       const answer = await this.answersModel.findOneBy({
         gameProgressId: game.gameProgressId,
@@ -119,18 +122,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
       return answerViewModel;
     } else {
-      /*      const playerScoreKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerScore'
-          : 'secondPlayerScore';
-
-      await this.gameProgressesModel.update(
-        { id: game.gameProgressId },
-        {
-          [playerScoreKey]: game[playerScoreKey] - 1,
-        },
-      );*/
-
       const playerQuestionIdKey =
         game.firstPlayerId === command.userId
           ? 'firstPlayerQuestionId'
@@ -144,21 +135,17 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           ? 'firstPlayerAddedAt'
           : 'secondPlayerAddedAt';
 
-      await this.answersModel.update(
-        {
-          gameProgressId: game.gameProgressId,
-        },
-        {
-          [playerQuestionIdKey]: currentQuestion.id,
-          [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
-          [playerAddedAtKey]: new Date().toISOString(),
-        },
-      );
+      await this.answersModel.save({
+        gameProgressId: game.gameProgressId,
+        [playerQuestionIdKey]: currentQuestion.id,
+        [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
+        [playerAddedAtKey]: new Date().toISOString(),
+      });
 
       const answer = await this.answersModel.findOneBy({
         gameProgressId: game.gameProgressId,
       });
-
+      console.log('answer', answer);
       const answerViewModel =
         game.firstPlayerId === command.userId
           ? new FirstPlayerAnswerViewModel(answer)
