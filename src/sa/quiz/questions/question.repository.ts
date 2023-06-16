@@ -9,6 +9,7 @@ import {
 } from '../../../models/models';
 import { Questions } from '../../../entities/questions.entity';
 import { CorrectAnswers } from '../../../entities/correct-answers.entity';
+import { Answers } from '../../../entities/answers';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionRepository {
@@ -18,6 +19,8 @@ export class QuestionRepository {
     private readonly questionModel: Repository<Questions>,
     @InjectRepository(CorrectAnswers)
     private readonly correctAnswersModel: Repository<CorrectAnswers>,
+    @InjectRepository(Answers)
+    private readonly answersModel: Repository<Answers>,
   ) {}
 
   async createQuestion(
@@ -55,10 +58,13 @@ export class QuestionRepository {
         throw new NotFoundException();
       }
 
+      await this.correctAnswersModel.delete({ questionsId: questionId }); // удаляем ответы
+
       const result = await this.questionModel.delete({ id: questionId });
+
       return result.affected > 0;
-    } catch (e) {
-      throw new NotFoundException();
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -66,24 +72,23 @@ export class QuestionRepository {
     questionId: string,
     updateQuestionDto: QuestionUpdateModel,
     updatedAt: string,
-  ): Promise<boolean> {
+  ): Promise<any> {
     try {
       const question = await this.questionModel.findOneBy({ id: questionId });
       if (!question) {
         throw new NotFoundException();
       }
 
-      const result = await this.questionModel.update(questionId, {
-        body: updateQuestionDto.body,
-        correctAnswers: {
-          questionsId: questionId,
-          answer1: '1',
-          answer2: '2',
-        },
-        updatedAt: updatedAt,
-      });
-      return result.affected > 0;
-    } catch (e) {
+      question.body = updateQuestionDto.body;
+      question.correctAnswers = {
+        questionsId: questionId,
+        answer1: '1',
+        answer2: '2',
+      };
+      question.updatedAt = updatedAt;
+
+      return await this.questionModel.save(question);
+    } catch (error) {
       throw new NotFoundException();
     }
   }

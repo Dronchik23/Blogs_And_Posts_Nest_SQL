@@ -32,7 +32,9 @@ export class Questions {
   @Column({ nullable: true, type: 'uuid' })
   gameId: string;
 
-  @OneToOne(() => CorrectAnswers, (c) => c.questions, { eager: true })
+  @OneToOne(() => CorrectAnswers, (c) => c.questions, {
+    eager: true,
+  })
   correctAnswers: CorrectAnswers;
 
   @ManyToOne(() => Games, (qp) => qp.questions)

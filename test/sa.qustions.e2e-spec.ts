@@ -70,16 +70,18 @@ describe('sa/games/questions tests (e2e)', () => {
         expect(question).toBeDefined();
       });
       it('should get all questions', async () => {
-        await request(server)
+        const response = await request(server)
           .get(url)
           .auth('admin', 'qwerty')
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [question],
-          });
+          .expect(200);
+
+        expect(response.body).toEqual({
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          items: [question],
+        });
       });
     });
     describe('create question tests', () => {
@@ -169,13 +171,13 @@ describe('sa/games/questions tests (e2e)', () => {
         question = createResponseForQuestion.body;
         expect(question).toBeDefined();
       });
-      it('should not question user that not exist ', async () => {
+      it('should not delete question user that not exist ', async () => {
         await request(server)
           .delete(`${url}${'fake' + question.id}`)
           .auth('admin', 'qwerty')
           .expect(404);
       });
-      it('should not question user with bad auth params', async () => {
+      it('should not delete question user with bad auth params', async () => {
         await request(server)
           .delete(`${url}${question.id}`)
           .auth('admin', 'invalid')
@@ -186,7 +188,7 @@ describe('sa/games/questions tests (e2e)', () => {
           .auth('Authorization', `Bearer YWRtaW46cXdlcnR5`)
           .expect(401);
       });
-      it('should question with correct id', async () => {
+      it('should delete question with correct id', async () => {
         await request(server)
           .delete(`${url}${question.id}`)
           .auth('admin', 'qwerty')
@@ -269,6 +271,7 @@ describe('sa/games/questions tests (e2e)', () => {
         const response = await request(server).get(url).auth('admin', 'qwerty');
 
         const updatedQuestion: QuestionViewModel = response.body.items[0];
+        console.log('updatedQuestion', updatedQuestion);
 
         expect(updatedQuestion.body).toEqual(updateQuestionDto.body);
         expect(updatedQuestion.updatedAt).not.toBeNull();

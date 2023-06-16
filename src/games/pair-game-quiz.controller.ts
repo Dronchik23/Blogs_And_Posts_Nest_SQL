@@ -63,10 +63,10 @@ export class CreateGameController {
   }
 
   @UseGuards(BearerAuthGuard)
-  @Get(':pairId')
+  @Get(':gameId')
   @HttpCode(200)
   async getPairByPairId(
-    @Param('pairId') pairId: string,
+    @Param('gameId') pairId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
     return await this.gamesQueryRepository.findGameByGameId(pairId);

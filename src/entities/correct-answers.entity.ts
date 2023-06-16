@@ -10,7 +10,7 @@ import { Questions } from './questions.entity';
 @Entity({ name: 'correctAnswers' })
 export class CorrectAnswers {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id?: string;
 
   @Column({ nullable: true, type: 'uuid' })
   questionsId: string;
@@ -21,9 +21,9 @@ export class CorrectAnswers {
   @Column({ nullable: true })
   answer2: string;
 
-  @OneToOne(() => Questions, (q) => q.correctAnswers)
+  @OneToOne(() => Questions, (q) => q.correctAnswers, { cascade: true })
   @JoinColumn()
-  questions: Questions;
+  questions?: Questions;
 
   static create(answers: string[]) {
     const newCorrectAnswers = new CorrectAnswers();

@@ -34,15 +34,15 @@ export class QuestionsQueryRepository {
   private fromRawSQLQuestionTypeToQuestionViewModelArray(
     questions: any,
   ): QuestionViewModel[] {
-    return questions.map((question) => ({
+    const mapped = questions.map((question) => ({
       id: question.id,
       body: question.body,
-      correctAnswers: [questions.answer1, questions.answer2],
+      correctAnswers: [question.answer1, question.answer2],
       published: question.published,
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
-      gameId: question.gameId,
     }));
+    return mapped;
   }
 
   async getAllQuestions(

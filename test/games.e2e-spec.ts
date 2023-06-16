@@ -133,6 +133,7 @@ describe('pair-games-games tests (e2e)', () => {
           .expect(200);
 
         const gameFromResponse = responseForGame.body;
+        console.log('gameFromResponse', gameFromResponse);
 
         expect(gameFromResponse.id).toEqual(game.id);
         expect(gameFromResponse.status).toBeDefined();
