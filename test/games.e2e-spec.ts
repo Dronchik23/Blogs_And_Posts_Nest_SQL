@@ -38,10 +38,10 @@ describe('pair-games-games tests (e2e)', () => {
     },
   };
   const questionsUrl = '/sa/quiz/questions';
-  const gameCreateUrl = '/pair-games-quiz/pairs/connection';
+  const gameCreateUrl = '/pair-game-quiz/pairs/connection';
   const gameUrl = '/pair-games-quiz/pairs';
-  const sendAnswerUrl = '/pair-games-quiz/pairs/my-current/answers';
-  const currentGameUrl = '/pair-games-quiz/pairs/my-current';
+  const sendAnswerUrl = '/pair-game-quiz/pairs/my-current/answers';
+  const currentGameUrl = '/pair-game-quiz/pairs/my-current';
   const wipeAllData = '/testing/all-data';
   const userAgent = {
     'User-Agent': 'jest user-agent',

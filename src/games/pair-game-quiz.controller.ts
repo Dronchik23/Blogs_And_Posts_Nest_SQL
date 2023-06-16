@@ -27,7 +27,7 @@ import { GameStatuses } from '../types/types';
 import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
-@Controller({ path: 'pair-games-quiz/pairs', scope: Scope.DEFAULT })
+@Controller({ path: 'pair-game-quiz/pairs', scope: Scope.DEFAULT })
 export class CreateGameController {
   constructor(
     private readonly commandBus: CommandBus,
