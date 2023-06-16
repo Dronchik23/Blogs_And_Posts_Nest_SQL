@@ -39,7 +39,7 @@ describe('pair-games-games tests (e2e)', () => {
   };
   const questionsUrl = '/sa/quiz/questions';
   const gameCreateUrl = '/pair-game-quiz/pairs/connection';
-  const gameUrl = '/pair-games-quiz/pairs';
+  const gameUrl = '/pair-game-quiz/pairs';
   const sendAnswerUrl = '/pair-game-quiz/pairs/my-current/answers';
   const currentGameUrl = '/pair-game-quiz/pairs/my-current';
   const wipeAllData = '/testing/all-data';
@@ -126,6 +126,13 @@ describe('pair-games-games tests (e2e)', () => {
         expect(game.id).toBeDefined();
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
       });
+      it.skip('should send 404 if game not found', async () => {
+        const fakeGameId = 'cuifhw09r';
+        await request(server)
+          .get(gameUrl + `/${fakeGameId}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(404);
+      });
       it('should get games by pairId', async () => {
         const responseForGame = await request(server)
           .get(gameUrl + `/${game.id}`)
@@ -133,7 +140,6 @@ describe('pair-games-games tests (e2e)', () => {
           .expect(200);
 
         const gameFromResponse = responseForGame.body;
-        console.log('gameFromResponse', gameFromResponse);
 
         expect(gameFromResponse.id).toEqual(game.id);
         expect(gameFromResponse.status).toBeDefined();
@@ -142,7 +148,7 @@ describe('pair-games-games tests (e2e)', () => {
         expect(gameFromResponse.startGameDate).toBeDefined();
         expect(gameFromResponse.finishGameDate).toBeDefined();
       });
-      it.skip('should send 403 if user try to get alien games', async () => {
+      it('should send 403 if user try to get alien game', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -168,7 +174,7 @@ describe('pair-games-games tests (e2e)', () => {
 
         const accessToken2 = loginUser2.body.accessToken;
 
-        return await request(server)
+        await request(server)
           .get(gameUrl + `/${game.id}`)
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(403);
@@ -251,6 +257,37 @@ describe('pair-games-games tests (e2e)', () => {
         expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
         expect(foundGame.startGameDate).toBeNull();
         expect(foundGame.finishGameDate).toBeNull();
+      });
+      it('should send 403 if user try to get alien current game', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(403);
       });
     });
     describe('create games games for one player tests', () => {

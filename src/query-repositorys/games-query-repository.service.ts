@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Scope } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  Scope,
+} from '@nestjs/common';
 import { GameStatuses } from '../types/types';
 import { GameViewModel } from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
@@ -103,12 +108,15 @@ export class GamesQueryRepository {
     };
   }
 
-  async findGameByGameId(gameId: string): Promise<GameViewModel> {
+  async findGameByGameId(
+    gameId: string,
+    userId: string,
+  ): Promise<GameViewModel> {
     try {
       const game = await this.gameModel.findOneBy({ id: gameId });
       return game ? this.gameDBTypePairViewModel(game) : null;
     } catch (error) {
-      throw new NotFoundException();
+      new NotFoundException();
     }
   }
 
@@ -164,8 +172,7 @@ export class GamesQueryRepository {
 
       return game ? this.RawSQLGameDBTypePairViewModel(game) : null;
     } catch (error) {
-      console.log('error', error);
-      throw new NotFoundException();
+      throw new ForbiddenException();
     }
   }
   async findRawSQLGameByPlayerId(currentUserId: string): Promise<any> {

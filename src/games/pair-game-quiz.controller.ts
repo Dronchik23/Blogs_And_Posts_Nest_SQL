@@ -58,7 +58,7 @@ export class CreateGameController {
   @UseGuards(BearerAuthGuard)
   @Get('/my-current')
   @HttpCode(200)
-  async getCurrentGame(@CurrentUserId() currentUserId): Promise<GameViewModel> {
+  async getCurrentGame(@CurrentUserId() currentUserId): Promise<any> {
     return await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
   }
 
@@ -69,6 +69,15 @@ export class CreateGameController {
     @Param('gameId') pairId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
-    return await this.gamesQueryRepository.findGameByGameId(pairId);
+    const game = await this.gamesQueryRepository.findGameByGameId(
+      pairId,
+      currentUserId,
+    );
+    if (
+      game.firstPlayerProgress.player.id !== currentUserId ||
+      game.secondPlayerProgress.player.id !== currentUserId
+    ) {
+      throw new ForbiddenException();
+    }
   }
 }
