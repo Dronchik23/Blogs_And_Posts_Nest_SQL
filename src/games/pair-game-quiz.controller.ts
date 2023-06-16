@@ -70,14 +70,5 @@ export class CreateGameController {
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
     return await this.gamesQueryRepository.findGameByGameId(pairId);
-    /*   if (isNil(game)) {
-      throw new NotFoundException();
-    }
-    if (
-      game.gameProgress.firstPlayerScore !== currentUserId ||
-      game.gameProgress.players.secondPlayerId !== currentUserId
-    ) {
-      throw new ForbiddenException();
-    }*/
   }
 }
