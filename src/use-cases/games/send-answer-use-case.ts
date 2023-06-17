@@ -25,13 +25,10 @@ export class SendAnswerCommand {
   constructor(public sendAnswerDTO: AnswerInputModel, public userId: string) {}
 }
 
-export class CustomForbiddenException extends HttpException {
-  constructor(message: string, customData: any) {
-    super(message, HttpStatus.FORBIDDEN);
-    this.customData = customData;
+export class MaximumAnsweredQuestionsReachedException extends ForbiddenException {
+  constructor() {
+    super('Maximum answered questions reached');
   }
-
-  customData: any;
 }
 
 @CommandHandler(SendAnswerCommand)
@@ -74,18 +71,18 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       gameProgressId: game.gameProgressId,
     });
 
-    const answeredQuestionCount = playersAnswers.length;
+    const answeredQuestionsCount = playersAnswers.length;
 
-    if (answeredQuestionCount < 5) {
-      currentQuestion = allCurrentQuestions[answeredQuestionCount];
+    if (answeredQuestionsCount < 5) {
+      currentQuestion = allCurrentQuestions[answeredQuestionsCount];
     } else {
-      throw new CustomForbiddenException('тут ебнулось', currentQuestion);
+      throw new MaximumAnsweredQuestionsReachedException();
     }
 
     const questionDBType: Questions = await this.questionModule.findOneBy({
       id: currentQuestion.id,
     });
-    //
+
     const isAnswerCorrect =
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer1 ||
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer2;
