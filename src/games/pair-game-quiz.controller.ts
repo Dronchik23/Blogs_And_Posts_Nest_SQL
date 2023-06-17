@@ -58,26 +58,29 @@ export class CreateGameController {
   @UseGuards(BearerAuthGuard)
   @Get('/my-current')
   @HttpCode(200)
-  async getCurrentGame(@CurrentUserId() currentUserId): Promise<any> {
+  async getCurrentGame(@CurrentUserId() currentUserId): Promise<GameViewModel> {
     return await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
   }
 
   @UseGuards(BearerAuthGuard)
   @Get(':gameId')
   @HttpCode(200)
-  async getPairByPairId(
-    @Param('gameId') pairId: string,
+  async getGameByGameId(
+    @Param('gameId') gameId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
-    const game = await this.gamesQueryRepository.findGameByGameId(
-      pairId,
-      currentUserId,
-    );
-    if (
-      game.firstPlayerProgress.player.id !== currentUserId ||
-      game.secondPlayerProgress.player.id !== currentUserId
-    ) {
+    const game: GameViewModel =
+      await this.gamesQueryRepository.findGameByGameId(gameId);
+    if (isNil(game)) {
+      throw new NotFoundException();
+    }
+    const isPlayerParticipant =
+      game.firstPlayerProgress.player.id === currentUserId ||
+      game.secondPlayerProgress.player.id === currentUserId;
+
+    if (!isPlayerParticipant) {
       throw new ForbiddenException();
     }
+    return game;
   }
 }

@@ -71,7 +71,7 @@ describe('pair-games-games tests (e2e)', () => {
   });
 
   describe('sa/games/questions', () => {
-    describe('get games by gameId tests', () => {
+    describe('get game by gameId tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
         const createUserDto: UserInputModel = {
@@ -126,14 +126,14 @@ describe('pair-games-games tests (e2e)', () => {
         expect(game.id).toBeDefined();
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
       });
-      it.skip('should send 404 if game not found', async () => {
+      it('should send 404 if game not found', async () => {
         const fakeGameId = 'cuifhw09r';
         await request(server)
           .get(gameUrl + `/${fakeGameId}`)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(404);
       });
-      it('should get games by pairId', async () => {
+      it('should get game by gameId', async () => {
         const responseForGame = await request(server)
           .get(gameUrl + `/${game.id}`)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -179,13 +179,6 @@ describe('pair-games-games tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(403);
       });
-      it.skip('should not get games by bad pairId', async () => {
-        const badPairId = 4;
-        return await request(server)
-          .get(gameUrl + `/${badPairId}`)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .expect(400);
-      });
     });
     describe('get current games tests', () => {
       beforeAll(async () => {
@@ -207,7 +200,6 @@ describe('pair-games-games tests (e2e)', () => {
 
         const loginUser = await request(server)
           .post('/auth/login')
-          .set(userAgent)
           .set(userAgent)
           .send({
             loginOrEmail: createUserDto.login,
@@ -258,7 +250,7 @@ describe('pair-games-games tests (e2e)', () => {
         expect(foundGame.startGameDate).toBeNull();
         expect(foundGame.finishGameDate).toBeNull();
       });
-      it('should send 403 if user try to get alien current game', async () => {
+      it('should send 404 if game not found', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -276,7 +268,6 @@ describe('pair-games-games tests (e2e)', () => {
         const loginUser2 = await request(server)
           .post('/auth/login')
           .set(userAgent)
-          .set(userAgent)
           .send({
             loginOrEmail: createUserDto2.login,
             password: createUserDto2.password,
@@ -287,7 +278,7 @@ describe('pair-games-games tests (e2e)', () => {
         await request(server)
           .get(currentGameUrl)
           .set('Authorization', `Bearer ${accessToken2}`)
-          .expect(403);
+          .expect(404);
       });
     });
     describe('create games games for one player tests', () => {
@@ -373,7 +364,7 @@ describe('pair-games-games tests (e2e)', () => {
       });
     });
     describe('create games games for two players tests', () => {
-      beforeAll(async () => {
+      beforeEach(async () => {
         await request(server).delete(wipeAllData);
 
         const createUserDto: UserInputModel = {
@@ -471,6 +462,65 @@ describe('pair-games-games tests (e2e)', () => {
         expect(pair2.pairCreatedDate).toBeDefined();
         expect(pair2.startGameDate).toBeDefined();
         expect(pair2.finishGameDate).toBeNull();
+      });
+      it('Should return 403 if current user is already participating in active game', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
+
+        const accessToken2 = loginUser2.body.accessToken;
+
+        const responseForGameUser1 = await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        game = responseForGameUser1.body;
+
+        expect(game.id).toBeDefined();
+        expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
+        expect(game.questions).toEqual(game.questions);
+        expect(game.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(game.startGameDate).toBeNull();
+        expect(game.finishGameDate).toBeNull();
+
+        const responseForGameUser2 = await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+
+        const game2: GameViewModel = responseForGameUser2.body;
+
+        expect(game2.id).toBeDefined();
+        expect(game2.status).toEqual(GameStatuses.Active);
+        expect(game2.questions).toBeDefined();
+        expect(game2.pairCreatedDate).toBeDefined();
+        expect(game2.startGameDate).toBeDefined();
+        expect(game2.finishGameDate).toBeNull();
+
+        await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(403);
       });
       it.skip('should not create games with incorrect authorization data', async () => {
         await request(server)

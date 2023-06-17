@@ -12,6 +12,10 @@ import { QuestionsQueryRepository } from '../../query-repositorys/questions-quer
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
 import { Games } from '../../entities/games.entity';
 import { isNil } from '@nestjs/common/utils/shared.utils';
+import { Players } from '../../entities/players.entity';
+import { ForbiddenException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 export class CreateGameCommand {
   constructor(public user: UserViewModel) {}
@@ -25,9 +29,31 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
     private readonly usersRepository: UsersRepository,
     private readonly questionsQueryRepository: QuestionsQueryRepository,
     private readonly gamesQueryRepository: GamesQueryRepository,
+    @InjectRepository(Players)
+    private readonly playerModel: Repository<Players>,
+    @InjectRepository(Games)
+    private readonly gameModule: Repository<Games>,
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
+    debugger;
+    const player: Players = await this.playerModel
+      .createQueryBuilder()
+      .where('"firstPlayerId" = :userId OR "secondPlayerId" = :userId', {
+        userId: command.user.id,
+      })
+      .getOne();
+
+    if (player) {
+      const playersGame = await this.gameModule.findOneBy({
+        gameProgressId: player.gameProgressId,
+      });
+
+      if (playersGame.status === GameStatuses.Active) {
+        throw new ForbiddenException();
+      }
+    }
+
     const questions: QuestionViewModel[] =
       await this.questionsQueryRepository.getFiveRandomQuestions();
 

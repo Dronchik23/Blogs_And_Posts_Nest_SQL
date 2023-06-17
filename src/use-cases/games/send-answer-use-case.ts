@@ -13,7 +13,7 @@ import {
   FirstPlayerAnswerViewModel,
   SecondPlayerAnswerViewModel,
 } from '../../models/models';
-import { AnswerStatuses } from '../../types/types';
+import { AnswerStatuses, GameStatuses } from '../../types/types';
 import { Questions } from '../../entities/questions.entity';
 
 export class SendAnswerCommand {
@@ -40,12 +40,12 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   ) {}
 
   async execute(command: SendAnswerCommand): Promise<any> {
-    debugger;
     let currentQuestion;
 
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
       command.userId,
     );
+
     const game = rawGame[0];
 
     if (!game || game.status !== 'Active') {

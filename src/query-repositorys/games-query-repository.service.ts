@@ -108,10 +108,7 @@ export class GamesQueryRepository {
     };
   }
 
-  async findGameByGameId(
-    gameId: string,
-    userId: string,
-  ): Promise<GameViewModel> {
+  async findGameByGameId(gameId: string): Promise<GameViewModel> {
     try {
       const game = await this.gameModel.findOneBy({ id: gameId });
       return game ? this.gameDBTypePairViewModel(game) : null;
@@ -159,7 +156,10 @@ export class GamesQueryRepository {
           'answers."secondPlayerAddedAt"',
         ])
         .from(Players, 'players')
-        .where('players."firstPlayerId" = :currentUserId', { currentUserId })
+        .where(
+          '(players."firstPlayerId" = :currentUserId OR players."secondPlayerId" = :currentUserId)',
+          { currentUserId },
+        )
         .innerJoin(
           GameProgresses,
           'progress',
@@ -170,9 +170,13 @@ export class GamesQueryRepository {
         .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
         .getRawMany();
 
+      if (!game || game.length === 0) {
+        throw new NotFoundException();
+      }
+
       return game ? this.RawSQLGameDBTypePairViewModel(game) : null;
     } catch (error) {
-      throw new ForbiddenException();
+      throw new NotFoundException();
     }
   }
   async findRawSQLGameByPlayerId(currentUserId: string): Promise<any> {
