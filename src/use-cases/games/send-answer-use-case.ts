@@ -25,12 +25,6 @@ export class SendAnswerCommand {
   constructor(public sendAnswerDTO: AnswerInputModel, public userId: string) {}
 }
 
-export class MaximumAnsweredQuestionsReachedException extends ForbiddenException {
-  constructor() {
-    super('Maximum answered questions reached');
-  }
-}
-
 @CommandHandler(SendAnswerCommand)
 export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   constructor(
@@ -60,9 +54,8 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const game = rawGame[0];
 
     if (!game || game.status !== GameStatuses.Active) {
-      throw new ForbiddenException();
+      return HttpStatus.I_AM_A_TEAPOT;
     }
-
     const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
       gameId: game.id,
     });
@@ -76,7 +69,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     if (answeredQuestionsCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionsCount];
     } else {
-      throw new MaximumAnsweredQuestionsReachedException();
+      throw new ForbiddenException();
     }
 
     const questionDBType: Questions = await this.questionModule.findOneBy({
