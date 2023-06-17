@@ -49,7 +49,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const game = rawGame[0];
 
     if (!game || game.status !== GameStatuses.Active) {
-      throw new ForbiddenException();
+      throw new UnauthorizedException();
     }
 
     const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
@@ -65,9 +65,9 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     if (answeredQuestionCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionCount];
     } else {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
-    //
+
     const questionDBType: Questions = await this.questionModule.findOneBy({
       id: currentQuestion.id,
     });
