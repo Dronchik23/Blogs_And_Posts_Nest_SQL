@@ -1,7 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { ForbiddenException } from '@nestjs/common';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../../entities/games.entity';
 import { Users } from '../../entities/users.entity';
@@ -48,7 +48,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
     const game = rawGame[0];
 
-    if (!game || game.status !== 'Active') {
+    if (!game || game.status !== GameStatuses.Active) {
       throw new ForbiddenException();
     }
 
@@ -65,7 +65,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     if (answeredQuestionCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionCount];
     } else {
-      throw new ForbiddenException();
+      throw new UnauthorizedException();
     }
 
     const questionDBType: Questions = await this.questionModule.findOneBy({
@@ -141,7 +141,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       const answer = await this.answersModel.findOneBy({
         gameProgressId: game.gameProgressId,
       });
-      console.log('answer', answer);
+
       const answerViewModel =
         game.firstPlayerId === command.userId
           ? new FirstPlayerAnswerViewModel(answer)

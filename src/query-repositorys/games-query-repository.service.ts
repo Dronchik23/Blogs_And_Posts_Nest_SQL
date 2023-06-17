@@ -179,6 +179,7 @@ export class GamesQueryRepository {
       throw new NotFoundException();
     }
   }
+
   async findRawSQLGameByPlayerId(currentUserId: string): Promise<any> {
     try {
       return await this.dataSource
