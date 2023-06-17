@@ -170,8 +170,8 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ThrottlerModule.forRoot({
-      ttl: 10,
-      limit: 5,
+      ttl: 10000,
+      limit: 5000,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',

@@ -62,11 +62,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
     const answeredQuestionCount = playerAnswers.length;
 
-    if (answeredQuestionCount > allCurrentQuestions.length) {
-      throw new ForbiddenException();
-    }
-
-    if (answeredQuestionCount < allCurrentQuestions.length) {
+    if (answeredQuestionCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionCount];
     } else {
       throw new ForbiddenException();

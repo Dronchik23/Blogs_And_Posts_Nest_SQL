@@ -36,7 +36,6 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
-    debugger;
     const player: Players = await this.playerModel
       .createQueryBuilder()
       .where('"firstPlayerId" = :userId OR "secondPlayerId" = :userId', {
@@ -49,7 +48,10 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
         gameProgressId: player.gameProgressId,
       });
 
-      if (playersGame.status === GameStatuses.Active) {
+      if (
+        playersGame.status === GameStatuses.Active ||
+        playersGame.status === GameStatuses.PendingSecondPlayer
+      ) {
         throw new ForbiddenException();
       }
     }

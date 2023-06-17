@@ -6,6 +6,7 @@ import {
   HttpCode,
   NotFoundException,
   Param,
+  ParseUUIDPipe,
   Post,
   Scope,
   UseGuards,
@@ -66,7 +67,7 @@ export class CreateGameController {
   @Get(':gameId')
   @HttpCode(200)
   async getGameByGameId(
-    @Param('gameId') gameId: string,
+    @Param('gameId', ParseUUIDPipe) gameId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
     const game: GameViewModel =

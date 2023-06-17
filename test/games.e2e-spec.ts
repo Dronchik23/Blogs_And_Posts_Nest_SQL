@@ -17,7 +17,7 @@ import { AppModule } from '../src/app.module';
 import { Questions } from '../src/entities/questions.entity';
 import { sleep } from './helpers/sleepfunction';
 
-describe('pair-games-games tests (e2e)', () => {
+describe('pair-game-quiz/pairs tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
 
   let app: INestApplication;
@@ -70,7 +70,7 @@ describe('pair-games-games tests (e2e)', () => {
     await app.close();
   });
 
-  describe('sa/games/questions', () => {
+  describe('pair-game-quiz/pairs', () => {
     describe('get game by gameId tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);

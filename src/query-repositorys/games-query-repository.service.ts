@@ -220,7 +220,6 @@ export class GamesQueryRepository {
         .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
         .getRawMany();
     } catch (error) {
-      console.log('error', error);
       throw new NotFoundException();
     }
   }
