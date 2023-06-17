@@ -85,7 +85,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const questionDBType: Questions = await this.questionModule.findOneBy({
       id: currentQuestion.id,
     });
-
+    //
     const isAnswerCorrect =
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer1 ||
       command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer2;
