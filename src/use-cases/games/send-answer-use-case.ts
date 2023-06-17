@@ -54,7 +54,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const game = rawGame[0];
 
     if (!game || game.status !== GameStatuses.Active) {
-      return HttpStatus.I_AM_A_TEAPOT;
+      throw new ForbiddenException();
     }
     const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
       gameId: game.id,
@@ -69,7 +69,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     if (answeredQuestionsCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionsCount];
     } else {
-      throw new ForbiddenException();
+      return HttpStatus.I_AM_A_TEAPOT;
     }
 
     const questionDBType: Questions = await this.questionModule.findOneBy({
