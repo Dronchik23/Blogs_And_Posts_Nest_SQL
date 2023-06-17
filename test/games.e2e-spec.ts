@@ -768,9 +768,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
       });
       it('should send 403 if firstPlayer give more than 5 answers', async () => {
         for (let i = 0; i < 5; i++) {
-          await new Promise((resolve) => setTimeout(resolve, 1000)); // Задержка в 1 секунду
-
-          const answerRequest = await request(server)
+          await request(server)
             .post(sendAnswerUrl)
             .send({ answer: 'answer1' })
             .set('Authorization', `Bearer ${accessToken}`)
@@ -779,35 +777,11 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
 
         sleep(10);
 
-        const answerRequest = await request(server)
+        await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'not correct' })
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(403);
-
-        /*      const answer: AnswerViewModel = answerRequest.body;
-
-        expect(answer.questionId).toBeDefined();
-        expect(answer.answerStatus).toEqual(AnswerStatuses.Incorrect);
-        expect(answer.addedAt).toBeDefined();
-
-        const responseForGame = await request(server)
-          .get(currentGameUrl)
-          .set('Authorization', `Bearer ${accessToken}`)
-          .expect(200);
-
-        const foundGame: GameViewModel = responseForGame.body;
-
-        expect(foundGame.id).toEqual(game.id);
-        expect(foundGame.status).toEqual('Active');
-        expect(foundGame.questions).toBeDefined();
-        expect(foundGame.pairCreatedDate).toEqual(game.pairCreatedDate);
-        expect(foundGame.startGameDate).toBeDefined();
-        expect(foundGame.firstPlayerProgress.answers[0].answerStatus).toEqual(
-          AnswerStatuses.Incorrect,
-        );
-        expect(foundGame.firstPlayerProgress.score).toBe(0);
-        expect(foundGame.finishGameDate).toBeNull();*/
       });
     });
   });

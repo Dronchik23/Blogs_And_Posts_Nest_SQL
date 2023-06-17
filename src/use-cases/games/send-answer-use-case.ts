@@ -40,6 +40,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   ) {}
 
   async execute(command: SendAnswerCommand): Promise<any> {
+    debugger;
     let currentQuestion;
 
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
@@ -49,7 +50,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     const game = rawGame[0];
 
     if (!game || game.status !== GameStatuses.Active) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
@@ -61,6 +62,9 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     });
 
     const answeredQuestionCount = playerAnswers.length;
+    if (answeredQuestionCount === 5) {
+      throw new ForbiddenException();
+    }
 
     if (answeredQuestionCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionCount];
