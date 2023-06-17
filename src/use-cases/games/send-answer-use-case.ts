@@ -67,7 +67,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     } else {
       throw new UnauthorizedException();
     }
-
+    //
     const questionDBType: Questions = await this.questionModule.findOneBy({
       id: currentQuestion.id,
     });
