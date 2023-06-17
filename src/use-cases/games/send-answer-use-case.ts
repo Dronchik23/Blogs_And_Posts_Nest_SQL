@@ -1,7 +1,12 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../../entities/games.entity';
 import { Users } from '../../entities/users.entity';
@@ -18,6 +23,15 @@ import { Questions } from '../../entities/questions.entity';
 
 export class SendAnswerCommand {
   constructor(public sendAnswerDTO: AnswerInputModel, public userId: string) {}
+}
+
+export class CustomForbiddenException extends HttpException {
+  constructor(message: string, customData: any) {
+    super(message, HttpStatus.FORBIDDEN);
+    this.customData = customData;
+  }
+
+  customData: any;
 }
 
 @CommandHandler(SendAnswerCommand)
@@ -40,7 +54,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   ) {}
 
   async execute(command: SendAnswerCommand): Promise<any> {
-    debugger;
     let currentQuestion;
 
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
@@ -57,19 +70,16 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       gameId: game.id,
     });
 
-    const playerAnswers: Answers[] = await this.answersModel.findBy({
+    const playersAnswers: Answers[] = await this.answersModel.findBy({
       gameProgressId: game.gameProgressId,
     });
 
-    const answeredQuestionCount = playerAnswers.length;
-    if (answeredQuestionCount === 5) {
-      throw new ForbiddenException();
-    }
+    const answeredQuestionCount = playersAnswers.length;
 
     if (answeredQuestionCount < 5) {
       currentQuestion = allCurrentQuestions[answeredQuestionCount];
     } else {
-      throw new ForbiddenException();
+      throw new CustomForbiddenException('тут ебнулось', currentQuestion);
     }
 
     const questionDBType: Questions = await this.questionModule.findOneBy({

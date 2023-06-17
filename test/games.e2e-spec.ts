@@ -659,8 +659,6 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(200);
 
         const foundGame: GameViewModel = responseForGame.body;
-        console.log('foundGame', foundGame.firstPlayerProgress.answers);
-        console.log('foundGame', foundGame);
 
         expect(foundGame.id).toEqual(game.id);
         expect(foundGame.status).toEqual('Active');

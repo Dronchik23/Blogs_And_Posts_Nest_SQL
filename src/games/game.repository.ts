@@ -90,28 +90,4 @@ export class GamesRepository {
 
     return new GameViewModel(modifiedGame);
   }
-
-  async finishGame(gameId: string) {
-    try {
-      const game = await this.gameModel.findOneBy({ id: gameId });
-      if (!game) {
-        throw new NotFoundException();
-      }
-
-      const result = await this.gameModel.update(gameId, {
-        status: GameStatuses.Finished,
-      });
-      return result.affected > 0;
-    } catch (e) {
-      throw new NotFoundException();
-    }
-  }
-
-  /*  async saveAnswer(gameId: string, answer: string) {
-    //const newAnswer: Answers = Answers.create(answer);
-
-    const createdAnswer = await this.answerModel.save(newAnswer);
-    return createdAnswer;
-    //return new AnswerViewModel(createdAnswer);
-  }*/
 }
