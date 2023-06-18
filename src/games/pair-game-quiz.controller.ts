@@ -44,6 +44,7 @@ export class CreateGameController {
     return await this.commandBus.execute(new CreateGameCommand(currentUser));
   }
 
+  @SkipThrottle()
   @UseGuards(BearerAuthGuard)
   @Post('/my-current/answers')
   @HttpCode(200)

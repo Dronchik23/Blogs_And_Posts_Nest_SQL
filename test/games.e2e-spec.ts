@@ -15,7 +15,6 @@ import { createApp } from '../src/helpers/createApp';
 import { EmailAdapter } from '../src/email/email.adapter';
 import { AppModule } from '../src/app.module';
 import { Questions } from '../src/entities/questions.entity';
-import { sleep } from './helpers/sleepfunction';
 
 describe('pair-game-quiz/pairs tests (e2e)', () => {
   jest.setTimeout(1000 * 60 * 3);
@@ -454,14 +453,15 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken2}`)
           .expect(200);
 
-        const pair2: GameViewModel = createResponseForPairUser2.body;
+        const game2: GameViewModel = createResponseForPairUser2.body;
+        console.log('game2', game2);
 
-        expect(pair2.id).toBeDefined();
-        expect(pair2.status).toEqual(GameStatuses.Active);
-        expect(pair2.questions).toBeDefined();
-        expect(pair2.pairCreatedDate).toBeDefined();
-        expect(pair2.startGameDate).toBeDefined();
-        expect(pair2.finishGameDate).toBeNull();
+        expect(game2.id).toBeDefined();
+        expect(game2.status).toEqual(GameStatuses.Active);
+        expect(game2.questions).toBeDefined();
+        expect(game2.pairCreatedDate).toBeDefined();
+        expect(game2.startGameDate).toBeDefined();
+        expect(game2.finishGameDate).toBeNull();
       });
       it('Should return 403 if current user is already participating in active game', async () => {
         const createUserDto2: UserInputModel = {
@@ -764,6 +764,63 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(foundGame.secondPlayerProgress.score).toBe(1);
         expect(foundGame.finishGameDate).toBeNull();
       });
+      it('should send 5 correct answers from firstPlayer and secondPlayer with correct input data', async () => {
+        for (let i = 0; i < 5; i++) {
+          const firstPlayerRequest = await request(server)
+            .post(sendAnswerUrl)
+            .send({ answer: 'answer1' })
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(200);
+
+          const answer: AnswerViewModel = firstPlayerRequest.body;
+
+          expect(answer.questionId).toBeDefined();
+          expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
+          expect(answer.addedAt).toBeDefined();
+
+          const secondPlayerRequest = await request(server)
+            .post(sendAnswerUrl)
+            .send({ answer: 'incorrect' })
+            .set('Authorization', `Bearer ${accessToken2}`)
+            .expect(200);
+
+          const answer2: AnswerViewModel = secondPlayerRequest.body;
+
+          expect(answer2.questionId).toBeDefined();
+          expect(answer2.answerStatus).toEqual(AnswerStatuses.Incorrect);
+          expect(answer2.addedAt).toBeDefined();
+        }
+      });
+      it('should send 5 correct answers from firstPlayer with correct input data', async () => {
+        for (let i = 0; i < 5; i++) {
+          const answerRequest = await request(server)
+            .post(sendAnswerUrl)
+            .send({ answer: 'answer1' })
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(200);
+
+          const answer: AnswerViewModel = answerRequest.body;
+
+          expect(answer.questionId).toBeDefined();
+          expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
+          expect(answer.addedAt).toBeDefined();
+        }
+      });
+      it('should send 5 correct answers from secondPlayer with correct input data', async () => {
+        for (let i = 0; i < 5; i++) {
+          const answerRequest = await request(server)
+            .post(sendAnswerUrl)
+            .send({ answer: 'answer1' })
+            .set('Authorization', `Bearer ${accessToken2}`)
+            .expect(200);
+
+          const answer: AnswerViewModel = answerRequest.body;
+
+          expect(answer.questionId).toBeDefined();
+          expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
+          expect(answer.addedAt).toBeDefined();
+        }
+      });
       it('should send 403 if firstPlayer give more than 5 answers', async () => {
         for (let i = 0; i < 5; i++) {
           await request(server)
@@ -772,8 +829,6 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
             .set('Authorization', `Bearer ${accessToken}`)
             .expect(200);
         }
-
-        sleep(10);
 
         await request(server)
           .post(sendAnswerUrl)
