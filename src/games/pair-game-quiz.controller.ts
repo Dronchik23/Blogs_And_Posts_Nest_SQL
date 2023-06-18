@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -64,7 +65,8 @@ export class CreateGameController {
     const game = await this.gamesQueryRepository.findGameByPlayerId(
       currentUserId,
     );
-    if (isNil(game)) {
+    console.log('game control', game);
+    if (!game) {
       throw new NotFoundException();
     }
     return game;
@@ -81,6 +83,9 @@ export class CreateGameController {
     gameId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
+    if (typeof gameId !== 'string') {
+      throw new BadRequestException();
+    }
     const game: GameViewModel =
       await this.gamesQueryRepository.findGameByGameId(gameId);
     if (isNil(game)) {
