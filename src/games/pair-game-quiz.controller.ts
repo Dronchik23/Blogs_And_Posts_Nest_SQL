@@ -60,15 +60,25 @@ export class CreateGameController {
   @UseGuards(BearerAuthGuard)
   @Get('/my-current')
   @HttpCode(200)
-  async getCurrentGame(@CurrentUserId() currentUserId): Promise<GameViewModel> {
-    return await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
+  async getCurrentGame(@CurrentUserId() currentUserId): Promise<any> {
+    const game = await this.gamesQueryRepository.findGameByPlayerId(
+      currentUserId,
+    );
+    if (isNil(game)) {
+      throw new NotFoundException();
+    }
+    return game;
   }
 
   @UseGuards(BearerAuthGuard)
   @Get(':gameId')
   @HttpCode(200)
   async getGameByGameId(
-    @Param('gameId', ParseUUIDPipe) gameId: string,
+    @Param(
+      'gameId',
+      // ParseUUIDPipe
+    )
+    gameId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
     const game: GameViewModel =

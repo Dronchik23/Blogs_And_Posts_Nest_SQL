@@ -61,7 +61,7 @@ export class GamesRepository {
       ),
     ); // add gameId to questions
 
-    await this.gameModel.findOneBy({ id: savedGame.id }); //return  games with all nests
+    return await this.gameModel.findOneBy({ id: savedGame.id }); //return  games with all nests
   }
 
   async createGameWithTwoPlayers(

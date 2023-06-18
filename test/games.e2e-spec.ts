@@ -179,7 +179,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(403);
       });
     });
-    describe('get current games tests', () => {
+    describe('get current game tests', () => {
       beforeAll(async () => {
         await request(server).delete(wipeAllData);
 
@@ -224,17 +224,17 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(getResponseForQuestions.body.totalCount).toEqual(10);
         expect(getResponseForQuestions.body.items.length).toEqual(10);
 
-        const createResponseForPair = await request(server)
+        const responseForGame = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        game = createResponseForPair.body;
+        game = responseForGame.body;
 
         expect(game.id).toBeDefined();
         expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
       });
-      it('should get current games', async () => {
+      it('should get current game', async () => {
         const responseForGame = await request(server)
           .get(currentGameUrl)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -250,6 +250,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(foundGame.finishGameDate).toBeNull();
       });
       it('should send 404 if game not found', async () => {
+        debugger;
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',

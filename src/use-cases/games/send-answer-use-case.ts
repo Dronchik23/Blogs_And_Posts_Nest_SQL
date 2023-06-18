@@ -71,8 +71,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           a.firstPlayerAnswerStatus === AnswerStatuses.Incorrect,
       );
 
-      console.log('secondPlayerAnswers', firstPlayerAnswers);
-
       if (firstPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[firstPlayerAnswers.length];
       } else {
@@ -87,8 +85,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           a.secondPlayerAnswerStatus === AnswerStatuses.Correct ||
           a.secondPlayerAnswerStatus === AnswerStatuses.Incorrect,
       );
-
-      console.log('secondPlayerAnswers', secondPlayerAnswers);
 
       if (secondPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[secondPlayerAnswers.length];
@@ -176,7 +172,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           : 'secondPlayerAddedAt';
 
       const answer = await this.answersModel.findOneBy({
-        gameProgressId: game.gameProgressId,
+        [playerQuestionIdKey]: currentQuestion.id,
       });
       if (answer) {
         await this.answersModel.update(

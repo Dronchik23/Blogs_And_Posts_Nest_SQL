@@ -44,13 +44,7 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
       .getOne();
 
     if (player) {
-      const playersGame = await this.gameModule.findOneBy({
-        gameProgressId: player.gameProgressId,
-      });
-
-      if (playersGame.status === GameStatuses.Active) {
-        throw new ForbiddenException();
-      }
+      throw new ForbiddenException();
     }
 
     const questions: QuestionViewModel[] =
