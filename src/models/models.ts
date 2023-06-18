@@ -473,7 +473,7 @@ export class GameViewModel {
       },
       score: gameDB.gameProgress.secondPlayerScore,
     };
-    this.questions = gameDB.questions;
+    this.questions = gameDB.questions.map((q) => ({ id: q.id, body: q.body }));
     this.status = gameDB.status;
     this.pairCreatedDate = gameDB.pairCreatedDate;
     this.startGameDate = gameDB.startGameDate;

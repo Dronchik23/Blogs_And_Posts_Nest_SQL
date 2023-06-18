@@ -48,10 +48,7 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
         gameProgressId: player.gameProgressId,
       });
 
-      if (
-        playersGame.status === GameStatuses.Active ||
-        playersGame.status === GameStatuses.PendingSecondPlayer
-      ) {
+      if (playersGame.status === GameStatuses.Active) {
         throw new ForbiddenException();
       }
     }
