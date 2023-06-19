@@ -64,6 +64,7 @@ export class GamesRepository {
     const rawGameWith1Player = await this.gameModel.findOneBy({
       id: savedGame.id,
     }); //games with all nests
+
     return new GameViewModel(rawGameWith1Player);
   }
 

@@ -36,16 +36,17 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
-    const player: Players = await this.playerModel
+    const playersEntity: Players = await this.playerModel
       .createQueryBuilder()
       .where('"firstPlayerId" = :userId OR "secondPlayerId" = :userId', {
         userId: command.user.id,
       })
       .getOne();
 
-    if (player) {
-      const game: GameViewModel =
-        await this.gamesQueryRepository.findGameByPlayerId(player.id);
+    if (playersEntity) {
+      const game: Games = await this.gameModule.findOneBy({
+        gameProgressId: playersEntity.gameProgressId,
+      });
 
       if (game.status === GameStatuses.Active) {
         throw new ForbiddenException();
