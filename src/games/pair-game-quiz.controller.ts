@@ -83,10 +83,6 @@ export class CreateGameController {
     gameId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
-    if (typeof gameId !== 'string') {
-      throw new BadRequestException('gameId must be a string');
-    }
-
     const game: GameViewModel =
       await this.gamesQueryRepository.findGameByGameId(gameId);
     if (isNil(game)) {

@@ -492,11 +492,7 @@ export class GameForOneViewModel {
   constructor(gameDB: Games) {
     this.id = gameDB.id;
     this.firstPlayerProgress = {
-      answers: gameDB.gameProgress.answers.map((a) => ({
-        questionId: a.firstPlayerQuestionId,
-        answerStatus: a.firstPlayerAnswerStatus,
-        addedAt: a.firstPlayerAddedAt,
-      })),
+      answers: [],
       player: {
         id: gameDB.gameProgress.players.firstPlayerId,
         login: gameDB.gameProgress.players.firstPlayerLogin,
