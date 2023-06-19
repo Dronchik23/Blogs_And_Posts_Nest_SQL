@@ -63,7 +63,7 @@ export class GamesQueryRepository {
     };
   }
 
-  private RawSQLGameDBTypeGameViewModel(rawGame: any[]): GameViewModel {
+  private fromRawSQLGameDBTypeGameViewModel(rawGame: any[]): GameViewModel {
     const game = rawGame[0];
     return {
       id: game.id,
@@ -174,7 +174,7 @@ export class GamesQueryRepository {
         throw new NotFoundException();
       }
 
-      return game ? this.RawSQLGameDBTypeGameViewModel(game) : null;
+      return game ? this.fromRawSQLGameDBTypeGameViewModel(game) : null;
     } catch (error) {
       throw new NotFoundException();
     }

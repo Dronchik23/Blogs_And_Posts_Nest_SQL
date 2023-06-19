@@ -339,7 +339,14 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
 
         expect(createdGame.id).toBeDefined();
         expect(createdGame.status).toEqual(GameStatuses.PendingSecondPlayer);
-        expect(createdGame.questions.length).toBe(5);
+        expect(createdGame.firstPlayerProgress.player.id).toEqual(user.id);
+        expect(createdGame.firstPlayerProgress.player.login).toEqual(
+          user.login,
+        );
+        expect(createdGame.firstPlayerProgress.answers).toEqual([]);
+        expect(createdGame.firstPlayerProgress.score).toBe(0);
+        expect(createdGame.secondPlayerProgress).toBeNull();
+        expect(createdGame.questions).toBeNull();
         expect(createdGame.pairCreatedDate).toBeDefined();
         expect(createdGame.startGameDate).toBeNull();
         expect(createdGame.finishGameDate).toBeNull();

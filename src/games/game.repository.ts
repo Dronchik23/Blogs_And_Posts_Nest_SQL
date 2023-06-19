@@ -4,6 +4,7 @@ import { Games } from '../entities/games.entity';
 import { Repository } from 'typeorm';
 import { Players } from '../entities/players.entity';
 import {
+  GameForOneViewModel,
   GameViewModel,
   QuestionViewModel,
   UserViewModel,
@@ -65,7 +66,7 @@ export class GamesRepository {
       id: savedGame.id,
     }); //games with all nests
 
-    return new GameViewModel(rawGameWith1Player);
+    return new GameForOneViewModel(rawGameWith1Player);
   }
 
   async createGameWithTwoPlayers(

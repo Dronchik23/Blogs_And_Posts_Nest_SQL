@@ -23,9 +23,7 @@ import { BearerAuthGuard } from '../auth/strategys/bearer-strategy';
 import { CurrentUser, CurrentUserId } from '../auth/decorators';
 import { CreateGameCommand } from '../use-cases/games/create-game-use-case';
 import { GamesQueryRepository } from '../query-repositorys/games-query-repository.service';
-import { Games } from '../entities/games.entity';
 import { SendAnswerCommand } from '../use-cases/games/send-answer-use-case';
-import { GameStatuses } from '../types/types';
 import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @SkipThrottle()
@@ -45,6 +43,7 @@ export class CreateGameController {
     const game: GameViewModel = await this.commandBus.execute(
       new CreateGameCommand(currentUser),
     );
+    console.log('game controller', game);
     return game;
   }
 

@@ -48,10 +48,6 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
         gameProgressId: playersEntity.gameProgressId,
       });
 
-      /*    if (game.status === GameStatuses.Active) {
-        throw new ForbiddenException();
-      } */
-
       if (game) {
         throw new ForbiddenException();
       }

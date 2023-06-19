@@ -480,6 +480,37 @@ export class GameViewModel {
     this.finishGameDate = gameDB.finishGameDate;
   }
 }
+export class GameForOneViewModel {
+  id: string;
+  firstPlayerProgress: GamePlayerProgressViewModel;
+  secondPlayerProgress: GamePlayerProgressViewModel;
+  questions: QuestionGameViewModel[];
+  status: GameStatuses;
+  pairCreatedDate: string;
+  startGameDate: string;
+  finishGameDate: string;
+  constructor(gameDB: Games) {
+    this.id = gameDB.id;
+    this.firstPlayerProgress = {
+      answers: gameDB.gameProgress.answers.map((a) => ({
+        questionId: a.firstPlayerQuestionId,
+        answerStatus: a.firstPlayerAnswerStatus,
+        addedAt: a.firstPlayerAddedAt,
+      })),
+      player: {
+        id: gameDB.gameProgress.players.firstPlayerId,
+        login: gameDB.gameProgress.players.firstPlayerLogin,
+      },
+      score: gameDB.gameProgress.firstPlayerScore,
+    };
+    this.secondPlayerProgress = null;
+    this.questions = null;
+    this.status = gameDB.status;
+    this.pairCreatedDate = gameDB.pairCreatedDate;
+    this.startGameDate = gameDB.startGameDate;
+    this.finishGameDate = gameDB.finishGameDate;
+  }
+}
 export class GamePlayerProgressViewModel {
   answers: AnswerViewModel[];
   player: PlayerViewModel;
