@@ -42,7 +42,10 @@ export class CreateGameController {
   async createGame(
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<GameViewModel> {
-    return await this.commandBus.execute(new CreateGameCommand(currentUser));
+    const game: GameViewModel = await this.commandBus.execute(
+      new CreateGameCommand(currentUser),
+    );
+    return game;
   }
 
   @SkipThrottle()
@@ -53,9 +56,10 @@ export class CreateGameController {
     @Body() sendAnswerDTO: AnswerInputModel,
     @CurrentUserId() currentUserId,
   ): Promise<GameViewModel> {
-    return await this.commandBus.execute(
+    const game = await this.commandBus.execute(
       new SendAnswerCommand(sendAnswerDTO, currentUserId),
     );
+    return game;
   }
 
   @UseGuards(BearerAuthGuard)
@@ -76,16 +80,14 @@ export class CreateGameController {
   @Get(':gameId')
   @HttpCode(200)
   async getGameByGameId(
-    @Param(
-      'gameId',
-      // ParseUUIDPipe
-    )
+    @Param('gameId', ParseUUIDPipe)
     gameId: string,
     @CurrentUserId() currentUserId: string,
   ): Promise<any> {
     if (typeof gameId !== 'string') {
-      throw new BadRequestException();
+      throw new BadRequestException('gameId must be a string');
     }
+
     const game: GameViewModel =
       await this.gamesQueryRepository.findGameByGameId(gameId);
     if (isNil(game)) {

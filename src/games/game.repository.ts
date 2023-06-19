@@ -61,7 +61,10 @@ export class GamesRepository {
       ),
     ); // add gameId to questions
 
-    return await this.gameModel.findOneBy({ id: savedGame.id }); //return  games with all nests
+    const rawGameWith1Player = await this.gameModel.findOneBy({
+      id: savedGame.id,
+    }); //games with all nests
+    return new GameViewModel(rawGameWith1Player);
   }
 
   async createGameWithTwoPlayers(
@@ -86,8 +89,8 @@ export class GamesRepository {
 
     await Promise.all([updateGamePromise, updatePlayersPromise]);
 
-    const modifiedGame = await this.gameModel.findOneBy({ id: game.id });
+    const rawGameWith2Players = await this.gameModel.findOneBy({ id: game.id });
 
-    return new GameViewModel(modifiedGame);
+    return new GameViewModel(rawGameWith2Players);
   }
 }

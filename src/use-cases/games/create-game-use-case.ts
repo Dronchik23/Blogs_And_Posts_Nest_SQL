@@ -13,9 +13,9 @@ import { GamesQueryRepository } from '../../query-repositorys/games-query-reposi
 import { Games } from '../../entities/games.entity';
 import { isNil } from '@nestjs/common/utils/shared.utils';
 import { Players } from '../../entities/players.entity';
-import { ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ForbiddenException } from '@nestjs/common';
 
 export class CreateGameCommand {
   constructor(public user: UserViewModel) {}
@@ -44,7 +44,12 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
       .getOne();
 
     if (player) {
-      throw new ForbiddenException();
+      const game: GameViewModel =
+        await this.gamesQueryRepository.findGameByPlayerId(player.id);
+
+      if (game.status === GameStatuses.Active) {
+        throw new ForbiddenException();
+      }
     }
 
     const questions: QuestionViewModel[] =
@@ -56,15 +61,21 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
       );
 
     if (isNil(activeGame)) {
-      return await this.gamesRepository.createGameWithOnePlayer(
-        questions,
-        command.user,
-      );
+      const gameWith1Player: GameViewModel =
+        await this.gamesRepository.createGameWithOnePlayer(
+          questions,
+          command.user,
+        );
+
+      return gameWith1Player;
     } else {
-      return await this.gamesRepository.createGameWithTwoPlayers(
-        command.user,
-        activeGame,
-      );
+      const gameWith2players: GameViewModel =
+        await this.gamesRepository.createGameWithTwoPlayers(
+          command.user,
+          activeGame,
+        );
+
+      return gameWith2players;
     }
   }
 }

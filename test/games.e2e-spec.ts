@@ -455,7 +455,6 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(200);
 
         const game2: GameViewModel = createResponseForPairUser2.body;
-        console.log('game2', game2);
 
         expect(game2.id).toBeDefined();
         expect(game2.status).toEqual(GameStatuses.Active);
