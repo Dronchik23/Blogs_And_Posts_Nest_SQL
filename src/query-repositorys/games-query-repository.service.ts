@@ -5,7 +5,7 @@ import {
   Scope,
 } from '@nestjs/common';
 import { GameStatuses } from '../types/types';
-import { GameViewModel } from '../models/models';
+import { GameForOneViewModel, GameViewModel } from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
@@ -23,7 +23,7 @@ export class GamesQueryRepository {
     private readonly playerModel: Repository<Players>,
   ) {}
 
-  private gameDBTypePairViewModel(game: Games): GameViewModel {
+  private fromGameDBTypeToGameViewModel(game: Games): GameViewModel {
     return {
       id: game.id,
       firstPlayerProgress: {
@@ -63,18 +63,16 @@ export class GamesQueryRepository {
     };
   }
 
-  private fromRawSQLGameDBTypeGameViewModel(rawGame: any[]): GameViewModel {
+  private fromRawSQLToGameViewModel(rawGame: any[]): GameViewModel {
     const game = rawGame[0];
     return {
       id: game.id,
       firstPlayerProgress: {
-        answers: [
-          {
-            questionId: game.firstPlayerQuestionId,
-            answerStatus: game.firstPlayerAnswerStatus,
-            addedAt: game.firstPlayerAddedAt,
-          },
-        ],
+        answers: rawGame.map((rawGameItem) => ({
+          questionId: rawGameItem.firstPlayerQuestionId,
+          answerStatus: rawGameItem.firstPlayerAnswerStatus,
+          addedAt: rawGameItem.firstPlayerAddedAt,
+        })),
         player: {
           id: game.firstPlayerId,
           login: game.firstPlayerLogin,
@@ -95,12 +93,30 @@ export class GamesQueryRepository {
         },
         score: game.secondPlayerScore,
       },
-      questions: [
-        {
-          id: game.questionId,
-          body: game.body,
+      questions: rawGame.map((rawGameItem) => ({
+        id: rawGameItem.questionId,
+        body: rawGameItem.body,
+      })),
+      status: game.status,
+      pairCreatedDate: game.pairCreatedDate,
+      startGameDate: game.startGameDate,
+      finishGameDate: game.finishGameDate,
+    };
+  }
+  private fromRawSQLToGameForOneViewModel(rawGame: any[]): GameViewModel {
+    const game = rawGame[0];
+    return {
+      id: game.id,
+      firstPlayerProgress: {
+        answers: [],
+        player: {
+          id: game.firstPlayerId,
+          login: game.firstPlayerLogin,
         },
-      ],
+        score: game.firstPlayerScore,
+      },
+      secondPlayerProgress: null,
+      questions: null,
       status: game.status,
       pairCreatedDate: game.pairCreatedDate,
       startGameDate: game.startGameDate,
@@ -110,8 +126,13 @@ export class GamesQueryRepository {
 
   async findGameByGameId(gameId: string): Promise<GameViewModel> {
     try {
-      const game = await this.gameModel.findOneBy({ id: gameId });
-      return game ? this.gameDBTypePairViewModel(game) : null;
+      const game: Games = await this.gameModel.findOneBy({ id: gameId });
+
+      if (game.gameProgress.players.secondPlayerId === null) {
+        return new GameForOneViewModel(game);
+      }
+
+      return game ? this.fromGameDBTypeToGameViewModel(game) : null;
     } catch (error) {
       new NotFoundException();
     }
@@ -173,8 +194,12 @@ export class GamesQueryRepository {
       if (!game || game.length === 0) {
         throw new NotFoundException();
       }
+      debugger;
+      if (game[0].secondPlayerId === null) {
+        return this.fromRawSQLToGameForOneViewModel(game);
+      }
 
-      return game ? this.fromRawSQLGameDBTypeGameViewModel(game) : null;
+      return game ? this.fromRawSQLToGameViewModel(game) : null;
     } catch (error) {
       throw new NotFoundException();
     }

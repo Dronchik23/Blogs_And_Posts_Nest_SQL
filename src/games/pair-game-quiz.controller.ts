@@ -43,7 +43,7 @@ export class CreateGameController {
     const game: GameViewModel = await this.commandBus.execute(
       new CreateGameCommand(currentUser),
     );
-    console.log('game controller', game);
+
     return game;
   }
 
@@ -68,7 +68,7 @@ export class CreateGameController {
     const game = await this.gamesQueryRepository.findGameByPlayerId(
       currentUserId,
     );
-    console.log('game control', game);
+
     if (!game) {
       throw new NotFoundException();
     }
