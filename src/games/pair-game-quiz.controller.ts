@@ -69,7 +69,7 @@ export class CreateGameController {
     const game: GameViewModel =
       await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
 
-    if (!game || game.status !== GameStatuses.Active) {
+    if (!game || game.status === GameStatuses.Finished) {
       throw new NotFoundException();
     }
 
