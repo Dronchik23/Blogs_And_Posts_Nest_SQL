@@ -587,7 +587,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(game2.startGameDate).toBeDefined();
         expect(game2.finishGameDate).toBeNull();
       });
-      it('Should return 403 if current user is already participating in active game', async () => {
+      it('Should return 403 if current user is already in active game', async () => {
         const createUserDto2: UserInputModel = {
           login: `user2`,
           password: 'password',
@@ -644,6 +644,26 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(403);
+      });
+      it('Should return 403 if current user is already in pending game', async () => {
+        const responseForGame = await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        game = responseForGame.body;
+
+        expect(game.id).toBeDefined();
+        expect(game.status).toEqual(GameStatuses.PendingSecondPlayer);
+        expect(game.questions).toEqual(game.questions);
+        expect(game.pairCreatedDate).toEqual(game.pairCreatedDate);
+        expect(game.startGameDate).toBeNull();
+        expect(game.finishGameDate).toBeNull();
+
+        await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
           .expect(403);
       });
       it.skip('should not create games with incorrect authorization data', async () => {

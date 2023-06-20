@@ -40,6 +40,7 @@ export class CreateGameController {
   async createGame(
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<GameViewModel> {
+    debugger;
     const game: GameViewModel = await this.commandBus.execute(
       new CreateGameCommand(currentUser),
     );

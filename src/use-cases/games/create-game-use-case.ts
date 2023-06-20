@@ -36,13 +36,11 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
+    debugger;
     const game: GameViewModel =
-      await this.gamesQueryRepository.findGameByUserIdAndGameStatus(
-        command.user.id,
-        GameStatuses.Active,
-      );
+      await this.gamesQueryRepository.findGameByPlayerId(command.user.id);
 
-    if (game) {
+    if (game && game.status !== GameStatuses.Finished) {
       throw new ForbiddenException();
     }
 

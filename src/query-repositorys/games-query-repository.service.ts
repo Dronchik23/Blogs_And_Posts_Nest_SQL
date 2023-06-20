@@ -192,7 +192,7 @@ export class GamesQueryRepository {
         .getRawMany();
 
       if (!game || game.length === 0) {
-        throw new NotFoundException();
+        return null;
       }
 
       if (game[0].secondPlayerId === null) {
