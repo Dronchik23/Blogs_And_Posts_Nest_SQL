@@ -11,7 +11,7 @@ export class Answers {
   firstPlayerAnswerStatus: AnswerStatuses;
 
   @Column({ nullable: true, type: 'uuid' })
-  firstPlayerQuestionId: string;
+  questionId: string;
 
   @Column({ nullable: true, type: 'uuid' })
   gameProgressId: string;
@@ -21,9 +21,6 @@ export class Answers {
 
   @Column({ enum: AnswerStatuses, nullable: true })
   secondPlayerAnswerStatus: AnswerStatuses;
-
-  @Column({ nullable: true, type: 'uuid' })
-  secondPlayerQuestionId: string;
 
   @Column({ nullable: true })
   secondPlayerAddedAt: string;

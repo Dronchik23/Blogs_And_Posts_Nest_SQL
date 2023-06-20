@@ -34,7 +34,6 @@ export type JWTPayloadType = {
   deviceId: string;
   iat: number;
 };
-
 //enums
 export enum LikeStatus {
   None = 'None',
@@ -246,8 +245,3 @@ export class GameDBType {
   firstPlayerProgress?: GamePlayerProgressViewModel;
   secondPlayerProgress?: GamePlayerProgressViewModel;
 }
-/*export class GamePlayerProgressType {
-  answer: AnswerType,
-  player: string
-  score: number
-}*/

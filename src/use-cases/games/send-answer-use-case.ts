@@ -44,9 +44,33 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     private readonly gamesQueryRepository: GamesQueryRepository,
   ) {}
 
+  private async checkAmountOfAnswersAndFinishGame(game) {
+    const playersAnswers: Answers[] = await this.answersModel.findBy({
+      gameProgressId: game.gameProgressId,
+    });
+
+    const allAnswersNotNull = playersAnswers.every(
+      (answer) =>
+        answer.firstPlayerAnswerStatus !== null &&
+        answer.secondPlayerAnswerStatus !== null,
+    );
+
+    if (playersAnswers.length === 5 && allAnswersNotNull) {
+      const finishDate = new Date().toISOString();
+
+      await this.gameModule.update(
+        { id: game.id },
+        {
+          status: GameStatuses.Finished,
+          finishGameDate: finishDate,
+        },
+      );
+    }
+  }
+
   async execute(command: SendAnswerCommand): Promise<any> {
     let currentQuestion;
-    debugger;
+
     const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
       command.userId,
     );
@@ -79,7 +103,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     }
 
     if (command.userId === game.secondPlayerId) {
-      debugger;
       const secondPlayerAnswers = playersAnswers.filter(
         (a) =>
           a.secondPlayerAnswerStatus === AnswerStatuses.Correct ||
@@ -93,13 +116,13 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       }
     }
 
-    const questionDBType: Questions = await this.questionModule.findOneBy({
+    const question: Questions = await this.questionModule.findOneBy({
       id: currentQuestion.id,
-    });
+    }); // take question with all nests
 
     const isAnswerCorrect =
-      command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer1 ||
-      command.sendAnswerDTO.answer === questionDBType.correctAnswers.answer2;
+      command.sendAnswerDTO.answer === question.correctAnswers.answer1 ||
+      command.sendAnswerDTO.answer === question.correctAnswers.answer2;
 
     if (isAnswerCorrect) {
       const playerScoreKey =
@@ -112,43 +135,43 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
         { [playerScoreKey]: game[playerScoreKey] + 1 },
       );
 
-      const playerQuestionIdKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerQuestionId'
-          : 'secondPlayerQuestionId';
       const playerAnswerStatusKey =
         game.firstPlayerId === command.userId
           ? 'firstPlayerAnswerStatus'
           : 'secondPlayerAnswerStatus';
+
       const playerAddedAtKey =
         game.firstPlayerId === command.userId
           ? 'firstPlayerAddedAt'
           : 'secondPlayerAddedAt';
 
       const answer = await this.answersModel.findOneBy({
-        [playerQuestionIdKey]: currentQuestion.id,
+        questionId: currentQuestion.id,
       });
+
       if (answer) {
         await this.answersModel.update(
           {
-            [playerQuestionIdKey]: currentQuestion.id,
+            questionId: currentQuestion.id,
           },
           {
             [playerAnswerStatusKey]: AnswerStatuses.Correct,
             [playerAddedAtKey]: new Date().toISOString(),
           },
         );
+      } else {
+        await this.answersModel.save({
+          gameProgressId: game.gameProgressId,
+          questionId: currentQuestion.id,
+          [playerAnswerStatusKey]: AnswerStatuses.Correct,
+          [playerAddedAtKey]: new Date().toISOString(),
+        });
       }
 
-      await this.answersModel.save({
-        gameProgressId: game.gameProgressId,
-        [playerQuestionIdKey]: currentQuestion.id,
-        [playerAnswerStatusKey]: AnswerStatuses.Correct,
-        [playerAddedAtKey]: new Date().toISOString(),
-      });
+      await this.checkAmountOfAnswersAndFinishGame(game);
 
       const actualAnswer = await this.answersModel.findOneBy({
-        [playerQuestionIdKey]: currentQuestion.id,
+        questionId: currentQuestion.id,
       });
 
       const answerViewModel =
@@ -158,10 +181,6 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
       return answerViewModel;
     } else {
-      const playerQuestionIdKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerQuestionId'
-          : 'secondPlayerQuestionId';
       const playerAnswerStatusKey =
         game.firstPlayerId === command.userId
           ? 'firstPlayerAnswerStatus'
@@ -172,29 +191,31 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           : 'secondPlayerAddedAt';
 
       const answer = await this.answersModel.findOneBy({
-        [playerQuestionIdKey]: currentQuestion.id,
+        questionId: currentQuestion.id,
       });
       if (answer) {
         await this.answersModel.update(
           {
-            [playerQuestionIdKey]: currentQuestion.id,
+            questionId: currentQuestion.id,
           },
           {
-            [playerAnswerStatusKey]: AnswerStatuses.Correct,
+            [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
             [playerAddedAtKey]: new Date().toISOString(),
           },
         );
+      } else {
+        await this.answersModel.save({
+          questionId: currentQuestion.id,
+          gameProgressId: game.gameProgressId,
+          [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
+          [playerAddedAtKey]: new Date().toISOString(),
+        });
       }
 
-      await this.answersModel.save({
-        [playerQuestionIdKey]: currentQuestion.id,
-        gameProgressId: game.gameProgressId,
-        [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
-        [playerAddedAtKey]: new Date().toISOString(),
-      });
+      await this.checkAmountOfAnswersAndFinishGame(game);
 
       const actualAnswer = await this.answersModel.findOneBy({
-        [playerQuestionIdKey]: currentQuestion.id,
+        questionId: currentQuestion.id,
       });
 
       const answerViewModel =

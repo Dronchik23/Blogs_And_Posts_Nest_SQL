@@ -39,7 +39,6 @@ export class Games {
   static create(
     gameProgressId: string,
     players: Players,
-    //answers: Answers,
     startGameDate?: string | null,
   ) {
     const newGame = new Games();

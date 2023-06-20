@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -25,6 +24,7 @@ import { CreateGameCommand } from '../use-cases/games/create-game-use-case';
 import { GamesQueryRepository } from '../query-repositorys/games-query-repository.service';
 import { SendAnswerCommand } from '../use-cases/games/send-answer-use-case';
 import { isNil } from '@nestjs/common/utils/shared.utils';
+import { GameStatuses } from '../types/types';
 
 @SkipThrottle()
 @Controller({ path: 'pair-game-quiz/pairs', scope: Scope.DEFAULT })
@@ -65,13 +65,13 @@ export class CreateGameController {
   @Get('/my-current')
   @HttpCode(200)
   async getCurrentGame(@CurrentUserId() currentUserId): Promise<any> {
-    const game = await this.gamesQueryRepository.findGameByPlayerId(
-      currentUserId,
-    );
+    const game: GameViewModel =
+      await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
 
-    if (!game) {
+    if (!game || game.status !== GameStatuses.Active) {
       throw new NotFoundException();
     }
+
     return game;
   }
 
@@ -85,16 +85,24 @@ export class CreateGameController {
   ): Promise<any> {
     const game: GameViewModel =
       await this.gamesQueryRepository.findGameByGameId(gameId);
+
     if (isNil(game)) {
       throw new NotFoundException();
     }
-    const isPlayerParticipant =
-      game.firstPlayerProgress.player.id === currentUserId ||
-      game.secondPlayerProgress.player.id === currentUserId;
 
-    if (!isPlayerParticipant) {
+    if (game.secondPlayerProgress !== null) {
+      if (
+        game.firstPlayerProgress.player.id !== currentUserId ||
+        game.secondPlayerProgress.player.id !== currentUserId
+      ) {
+        throw new ForbiddenException();
+      }
+    }
+
+    if (game.firstPlayerProgress.player.id !== currentUserId) {
       throw new ForbiddenException();
     }
+
     return game;
   }
 }

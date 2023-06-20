@@ -36,32 +36,25 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
-    const playersEntity: Players = await this.playerModel
-      .createQueryBuilder()
-      .where('"firstPlayerId" = :userId OR "secondPlayerId" = :userId', {
-        userId: command.user.id,
-      })
-      .getOne();
+    const game: GameViewModel =
+      await this.gamesQueryRepository.findGameByUserIdAndGameStatus(
+        command.user.id,
+        GameStatuses.Active,
+      );
 
-    if (playersEntity) {
-      const game: Games = await this.gameModule.findOneBy({
-        gameProgressId: playersEntity.gameProgressId,
-      });
-
-      if (game) {
-        throw new ForbiddenException();
-      }
+    if (game) {
+      throw new ForbiddenException();
     }
 
     const questions: QuestionViewModel[] =
       await this.questionsQueryRepository.getFiveRandomQuestions();
 
-    const activeGame: Games =
+    const gameWithPendingStatus: Games =
       await this.gamesQueryRepository.findPairByGameStatus(
         GameStatuses.PendingSecondPlayer,
       );
 
-    if (isNil(activeGame)) {
+    if (isNil(gameWithPendingStatus)) {
       const gameWith1Player: GameViewModel =
         await this.gamesRepository.createGameWithOnePlayer(
           questions,
@@ -73,7 +66,7 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
       const gameWith2players: GameViewModel =
         await this.gamesRepository.createGameWithTwoPlayers(
           command.user,
-          activeGame,
+          gameWithPendingStatus,
         );
 
       return gameWith2players;

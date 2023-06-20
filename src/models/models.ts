@@ -451,7 +451,7 @@ export class GameViewModel {
     this.id = gameDB.id;
     this.firstPlayerProgress = {
       answers: gameDB.gameProgress.answers.map((a) => ({
-        questionId: a.firstPlayerQuestionId,
+        questionId: a.questionId,
         answerStatus: a.firstPlayerAnswerStatus,
         addedAt: a.firstPlayerAddedAt,
       })),
@@ -463,7 +463,7 @@ export class GameViewModel {
     };
     this.secondPlayerProgress = {
       answers: gameDB.gameProgress.answers.map((a) => ({
-        questionId: a.secondPlayerQuestionId,
+        questionId: a.questionId,
         answerStatus: a.secondPlayerAnswerStatus,
         addedAt: a.secondPlayerAddedAt,
       })),
@@ -522,7 +522,7 @@ export class FirstPlayerAnswerViewModel {
   answerStatus: AnswerStatuses;
   addedAt: string;
   constructor(answerDB: Answers) {
-    this.questionId = answerDB.firstPlayerQuestionId;
+    this.questionId = answerDB.questionId;
     this.answerStatus = answerDB.firstPlayerAnswerStatus;
     this.addedAt = answerDB.firstPlayerAddedAt;
   }
@@ -532,7 +532,7 @@ export class SecondPlayerAnswerViewModel {
   answerStatus: AnswerStatuses;
   addedAt: string;
   constructor(answerDB: Answers) {
-    this.questionId = answerDB.secondPlayerQuestionId;
+    this.questionId = answerDB.questionId;
     this.answerStatus = answerDB.secondPlayerAnswerStatus;
     this.addedAt = answerDB.secondPlayerAddedAt;
   }

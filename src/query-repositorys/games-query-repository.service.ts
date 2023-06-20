@@ -28,7 +28,7 @@ export class GamesQueryRepository {
       id: game.id,
       firstPlayerProgress: {
         answers: game.gameProgress.answers.map((a) => ({
-          questionId: a.firstPlayerQuestionId,
+          questionId: a.questionId,
           answerStatus: a.firstPlayerAnswerStatus,
           addedAt: a.firstPlayerAddedAt,
         })),
@@ -40,7 +40,7 @@ export class GamesQueryRepository {
       },
       secondPlayerProgress: {
         answers: game.gameProgress.answers.map((a) => ({
-          questionId: a.firstPlayerQuestionId,
+          questionId: a.questionId,
           answerStatus: a.firstPlayerAnswerStatus,
           addedAt: a.firstPlayerAddedAt,
         })),
@@ -69,7 +69,7 @@ export class GamesQueryRepository {
       id: game.id,
       firstPlayerProgress: {
         answers: rawGame.map((rawGameItem) => ({
-          questionId: rawGameItem.firstPlayerQuestionId,
+          questionId: rawGameItem.questionId,
           answerStatus: rawGameItem.firstPlayerAnswerStatus,
           addedAt: rawGameItem.firstPlayerAddedAt,
         })),
@@ -82,7 +82,7 @@ export class GamesQueryRepository {
       secondPlayerProgress: {
         answers: [
           {
-            questionId: game.secondPlayerQuestionId,
+            questionId: game.questionId,
             answerStatus: game.secondPlayerAnswerStatus,
             addedAt: game.secondPlayerAddedAt,
           },
@@ -170,10 +170,10 @@ export class GamesQueryRepository {
           'questions."id" as "questionId"',
           'questions."body"',
           'answers."firstPlayerAnswerStatus"',
-          'answers."firstPlayerQuestionId"',
+          'answers."questionId"',
           'answers."firstPlayerAddedAt"',
           'answers."secondPlayerAnswerStatus"',
-          'answers."secondPlayerQuestionId"',
+          'answers."questionId"',
           'answers."secondPlayerAddedAt"',
         ])
         .from(Players, 'players')
@@ -186,7 +186,7 @@ export class GamesQueryRepository {
           'progress',
           'progress.id = players."gameProgressId"',
         )
-        .innerJoin(Games, 'games', 'games.id = progress.gameId')
+        .innerJoin(Games, 'games', 'games.id = progress."gameId"')
         .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
         .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
         .getRawMany();
@@ -194,7 +194,7 @@ export class GamesQueryRepository {
       if (!game || game.length === 0) {
         throw new NotFoundException();
       }
-      debugger;
+
       if (game[0].secondPlayerId === null) {
         return this.fromRawSQLToGameForOneViewModel(game);
       }
@@ -205,7 +205,7 @@ export class GamesQueryRepository {
     }
   }
 
-  async findRawSQLGameByPlayerId(currentUserId: string): Promise<any> {
+  async findRawSQLGameByPlayerId(userId: string): Promise<any> {
     try {
       return await this.dataSource
         .createQueryBuilder()
@@ -225,16 +225,16 @@ export class GamesQueryRepository {
           'questions.id as "questionId"',
           'questions."body"',
           'answers."firstPlayerAnswerStatus"',
-          'answers."firstPlayerQuestionId"',
+          'answers."questionId"',
           'answers."firstPlayerAddedAt"',
           'answers."secondPlayerAnswerStatus"',
-          'answers."secondPlayerQuestionId"',
+          'answers."questionId"',
           'answers."secondPlayerAddedAt"',
         ])
         .from(Players, 'players')
         .where(
           'players."firstPlayerId" = :currentUserId OR players."secondPlayerId" = :currentUserId',
-          { currentUserId },
+          { currentUserId: userId },
         )
         .innerJoin(
           GameProgresses,
@@ -245,6 +245,58 @@ export class GamesQueryRepository {
         .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
         .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
         .getRawMany();
+    } catch (error) {
+      throw new NotFoundException();
+    }
+  }
+
+  async findGameByUserIdAndGameStatus(userId: string, status: GameStatuses) {
+    try {
+      const game = await this.dataSource
+        .createQueryBuilder()
+        .select([
+          'players."firstPlayerId"',
+          'players."secondPlayerId"',
+          'players."firstPlayerLogin"',
+          'players."secondPlayerLogin"',
+          'progress."firstPlayerScore"',
+          'progress."secondPlayerScore"',
+          'progress.id as "gameProgressId"',
+          'games."id"',
+          'games."status"',
+          'games."pairCreatedDate"',
+          'games."startGameDate"',
+          'games."finishGameDate"',
+          'questions.id as "questionId"',
+          'questions."body"',
+          'answers."firstPlayerAnswerStatus"',
+          'answers."questionId"',
+          'answers."firstPlayerAddedAt"',
+          'answers."secondPlayerAnswerStatus"',
+          'answers."questionId"',
+          'answers."secondPlayerAddedAt"',
+        ])
+        .from(Players, 'players')
+        .where(
+          'players."firstPlayerId" = :userId OR players."secondPlayerId" = :userId',
+          { userId },
+        )
+        .innerJoin(
+          GameProgresses,
+          'progress',
+          'progress.id = players."gameProgressId"',
+        )
+        .innerJoin(Games, 'games', 'games.id = progress."gameId" ')
+        .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
+        .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
+        .where('status = :status', { status })
+        .getRawMany();
+
+      if (game.length !== 0) {
+        return this.fromRawSQLToGameViewModel(game);
+      } else {
+        return null;
+      }
     } catch (error) {
       throw new NotFoundException();
     }
