@@ -277,7 +277,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           });
 
         accessToken2 = loginUser2.body.accessToken;
-
+        debugger;
         const responseForGame2 = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken2}`)

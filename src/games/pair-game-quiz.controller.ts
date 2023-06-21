@@ -40,11 +40,9 @@ export class CreateGameController {
   async createGame(
     @CurrentUser() currentUser: UserViewModel,
   ): Promise<GameViewModel> {
-    debugger;
     const game: GameViewModel = await this.commandBus.execute(
       new CreateGameCommand(currentUser),
     );
-
     return game;
   }
 
@@ -72,7 +70,6 @@ export class CreateGameController {
     if (!game || game.status === GameStatuses.Finished) {
       throw new NotFoundException();
     }
-
     return game;
   }
 
@@ -90,7 +87,6 @@ export class CreateGameController {
     if (isNil(game)) {
       throw new NotFoundException();
     }
-
     if (game.secondPlayerProgress !== null) {
       if (
         game.firstPlayerProgress.player.id !== currentUserId ||

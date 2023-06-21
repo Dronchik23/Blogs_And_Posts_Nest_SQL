@@ -36,7 +36,6 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
   ) {}
 
   async execute(command: CreateGameCommand): Promise<GameViewModel> {
-    debugger;
     const game: GameViewModel =
       await this.gamesQueryRepository.findGameByPlayerId(command.user.id);
 
