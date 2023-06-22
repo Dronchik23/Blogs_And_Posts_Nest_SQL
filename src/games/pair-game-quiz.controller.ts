@@ -58,7 +58,6 @@ export class CreateGameController {
     const game = await this.commandBus.execute(
       new SendAnswerCommand(sendAnswerDTO, currentUserId),
     );
-    console.log('/my-current/answers', game);
     return game;
   }
 
@@ -72,7 +71,6 @@ export class CreateGameController {
     if (!game || game.status === GameStatuses.Finished) {
       throw new NotFoundException();
     }
-    console.log('/my-current', game);
     return game;
   }
 
@@ -103,7 +101,6 @@ export class CreateGameController {
         throw new ForbiddenException();
       }
     }
-    console.log('from gameId', game);
     return game;
   }
 }

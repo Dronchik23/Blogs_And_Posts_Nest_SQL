@@ -63,12 +63,63 @@ export class GamesQueryRepository {
     };
   }
 
-  private fromRawSQLToGameViewModel(rawGame: any[]): GameViewModel {
-    const game = rawGame[0];
+  private fromGameDBTypeToGameViewModelForSendAnswer(
+    game: Games,
+  ): GameViewModel {
     return {
       id: game.id,
       firstPlayerProgress: {
-        answers: rawGame.map((rawGameItem) => ({
+        answers: game.gameProgress.answers.map((a) => ({
+          questionId: a.questionId,
+          answerStatus: a.firstPlayerAnswerStatus,
+          addedAt: a.firstPlayerAddedAt,
+        })),
+        player: {
+          id: game.gameProgress.players.firstPlayerId,
+          login: game.gameProgress.players.firstPlayerLogin,
+        },
+        score: game.gameProgress.firstPlayerScore,
+      },
+      secondPlayerProgress: {
+        answers: game.gameProgress.answers.map((a) => ({
+          questionId: a.questionId,
+          answerStatus: a.firstPlayerAnswerStatus,
+          addedAt: a.firstPlayerAddedAt,
+        })),
+        player: {
+          id: game.gameProgress.players.secondPlayerId,
+          login: game.gameProgress.players.secondPlayerLogin,
+        },
+        score: game.gameProgress.secondPlayerScore,
+      },
+      questions: game.questions.map((q) => {
+        return {
+          id: q.id,
+          body: q.body,
+        };
+      }),
+      status: game.status,
+      pairCreatedDate: game.pairCreatedDate,
+      startGameDate: game.startGameDate,
+      finishGameDate: game.finishGameDate,
+    };
+  }
+
+  private fromRawSQLToGameViewModel(rawGame: any[]): GameViewModel {
+    const game = rawGame[0];
+    const filteredAnswers = rawGame.filter(
+      (rawGameItem) =>
+        rawGameItem.questionIdFromAnswers !== null &&
+        rawGameItem.firstPlayerAnswerStatus !== null &&
+        rawGameItem.firstPlayerAddedAt !== null &&
+        rawGameItem.secondPlayerAnswerStatus !== null &&
+        rawGameItem.secondPlayerAddedAt !== null,
+    );
+
+    return {
+      id: game.id,
+      firstPlayerProgress: {
+        answers: filteredAnswers.map((rawGameItem) => ({
           questionId: rawGameItem.questionIdFromAnswers,
           answerStatus: rawGameItem.firstPlayerAnswerStatus,
           addedAt: rawGameItem.firstPlayerAddedAt,
@@ -80,7 +131,7 @@ export class GamesQueryRepository {
         score: game.firstPlayerScore,
       },
       secondPlayerProgress: {
-        answers: rawGame.map((rawGameItem) => ({
+        answers: filteredAnswers.map((rawGameItem) => ({
           questionId: rawGameItem.questionIdFromAnswers,
           answerStatus: rawGameItem.secondPlayerAnswerStatus,
           addedAt: rawGameItem.secondPlayerAddedAt,
@@ -101,6 +152,7 @@ export class GamesQueryRepository {
       finishGameDate: game.finishGameDate,
     };
   }
+
   private fromRawSQLToGameForOneViewModel(rawGame: any[]): GameViewModel {
     const game = rawGame[0];
     return {
@@ -192,6 +244,7 @@ export class GamesQueryRepository {
         return null;
       }
 
+      console.log('raw game', game);
       if (game[0].secondPlayerId === null) {
         return this.fromRawSQLToGameForOneViewModel(game);
       }

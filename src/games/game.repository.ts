@@ -14,6 +14,7 @@ import { GameProgresses } from '../entities/game-progresses';
 import { Answers } from '../entities/answers';
 import { Questions } from '../entities/questions.entity';
 import { CorrectAnswers } from '../entities/correct-answers.entity';
+import { QuestionsQueryRepository } from '../query-repositorys/questions-query.repository';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesRepository {
@@ -30,12 +31,10 @@ export class GamesRepository {
     private readonly answerModel: Repository<Answers>,
     @InjectRepository(CorrectAnswers)
     private readonly correctAnswerModel: Repository<CorrectAnswers>,
+    private readonly questionsQueryRepository: QuestionsQueryRepository,
   ) {}
 
-  async createGameWithOnePlayer(
-    questions: QuestionViewModel[],
-    user: UserViewModel,
-  ): Promise<any> {
+  async createGameWithOnePlayer(user: UserViewModel): Promise<any> {
     const newGameProgress = GameProgresses.create();
     const createdGameProgress = await this.gameProgressModel.save(
       newGameProgress,
@@ -53,14 +52,6 @@ export class GamesRepository {
     await this.gameProgressModel.update(createdGameProgress.id, {
       gameId: savedGame.id,
     }); // add gameId to gameProgress
-
-    const questionIds = questions.map((question) => question.id);
-
-    await Promise.all(
-      questionIds.map((questionId) =>
-        this.questionModel.update({ id: questionId }, { gameId: savedGame.id }),
-      ),
-    ); // add gameId to questions
 
     const rawGameWith1Player = await this.gameModel.findOneBy({
       id: savedGame.id,
@@ -89,7 +80,24 @@ export class GamesRepository {
       },
     );
 
-    await Promise.all([updateGamePromise, updatePlayersPromise]);
+    const questionsPromise =
+      this.questionsQueryRepository.getFiveRandomQuestions();
+
+    const bigArr = await Promise.all([
+      updateGamePromise,
+      updatePlayersPromise,
+      questionsPromise,
+    ]);
+
+    const question: QuestionViewModel[] = bigArr[2];
+
+    const questionIds = question.map((question) => question.id);
+
+    await Promise.all(
+      questionIds.map((questionId) =>
+        this.questionModel.update({ id: questionId }, { gameId: game.id }),
+      ),
+    ); // add gameId to questions
 
     const rawGameWith2Players = await this.gameModel.findOneBy({ id: game.id });
 

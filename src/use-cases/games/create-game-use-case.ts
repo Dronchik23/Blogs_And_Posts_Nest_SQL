@@ -43,9 +43,6 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
       throw new ForbiddenException();
     }
 
-    const questions: QuestionViewModel[] =
-      await this.questionsQueryRepository.getFiveRandomQuestions();
-
     const gameWithPendingStatus: Games =
       await this.gamesQueryRepository.findPairByGameStatus(
         GameStatuses.PendingSecondPlayer,
@@ -53,10 +50,7 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
 
     if (isNil(gameWithPendingStatus)) {
       const gameWith1Player: GameViewModel =
-        await this.gamesRepository.createGameWithOnePlayer(
-          questions,
-          command.user,
-        );
+        await this.gamesRepository.createGameWithOnePlayer(command.user);
 
       return gameWith1Player;
     } else {

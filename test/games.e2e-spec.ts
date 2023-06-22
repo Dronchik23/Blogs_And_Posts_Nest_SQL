@@ -256,12 +256,13 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(200);
 
         const game2: GameViewModel = createResponseForGame2.body;
+        console.log('game2', game2);
 
         expect(game2.id).toEqual(game.id);
         expect(game2.status).toEqual(GameStatuses.Active);
         expect(game2.firstPlayerProgress.player.id).toEqual(user.id);
         expect(game2.firstPlayerProgress.player.login).toEqual(user.login);
-        expect(game2.firstPlayerProgress.answers).toBeDefined();
+        expect(game2.firstPlayerProgress.answers).toEqual([]);
         expect(game2.firstPlayerProgress.score).toBe(0);
         expect(game2.secondPlayerProgress.player.id).toEqual(user2.id);
         expect(game2.secondPlayerProgress.player.login).toEqual(user2.login);
@@ -283,7 +284,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(responseForGame.firstPlayerProgress.player.login).toEqual(
           user.login,
         );
-        expect(responseForGame.firstPlayerProgress.answers).toBeDefined();
+        expect(responseForGame.firstPlayerProgress.answers).toStrictEqual([]);
         expect(responseForGame.firstPlayerProgress.score).toBe(0);
         expect(responseForGame.secondPlayerProgress.player.id).toEqual(
           user2.id,
@@ -497,7 +498,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(currentGame.startGameDate).toBeDefined();
         expect(currentGame.finishGameDate).toBeNull();
       });
-      it('should get current game with 2 players by 1nd player', async () => {
+      it('should get current game with 2 players by 2nd player', async () => {
         const responseForGame = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken}`)
@@ -569,12 +570,14 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(currentGame.firstPlayerProgress.player.login).toEqual(
           user.login,
         );
-        expect(currentGame.firstPlayerProgress.answers).toBeDefined();
+        expect(currentGame.firstPlayerProgress.answers).toEqual([]);
         expect(currentGame.firstPlayerProgress.score).toBe(0);
         expect(currentGame.secondPlayerProgress.player.id).toEqual(user2.id);
         expect(currentGame.secondPlayerProgress.player.login).toEqual(
           user2.login,
         );
+        expect(currentGame.secondPlayerProgress.answers).toStrictEqual([]);
+        expect(currentGame.secondPlayerProgress.score).toBe(0);
         expect(currentGame.questions.length).toBe(5);
         expect(currentGame.pairCreatedDate).toBeDefined();
         expect(currentGame.startGameDate).toBeDefined();
@@ -846,6 +849,12 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
 
         expect(game2.id).toBeDefined();
         expect(game2.status).toEqual(GameStatuses.Active);
+        expect(game2.firstPlayerProgress.player.id).toEqual(user.id);
+        expect(game2.firstPlayerProgress.player.login).toEqual(user.login);
+        expect(game2.firstPlayerProgress.answers).toEqual([]);
+        expect(game2.secondPlayerProgress.player.id).toEqual(user2.id);
+        expect(game2.secondPlayerProgress.player.login).toEqual(user2.login);
+        expect(game2.secondPlayerProgress.answers).toStrictEqual([]);
         expect(game2.questions).toBeDefined();
         expect(game2.pairCreatedDate).toBeDefined();
         expect(game2.startGameDate).toBeDefined();
@@ -1128,6 +1137,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(200);
 
         const foundGame: GameViewModel = responseForGame.body;
+        console.log('foundGame', foundGame);
 
         expect(foundGame.id).toEqual(game.id);
         expect(foundGame.status).toEqual('Active');
