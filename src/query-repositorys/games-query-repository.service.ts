@@ -68,10 +68,7 @@ export class GamesQueryRepository {
   }
 
   private fromRawSQLToGameViewModel(rawGame: any[]): GameViewModel {
-    debugger;
     const game = rawGame[0];
-    console.log('game map', game);
-    console.log('raw game map', rawGame);
 
     const filteredAnswersBeforeFilter = rawGame.map((rawGameItem) => {
       const updatedItem: any = {};
@@ -98,7 +95,6 @@ export class GamesQueryRepository {
     const filteredAnswers = filteredAnswersBeforeFilter.filter(
       (obj) => Object.keys(obj).length > 0,
     );
-    console.log('filter', filteredAnswers);
 
     return {
       id: game.id,
