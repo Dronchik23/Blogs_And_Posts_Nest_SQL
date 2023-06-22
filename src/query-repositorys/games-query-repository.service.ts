@@ -5,7 +5,11 @@ import {
   Scope,
 } from '@nestjs/common';
 import { GameStatuses } from '../types/types';
-import { GameForOneViewModel, GameViewModel } from '../models/models';
+import {
+  AnswerViewModel,
+  GameForOneViewModel,
+  GameViewModel,
+} from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
@@ -63,58 +67,38 @@ export class GamesQueryRepository {
     };
   }
 
-  private fromGameDBTypeToGameViewModelForSendAnswer(
-    game: Games,
-  ): GameViewModel {
-    return {
-      id: game.id,
-      firstPlayerProgress: {
-        answers: game.gameProgress.answers.map((a) => ({
-          questionId: a.questionId,
-          answerStatus: a.firstPlayerAnswerStatus,
-          addedAt: a.firstPlayerAddedAt,
-        })),
-        player: {
-          id: game.gameProgress.players.firstPlayerId,
-          login: game.gameProgress.players.firstPlayerLogin,
-        },
-        score: game.gameProgress.firstPlayerScore,
-      },
-      secondPlayerProgress: {
-        answers: game.gameProgress.answers.map((a) => ({
-          questionId: a.questionId,
-          answerStatus: a.firstPlayerAnswerStatus,
-          addedAt: a.firstPlayerAddedAt,
-        })),
-        player: {
-          id: game.gameProgress.players.secondPlayerId,
-          login: game.gameProgress.players.secondPlayerLogin,
-        },
-        score: game.gameProgress.secondPlayerScore,
-      },
-      questions: game.questions.map((q) => {
-        return {
-          id: q.id,
-          body: q.body,
-        };
-      }),
-      status: game.status,
-      pairCreatedDate: game.pairCreatedDate,
-      startGameDate: game.startGameDate,
-      finishGameDate: game.finishGameDate,
-    };
-  }
-
   private fromRawSQLToGameViewModel(rawGame: any[]): GameViewModel {
+    debugger;
     const game = rawGame[0];
-    const filteredAnswers = rawGame.filter(
-      (rawGameItem) =>
-        rawGameItem.questionIdFromAnswers !== null &&
-        rawGameItem.firstPlayerAnswerStatus !== null &&
-        rawGameItem.firstPlayerAddedAt !== null &&
-        rawGameItem.secondPlayerAnswerStatus !== null &&
-        rawGameItem.secondPlayerAddedAt !== null,
+    console.log('game map', game);
+    console.log('raw game map', rawGame);
+
+    const filteredAnswersBeforeFilter = rawGame.map((rawGameItem) => {
+      const updatedItem: any = {};
+
+      if (rawGameItem.questionIdFromAnswers !== null) {
+        updatedItem.questionIdFromAnswers = rawGameItem.questionIdFromAnswers;
+      }
+      if (rawGameItem.firstPlayerAddedAt !== null) {
+        updatedItem.firstPlayerAddedAt = rawGameItem.firstPlayerAddedAt;
+      }
+      if (rawGameItem.firstPlayerAnswerStatus !== null) {
+        updatedItem.firstPlayerAnswerStatus =
+          rawGameItem.firstPlayerAnswerStatus;
+      }
+      if (rawGameItem.secondPlayerAnswerStatus !== null) {
+        updatedItem.secondPlayerAnswerStatus =
+          rawGameItem.secondPlayerAnswerStatus;
+      }
+      if (rawGameItem.secondPlayerAddedAt !== null) {
+        updatedItem.secondPlayerAddedAt = rawGameItem.secondPlayerAddedAt;
+      }
+      return updatedItem;
+    });
+    const filteredAnswers = filteredAnswersBeforeFilter.filter(
+      (obj) => Object.keys(obj).length > 0,
     );
+    console.log('filter', filteredAnswers);
 
     return {
       id: game.id,
@@ -239,12 +223,12 @@ export class GamesQueryRepository {
         .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
         .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
         .getRawMany();
-      console.log('raw sql', game);
+
       if (!game || game.length === 0) {
         return null;
       }
 
-      console.log('raw game', game);
+      console.log('raw sql', game);
       if (game[0].secondPlayerId === null) {
         return this.fromRawSQLToGameForOneViewModel(game);
       }

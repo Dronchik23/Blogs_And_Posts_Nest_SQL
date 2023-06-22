@@ -459,7 +459,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           });
 
         accessToken2 = loginUser2.body.accessToken;
-        debugger;
+
         const responseForGame2 = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken2}`)
@@ -542,7 +542,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           });
 
         accessToken2 = loginUser2.body.accessToken;
-        debugger;
+
         const responseForGame2 = await request(server)
           .post(gameCreateUrl)
           .set('Authorization', `Bearer ${accessToken2}`)
@@ -1137,7 +1137,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(200);
 
         const foundGame: GameViewModel = responseForGame.body;
-        console.log('foundGame', foundGame);
+        console.log('foundGame', foundGame.firstPlayerProgress.answers);
 
         expect(foundGame.id).toEqual(game.id);
         expect(foundGame.status).toEqual('Active');

@@ -43,7 +43,6 @@ export class CreateGameController {
     const game: GameViewModel = await this.commandBus.execute(
       new CreateGameCommand(currentUser),
     );
-    console.log('/connection', game);
     return game;
   }
 
