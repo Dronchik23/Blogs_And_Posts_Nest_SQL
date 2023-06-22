@@ -71,7 +71,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
 
   describe('pair-game-quiz/pairs', () => {
     describe('get game by gameId tests', () => {
-      beforeAll(async () => {
+      beforeEach(async () => {
         await request(server).delete(wipeAllData);
         const createUserDto: UserInputModel = {
           login: `user`,
@@ -155,6 +155,102 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(gameFromResponse.pairCreatedDate).toBeDefined();
         expect(gameFromResponse.startGameDate).toBeNull();
         expect(gameFromResponse.finishGameDate).toBeNull();
+      });
+      it('should get game with 2 players by gameId', async () => {
+        const createUserDto2: UserInputModel = {
+          login: `user2`,
+          password: 'password',
+          email: `user2@gmail.com`,
+        };
+
+        const responseForUser2 = await request(server)
+          .post('/sa/users')
+          .auth('admin', 'qwerty')
+          .send(createUserDto2);
+
+        const user2 = responseForUser2.body;
+        expect(user2).toBeDefined();
+
+        const loginUser2 = await request(server)
+          .post('/auth/login')
+          .set(userAgent)
+          .set(userAgent)
+          .send({
+            loginOrEmail: createUserDto2.login,
+            password: createUserDto2.password,
+          });
+
+        accessToken2 = loginUser2.body.accessToken;
+
+        const createResponseForGame2 = await request(server)
+          .post(gameCreateUrl)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+
+        const game2: GameViewModel = createResponseForGame2.body;
+
+        expect(game2.id).toEqual(game.id);
+        expect(game2.status).toEqual(GameStatuses.Active);
+        expect(game2.questions).toBeDefined();
+        expect(game2.pairCreatedDate).toBeDefined();
+        expect(game2.startGameDate).toBeDefined();
+        expect(game2.finishGameDate).toBeNull();
+
+        const responseForGame1stPlayer = await request(server)
+          .get(gameUrl + `/${game.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const responseFor1stPlayer = responseForGame1stPlayer.body;
+
+        expect(responseFor1stPlayer.id).toBeDefined();
+        expect(responseFor1stPlayer.status).toEqual(GameStatuses.Active);
+        expect(responseFor1stPlayer.firstPlayerProgress.player.id).toEqual(
+          user.id,
+        );
+        expect(responseFor1stPlayer.firstPlayerProgress.player.login).toEqual(
+          user.login,
+        );
+        expect(responseFor1stPlayer.firstPlayerProgress.answers).toBeDefined();
+        expect(responseFor1stPlayer.firstPlayerProgress.score).toBe(0);
+        expect(responseFor1stPlayer.secondPlayerProgress.player.id).toEqual(
+          user2.id,
+        );
+        expect(responseFor1stPlayer.secondPlayerProgress.player.login).toEqual(
+          user2.login,
+        );
+        expect(responseFor1stPlayer.questions.length).toBe(5);
+        expect(responseFor1stPlayer.pairCreatedDate).toBeDefined();
+        expect(responseFor1stPlayer.startGameDate).toBeDefined();
+        expect(responseFor1stPlayer.finishGameDate).toBeNull();
+
+        const responseForGame2ndPlayer = await request(server)
+          .get(gameUrl + `/${game.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const responseFor2ndPlayer = responseForGame2ndPlayer.body;
+
+        expect(responseFor2ndPlayer.id).toBeDefined();
+        expect(responseFor2ndPlayer.status).toEqual(GameStatuses.Active);
+        expect(responseFor2ndPlayer.firstPlayerProgress.player.id).toEqual(
+          user.id,
+        );
+        expect(responseFor2ndPlayer.firstPlayerProgress.player.login).toEqual(
+          user.login,
+        );
+        expect(responseFor2ndPlayer.firstPlayerProgress.answers).toBeDefined();
+        expect(responseFor2ndPlayer.firstPlayerProgress.score).toBe(0);
+        expect(responseFor2ndPlayer.secondPlayerProgress.player.id).toEqual(
+          user2.id,
+        );
+        expect(responseFor2ndPlayer.secondPlayerProgress.player.login).toEqual(
+          user2.login,
+        );
+        expect(responseFor2ndPlayer.questions.length).toBe(5);
+        expect(responseFor2ndPlayer.pairCreatedDate).toBeDefined();
+        expect(responseFor2ndPlayer.startGameDate).toBeDefined();
+        expect(responseFor2ndPlayer.finishGameDate).toBeNull();
       });
       it('should send 403 if user try to get alien game', async () => {
         const createUserDto2: UserInputModel = {

@@ -177,10 +177,19 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       type: 'postgres',
       url: 'postgres://Dronchik23:LNDFEJKac6Q9@ep-plain-dew-291409.us-east-2.aws.neon.tech/fuckingBD',
       autoLoadEntities: true,
-      //logging: true,
       synchronize: true,
       ssl: true,
     }),
+    /*    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: 'localhost',
+      database: 'local',
+      username: 'postgres',
+      password: '2346',
+      port: 5432,
+      autoLoadEntities: true,
+      synchronize: true,
+    }),*/
     TypeOrmModule.forFeature([
       Users,
       Blogs,

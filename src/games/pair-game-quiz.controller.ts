@@ -43,6 +43,7 @@ export class CreateGameController {
     const game: GameViewModel = await this.commandBus.execute(
       new CreateGameCommand(currentUser),
     );
+    console.log('/connection', game);
     return game;
   }
 
@@ -57,6 +58,7 @@ export class CreateGameController {
     const game = await this.commandBus.execute(
       new SendAnswerCommand(sendAnswerDTO, currentUserId),
     );
+    console.log('/my-current/answers', game);
     return game;
   }
 
@@ -70,6 +72,7 @@ export class CreateGameController {
     if (!game || game.status === GameStatuses.Finished) {
       throw new NotFoundException();
     }
+    console.log('/my-current', game);
     return game;
   }
 
@@ -87,9 +90,10 @@ export class CreateGameController {
     if (isNil(game)) {
       throw new NotFoundException();
     }
+    debugger;
     if (game.secondPlayerProgress !== null) {
       if (
-        game.firstPlayerProgress.player.id !== currentUserId ||
+        game.firstPlayerProgress.player.id !== currentUserId &&
         game.secondPlayerProgress.player.id !== currentUserId
       ) {
         throw new ForbiddenException();
@@ -99,7 +103,7 @@ export class CreateGameController {
     if (game.firstPlayerProgress.player.id !== currentUserId) {
       throw new ForbiddenException();
     }
-
+    console.log('from gameId', game);
     return game;
   }
 }
