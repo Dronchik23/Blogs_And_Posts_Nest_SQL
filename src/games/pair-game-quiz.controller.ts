@@ -98,10 +98,10 @@ export class CreateGameController {
       ) {
         throw new ForbiddenException();
       }
-    }
-
-    if (game.firstPlayerProgress.player.id !== currentUserId) {
-      throw new ForbiddenException();
+    } else {
+      if (game.firstPlayerProgress.player.id !== currentUserId) {
+        throw new ForbiddenException();
+      }
     }
     console.log('from gameId', game);
     return game;

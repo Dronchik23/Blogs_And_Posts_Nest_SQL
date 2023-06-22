@@ -173,14 +173,14 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       ttl: 10000,
       limit: 5000,
     }),
-    TypeOrmModule.forRoot({
+    /*    TypeOrmModule.forRoot({
       type: 'postgres',
       url: 'postgres://Dronchik23:LNDFEJKac6Q9@ep-plain-dew-291409.us-east-2.aws.neon.tech/fuckingBD',
       autoLoadEntities: true,
       synchronize: true,
       ssl: true,
-    }),
-    /*    TypeOrmModule.forRoot({
+    }),*/
+    TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       database: 'local',
@@ -189,7 +189,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       port: 5432,
       autoLoadEntities: true,
       synchronize: true,
-    }),*/
+    }),
     TypeOrmModule.forFeature([
       Users,
       Blogs,
