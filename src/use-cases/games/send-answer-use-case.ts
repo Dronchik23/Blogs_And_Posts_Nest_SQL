@@ -1,12 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import {
-  ForbiddenException,
-  HttpException,
-  HttpStatus,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ForbiddenException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../../entities/games.entity';
 import { Users } from '../../entities/users.entity';
@@ -97,6 +92,21 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
       if (firstPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[firstPlayerAnswers.length];
+
+        const currentAnswerEntity = await this.answersModel.findOneBy({
+          gameProgressId: game.gameProgressId,
+          questionId: currentQuestion.id,
+        });
+        if (
+          playersAnswers.length === 5 &&
+          currentAnswerEntity &&
+          currentAnswerEntity.secondPlayerAnswerStatus === null
+        ) {
+          await this.gameProgressesModel.update(
+            { id: game.gameProgressId },
+            { firstPlayerScore: game.firstPlayerScore + 1 },
+          );
+        }
       } else {
         throw new ForbiddenException();
       }
@@ -111,6 +121,21 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
 
       if (secondPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[secondPlayerAnswers.length];
+
+        const currentAnswerEntity = await this.answersModel.findOneBy({
+          gameProgressId: game.gameProgressId,
+          questionId: currentQuestion.id,
+        });
+        if (
+          playersAnswers.length === 5 &&
+          currentAnswerEntity &&
+          currentAnswerEntity.firstPlayerAnswerStatus === null
+        ) {
+          await this.gameProgressesModel.update(
+            { id: game.gameProgressId },
+            { firstPlayerScore: game.firstPlayerScore + 1 },
+          );
+        }
       } else {
         throw new ForbiddenException();
       }

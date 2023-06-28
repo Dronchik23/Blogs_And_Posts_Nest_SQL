@@ -958,7 +958,6 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(401);*/
       });
     });
-    //
     describe('send answer tests', () => {
       beforeEach(async () => {
         await request(server).delete(wipeAllData);
