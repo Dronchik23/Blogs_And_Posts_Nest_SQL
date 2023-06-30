@@ -99,11 +99,21 @@ export class GamesQueryRepository {
     return {
       id: game.id,
       firstPlayerProgress: {
-        answers: filteredAnswers.map((rawGameItem) => ({
-          questionId: rawGameItem.questionIdFromAnswers,
-          answerStatus: rawGameItem.firstPlayerAnswerStatus,
-          addedAt: rawGameItem.firstPlayerAddedAt,
-        })),
+        answers: filteredAnswers
+          .map((rawGameItem) => ({
+            questionId: rawGameItem.questionIdFromAnswers,
+            answerStatus: rawGameItem.firstPlayerAnswerStatus,
+            addedAt: rawGameItem.firstPlayerAddedAt,
+          }))
+          .filter(
+            (answer, index, self) =>
+              index ===
+              self.findIndex((a) => a.questionId === answer.questionId),
+          )
+          .filter(
+            (answer) =>
+              answer.questionId && answer.answerStatus && answer.addedAt,
+          ),
         player: {
           id: game.firstPlayerId,
           login: game.firstPlayerLogin,
@@ -111,21 +121,37 @@ export class GamesQueryRepository {
         score: game.firstPlayerScore,
       },
       secondPlayerProgress: {
-        answers: filteredAnswers.map((rawGameItem) => ({
-          questionId: rawGameItem.questionIdFromAnswers,
-          answerStatus: rawGameItem.secondPlayerAnswerStatus,
-          addedAt: rawGameItem.secondPlayerAddedAt,
-        })),
+        answers: filteredAnswers
+          .map((rawGameItem) => ({
+            questionId: rawGameItem.questionIdFromAnswers,
+            answerStatus: rawGameItem.secondPlayerAnswerStatus,
+            addedAt: rawGameItem.secondPlayerAddedAt,
+          }))
+          .filter(
+            (answer, index, self) =>
+              index ===
+              self.findIndex((a) => a.questionId === answer.questionId),
+          )
+          .filter(
+            (answer) =>
+              answer.questionId && answer.answerStatus && answer.addedAt,
+          ),
+
         player: {
           id: game.secondPlayerId,
           login: game.secondPlayerLogin,
         },
         score: game.secondPlayerScore,
       },
-      questions: rawGame.map((rawGameItem) => ({
-        id: rawGameItem.questionId,
-        body: rawGameItem.body,
-      })),
+      questions: rawGame
+        .map((rawGameItem) => ({
+          id: rawGameItem.questionId,
+          body: rawGameItem.body,
+        }))
+        .filter((question, index, self) => {
+          const foundIndex = self.findIndex((q) => q.id === question.id);
+          return foundIndex === index;
+        }),
       status: game.status,
       pairCreatedDate: game.pairCreatedDate,
       startGameDate: game.startGameDate,
@@ -219,12 +245,11 @@ export class GamesQueryRepository {
         .leftJoin(Questions, 'questions', 'questions."gameId" = games.id')
         .leftJoin(Answers, 'answers', 'questions."gameId" = games.id')
         .getRawMany();
-
+      debugger;
       if (!game || game.length === 0) {
         return null;
       }
 
-      console.log('raw sql', game);
       if (game[0].secondPlayerId === null) {
         return this.fromRawSQLToGameForOneViewModel(game);
       }

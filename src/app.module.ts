@@ -180,7 +180,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       synchronize: true,
       ssl: true,
     }),
-    /*    TypeOrmModule.forRoot({
+    /*   TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       database: 'local',
