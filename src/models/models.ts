@@ -450,11 +450,16 @@ export class GameViewModel {
   constructor(gameDB: Games) {
     this.id = gameDB.id;
     this.firstPlayerProgress = {
-      answers: gameDB.gameProgress.answers.map((a) => ({
-        questionId: a.questionId,
-        answerStatus: a.firstPlayerAnswerStatus,
-        addedAt: a.firstPlayerAddedAt,
-      })),
+      answers: gameDB.gameProgress.answers
+        .map((a) => ({
+          questionId: a.questionId,
+          answerStatus: a.firstPlayerAnswerStatus,
+          addedAt: a.firstPlayerAddedAt,
+        }))
+        .filter(
+          (answer) =>
+            answer.questionId && answer.answerStatus && answer.addedAt,
+        ),
       player: {
         id: gameDB.gameProgress.players.firstPlayerId,
         login: gameDB.gameProgress.players.firstPlayerLogin,
@@ -462,11 +467,16 @@ export class GameViewModel {
       score: gameDB.gameProgress.firstPlayerScore,
     };
     this.secondPlayerProgress = {
-      answers: gameDB.gameProgress.answers.map((a) => ({
-        questionId: a.questionId,
-        answerStatus: a.secondPlayerAnswerStatus,
-        addedAt: a.secondPlayerAddedAt,
-      })),
+      answers: gameDB.gameProgress.answers
+        .map((a) => ({
+          questionId: a.questionId,
+          answerStatus: a.secondPlayerAnswerStatus,
+          addedAt: a.secondPlayerAddedAt,
+        }))
+        .filter(
+          (answer) =>
+            answer.questionId && answer.answerStatus && answer.addedAt,
+        ),
       player: {
         id: gameDB.gameProgress.players.secondPlayerId,
         login: gameDB.gameProgress.players.secondPlayerLogin,

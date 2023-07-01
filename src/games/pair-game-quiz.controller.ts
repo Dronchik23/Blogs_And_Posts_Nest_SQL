@@ -87,7 +87,7 @@ export class CreateGameController {
     if (isNil(game)) {
       throw new NotFoundException();
     }
-    debugger;
+
     if (game.secondPlayerProgress !== null) {
       if (
         game.firstPlayerProgress.player.id !== currentUserId &&
