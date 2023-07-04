@@ -33,7 +33,6 @@ import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/questions.entity';
 import { Games } from '../entities/games.entity';
-import { CorrectAnswers } from '../entities/correct-answers.entity';
 import { Answers } from '../entities/answers';
 
 export class DefaultPaginationData {
@@ -426,13 +425,10 @@ export class QuestionViewModel {
   published: boolean;
   createdAt: string;
   updatedAt: string;
-  constructor(questionDB: Questions, createdCorrectAnswers?: CorrectAnswers) {
+  constructor(questionDB: Questions) {
     this.id = questionDB.id;
     this.body = questionDB.body;
-    (this.correctAnswers = [
-      createdCorrectAnswers.answer1,
-      createdCorrectAnswers.answer2,
-    ]),
+    (this.correctAnswers = questionDB.correctAnswers),
       (this.published = questionDB.published);
     this.createdAt = questionDB.createdAt;
     this.updatedAt = questionDB.updatedAt;

@@ -8,7 +8,6 @@ import {
   QuestionViewModel,
 } from '../../../models/models';
 import { Questions } from '../../../entities/questions.entity';
-import { CorrectAnswers } from '../../../entities/correct-answers.entity';
 import { Answers } from '../../../entities/answers';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -17,8 +16,6 @@ export class QuestionRepository {
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Questions)
     private readonly questionModel: Repository<Questions>,
-    @InjectRepository(CorrectAnswers)
-    private readonly correctAnswersModel: Repository<CorrectAnswers>,
     @InjectRepository(Answers)
     private readonly answersModel: Repository<Answers>,
   ) {}
@@ -26,29 +23,10 @@ export class QuestionRepository {
   async createQuestion(
     createQuestionDTO: QuestionInputModel,
   ): Promise<QuestionViewModel> {
-    const answers = ['answer1', 'answer2'];
-    const newCorrectAnswers = CorrectAnswers.create(answers);
-    const createdCorrectAnswers = await this.correctAnswersModel.save(
-      newCorrectAnswers,
-    );
-    const newQuestion = Questions.create(
-      createQuestionDTO,
-      createdCorrectAnswers.id,
-    );
+    const newQuestion = Questions.create(createQuestionDTO);
     const createdQuestion = await this.questionModel.save(newQuestion);
 
-    await this.correctAnswersModel.update(createdCorrectAnswers.id, {
-      questionsId: createdQuestion.id,
-    });
-
-    const questionWithCorrectAnswers = await this.questionModel.findOneBy({
-      id: createdQuestion.id,
-    });
-
-    return new QuestionViewModel(
-      questionWithCorrectAnswers,
-      createdCorrectAnswers,
-    );
+    return new QuestionViewModel(createdQuestion);
   }
 
   async deleteQuestionByQuestionId(questionId: string) {
@@ -57,8 +35,6 @@ export class QuestionRepository {
       if (!question) {
         throw new NotFoundException();
       }
-
-      await this.correctAnswersModel.delete({ questionsId: questionId }); // удаляем ответы
 
       const result = await this.questionModel.delete({ id: questionId });
 
@@ -80,11 +56,7 @@ export class QuestionRepository {
       }
 
       question.body = updateQuestionDto.body;
-      question.correctAnswers = {
-        questionsId: questionId,
-        answer1: '1',
-        answer2: '2',
-      };
+      question.correctAnswers = updateQuestionDto.correctAnswers;
       question.updatedAt = updatedAt;
 
       return await this.questionModel.save(question);

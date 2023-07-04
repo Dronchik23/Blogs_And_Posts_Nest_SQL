@@ -1,13 +1,6 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { QuestionInputModel } from '../models/models';
 import { Games } from './games.entity';
-import { CorrectAnswers } from './correct-answers.entity';
 
 @Entity()
 export class Questions {
@@ -32,21 +25,24 @@ export class Questions {
   @Column({ nullable: true, type: 'uuid' })
   gameId: string;
 
-  @OneToOne(() => CorrectAnswers, (c) => c.questions, {
+  @Column({ type: 'text', array: true, nullable: true })
+  correctAnswers: string[];
+
+  /*@OneToOne(() => CorrectAnswers, (c) => c.questions, {
     eager: true,
   })
-  correctAnswers: CorrectAnswers;
+  correctAnswers: string[];*/
 
   @ManyToOne(() => Games, (qp) => qp.questions)
   game?: Games;
 
-  static create(dto: QuestionInputModel, correctAnswersId: string) {
+  static create(dto: QuestionInputModel) {
     const newQuestion = new Questions();
     newQuestion.body = dto.body;
     newQuestion.published = false;
     newQuestion.createdAt = new Date().toISOString();
     newQuestion.updatedAt = null;
-    newQuestion.correctAnswersId = correctAnswersId;
+    newQuestion.correctAnswers = dto.correctAnswers;
     return newQuestion;
   }
 }

@@ -98,7 +98,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
           questionId: currentQuestion.id,
         });
         if (
-          playersAnswers.length === 5 &&
+          firstPlayerAnswers.length === 5 &&
           currentAnswerEntity &&
           currentAnswerEntity.secondPlayerAnswerStatus === null
         ) {
@@ -145,9 +145,9 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       id: currentQuestion.id,
     }); // take question with all nests
 
-    const isAnswerCorrect =
-      command.sendAnswerDTO.answer === question.correctAnswers.answer1 ||
-      command.sendAnswerDTO.answer === question.correctAnswers.answer2;
+    const isAnswerCorrect = question.correctAnswers.some(
+      (answer) => answer === command.sendAnswerDTO.answer,
+    );
 
     if (isAnswerCorrect) {
       const playerScoreKey =

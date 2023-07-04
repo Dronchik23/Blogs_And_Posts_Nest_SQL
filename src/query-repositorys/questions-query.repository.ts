@@ -4,7 +4,6 @@ import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Questions } from '../entities/questions.entity';
 import { QuestionViewModel } from '../models/models';
-import { CorrectAnswers } from '../entities/correct-answers.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionsQueryRepository {
@@ -14,7 +13,7 @@ export class QuestionsQueryRepository {
     private readonly questionModel: Repository<Questions>,
   ) {}
 
-  private fromQuestionDBTypeToQuestionViewModelArray(
+  /*  private fromQuestionDBTypeToQuestionViewModelArray(
     questions: Questions[],
   ): QuestionViewModel[] {
     return questions.map((question) => ({
@@ -29,7 +28,7 @@ export class QuestionsQueryRepository {
       updatedAt: question.updatedAt,
       gameId: question.gameId,
     }));
-  }
+  }*/
 
   private fromRawSQLQuestionTypeToQuestionViewModelArray(
     questions: any,
@@ -62,15 +61,8 @@ export class QuestionsQueryRepository {
         'questions."createdAt"',
         'questions."updatedAt"',
         'questions."gameId"',
-        'answers."answer1"',
-        'answers."answer2"',
       ])
-      .from(Questions, 'questions')
-      .leftJoin(
-        CorrectAnswers,
-        'answers',
-        'answers."questionsId" = questions.id',
-      );
+      .from(Questions, 'questions');
 
     if (bodySearchTerm) {
       builder.andWhere('questions.body ILIKE :bodySearchTerm', {

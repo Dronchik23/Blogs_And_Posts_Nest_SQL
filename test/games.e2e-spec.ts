@@ -1264,6 +1264,34 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
         expect(answer.addedAt).toBeDefined();
 
+        const responseForCurrentGame4 = await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const currentGame4: GameViewModel = responseForCurrentGame4.body;
+
+        expect(currentGame4.id).toBeDefined();
+        expect(currentGame4.status).toEqual(GameStatuses.Active);
+        expect(currentGame4.firstPlayerProgress.player.id).toEqual(user.id);
+        expect(currentGame4.firstPlayerProgress.player.login).toEqual(
+          user.login,
+        );
+        expect(
+          currentGame4.firstPlayerProgress.answers[0].answerStatus,
+        ).toEqual(AnswerStatuses.Correct);
+        expect(currentGame4.firstPlayerProgress.score).toBeDefined();
+        expect(currentGame4.secondPlayerProgress.player.id).toEqual(user2.id);
+        expect(currentGame4.secondPlayerProgress.player.login).toEqual(
+          user2.login,
+        );
+        expect(currentGame4.secondPlayerProgress.answers.length).toBe(0);
+        expect(currentGame4.secondPlayerProgress.answers).toEqual([]);
+        expect(currentGame4.questions.length).toBe(5);
+        expect(currentGame4.pairCreatedDate).toBeDefined();
+        expect(currentGame4.startGameDate).toBeDefined();
+        expect(currentGame4.finishGameDate).toBeNull();
+
         const secondPlayerRequest = await request(server)
           .post(sendAnswerUrl)
           .send({ answer: 'incorrect' })
@@ -1275,6 +1303,37 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(answer2.questionId).toBeDefined();
         expect(answer2.answerStatus).toEqual(AnswerStatuses.Incorrect);
         expect(answer2.addedAt).toBeDefined();
+
+        const responseForCurrentGame5 = await request(server)
+          .get(currentGameUrl)
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+
+        const currentGame5: GameViewModel = responseForCurrentGame5.body;
+
+        expect(currentGame5.id).toBeDefined();
+        expect(currentGame5.status).toEqual(GameStatuses.Active);
+        expect(currentGame5.firstPlayerProgress.player.id).toEqual(user.id);
+        expect(currentGame5.firstPlayerProgress.player.login).toEqual(
+          user.login,
+        );
+        expect(currentGame5.firstPlayerProgress.answers).toBeDefined();
+        expect(
+          currentGame5.firstPlayerProgress.answers[0].answerStatus,
+        ).toEqual(AnswerStatuses.Correct);
+        expect(currentGame5.firstPlayerProgress.score).toBeDefined();
+        expect(currentGame5.secondPlayerProgress.player.id).toEqual(user2.id);
+        expect(currentGame5.secondPlayerProgress.player.login).toEqual(
+          user2.login,
+        );
+        expect(currentGame5.secondPlayerProgress.answers.length).toBe(1);
+        expect(
+          currentGame5.secondPlayerProgress.answers[0].answerStatus,
+        ).toEqual(AnswerStatuses.Incorrect);
+        expect(currentGame5.questions.length).toBe(5);
+        expect(currentGame5.pairCreatedDate).toBeDefined();
+        expect(currentGame5.startGameDate).toBeDefined();
+        expect(currentGame5.finishGameDate).toBeNull();
 
         const secondPlayerRequest2 = await request(server)
           .post(sendAnswerUrl)

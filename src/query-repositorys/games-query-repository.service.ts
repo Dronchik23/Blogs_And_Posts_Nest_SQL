@@ -162,7 +162,7 @@ export class GamesQueryRepository {
           { currentUserId },
         )
         .getMany();
-      console.log('playersEntityArray', playersEntityArray);
+
       if (playersEntityArray.length === 0) {
         return null;
       }
@@ -181,7 +181,6 @@ export class GamesQueryRepository {
           break;
         }
       }
-      console.log('currentGame', currentGame);
 
       if (!currentGame) {
         return null;

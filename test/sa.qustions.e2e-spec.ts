@@ -25,7 +25,14 @@ describe('sa/games/questions tests (e2e)', () => {
   const wipeAllData = '/testing/all-data';
   const createQuestionDto: QuestionInputModel = {
     body: `questionmorethen10`,
-    correctAnswers: ['answer1', 'answer2'],
+    correctAnswers: [
+      'answer1',
+      'answer2',
+      'answer3',
+      'answer4',
+      'answer5',
+      'answer6',
+    ],
   };
   const updateQuestionDto: QuestionInputModel = {
     body: `new questionmorethen10`,

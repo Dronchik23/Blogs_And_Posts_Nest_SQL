@@ -13,7 +13,6 @@ import { GameStatuses } from '../types/types';
 import { GameProgresses } from '../entities/game-progresses';
 import { Answers } from '../entities/answers';
 import { Questions } from '../entities/questions.entity';
-import { CorrectAnswers } from '../entities/correct-answers.entity';
 import { QuestionsQueryRepository } from '../query-repositorys/questions-query.repository';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -29,8 +28,6 @@ export class GamesRepository {
     private readonly gameProgressModel: Repository<GameProgresses>,
     @InjectRepository(Answers)
     private readonly answerModel: Repository<Answers>,
-    @InjectRepository(CorrectAnswers)
-    private readonly correctAnswerModel: Repository<CorrectAnswers>,
     private readonly questionsQueryRepository: QuestionsQueryRepository,
   ) {}
 
@@ -41,9 +38,6 @@ export class GamesRepository {
     );
     const newPlayers = Players.create(user, createdGameProgress.id);
     const createdPlayers = await this.playersModel.save(newPlayers);
-
-    const newCorrectAnswers = new CorrectAnswers();
-    await this.correctAnswerModel.save(newCorrectAnswers);
 
     const createdGame = Games.create(createdGameProgress.id, createdPlayers);
 
