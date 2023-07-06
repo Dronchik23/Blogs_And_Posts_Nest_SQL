@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, HttpCode } from '@nestjs/common';
+import { Controller, Delete, HttpCode } from '@nestjs/common';
 import { BlogsRepository } from '../blogs/blog.repository';
 import { UsersRepository } from '../sa/users/users-repository';
 import { DevicesRepository } from '../devices/device.repository';
@@ -15,31 +15,23 @@ import { Questions } from '../entities/questions.entity';
 @Controller('testing')
 export class TestingController {
   constructor(
-    private readonly blogsRepository: BlogsRepository,
+    /* private readonly blogsRepository: BlogsRepository,
     private readonly postsRepository: PostsRepository,
     private readonly usersRepository: UsersRepository,
     private readonly devicesRepository: DevicesRepository,
     private readonly commentsRepository: CommentsRepository,
     private readonly likesRepository: LikesRepository,
-    private readonly tokensRepository: TokensRepository,
-    private readonly testingRepository: TestingRepository,
-    @InjectRepository(Games) private q: Repository<Games>,
-    @InjectRepository(Questions) private qs: Repository<Questions>,
+    private readonly tokensRepository: TokensRepository,*/
+    private readonly testingRepository: TestingRepository /* @InjectRepository(Games) private q: Repository<Games>,
+    @InjectRepository(Questions) private qs: Repository<Questions>,*/,
   ) {}
 
   @Delete('all-data')
   @HttpCode(204)
   async deleteAllData() {
     await this.testingRepository.deleteAllData();
-    // await this.blogsRepository.deleteAllBlogs();
-    // await this.usersRepository.deleteAllUsers();
-    // await this.postsRepository.deleteAllPosts();
-    // await this.devicesRepository.deleteAllDevices();
-    // await this.commentsRepository.deleteAllComments();
-    // await this.likesRepository.deleteAllLikes();
-    // await this.tokensRepository.deleteAllBannedRefreshTokens();
   }
-
+  /*
   @Delete('all-blogs')
   @HttpCode(204)
   async deleteAllBlogs() {
@@ -74,5 +66,5 @@ export class TestingController {
   @HttpCode(204)
   async deleteAllBannedRefreshTokens() {
     await this.tokensRepository.deleteAllBannedRefreshTokens();
-  }
+  }*/
 }

@@ -10,9 +10,6 @@ export class Questions {
   @Column()
   body: string;
 
-  @Column({ nullable: true, type: 'uuid' })
-  correctAnswersId: string;
-
   @Column()
   published: boolean;
 
@@ -27,11 +24,6 @@ export class Questions {
 
   @Column({ type: 'text', array: true, nullable: true })
   correctAnswers: string[];
-
-  /*@OneToOne(() => CorrectAnswers, (c) => c.questions, {
-    eager: true,
-  })
-  correctAnswers: string[];*/
 
   @ManyToOne(() => Games, (qp) => qp.questions)
   game?: Games;

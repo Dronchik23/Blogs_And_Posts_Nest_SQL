@@ -102,17 +102,20 @@ describe('sa/games/questions tests (e2e)', () => {
           .expect(201);
 
         const question: QuestionViewModel = createResponseForQuestion.body;
-
-        await request(server)
+        const req = await request(server)
           .get(url)
           .auth('admin', 'qwerty')
-          .expect(200, {
-            pagesCount: 1,
-            page: 1,
-            pageSize: 10,
-            totalCount: 1,
-            items: [question],
-          });
+          .expect(200);
+
+        console.log('answers', req.body.items[0].correctAnswers);
+
+        expect(req.body).toEqual({
+          pagesCount: 1,
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          items: [question],
+        });
       });
       it('should not create question with incorrect input data', async () => {
         await request(server).delete(wipeAllData);

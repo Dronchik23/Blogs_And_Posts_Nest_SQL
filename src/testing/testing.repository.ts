@@ -21,8 +21,6 @@ DELETE FROM public."refreshTokenBlackList" CASCADE;
 
 DELETE FROM public.users CASCADE;
 
-DELETE FROM public."correctAnswers" CASCADE;
-
 DELETE FROM public.questions CASCADE;
 
 DELETE FROM public.players CASCADE;

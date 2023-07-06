@@ -13,30 +13,13 @@ export class QuestionsQueryRepository {
     private readonly questionModel: Repository<Questions>,
   ) {}
 
-  /*  private fromQuestionDBTypeToQuestionViewModelArray(
-    questions: Questions[],
-  ): QuestionViewModel[] {
-    return questions.map((question) => ({
-      id: question.id,
-      body: question.body,
-      correctAnswers: [
-        question.correctAnswers.answer1,
-        question.correctAnswers.answer2,
-      ],
-      published: question.published,
-      createdAt: question.createdAt,
-      updatedAt: question.updatedAt,
-      gameId: question.gameId,
-    }));
-  }*/
-
   private fromRawSQLQuestionTypeToQuestionViewModelArray(
     questions: any,
   ): QuestionViewModel[] {
     const mapped = questions.map((question) => ({
       id: question.id,
       body: question.body,
-      correctAnswers: [question.answer1, question.answer2],
+      correctAnswers: question.correctAnswers,
       published: question.published,
       createdAt: question.createdAt,
       updatedAt: question.updatedAt,
@@ -61,6 +44,7 @@ export class QuestionsQueryRepository {
         'questions."createdAt"',
         'questions."updatedAt"',
         'questions."gameId"',
+        'questions."correctAnswers"',
       ])
       .from(Questions, 'questions');
 
