@@ -34,11 +34,17 @@ export class GamesQueryRepository {
         score: game.gameProgress.firstPlayerScore,
       },
       secondPlayerProgress: {
-        answers: game.gameProgress.answers.map((a) => ({
-          questionId: a.questionId,
-          answerStatus: a.secondPlayerAnswerStatus,
-          addedAt: a.secondPlayerAddedAt,
-        })),
+        answers: game.gameProgress.answers
+          .map((a) => ({
+            questionId: a.questionId,
+            answerStatus: a.secondPlayerAnswerStatus,
+            addedAt: a.secondPlayerAddedAt,
+          }))
+          .filter(
+            (answer, index, self) =>
+              index ===
+              self.findIndex((a) => a.questionId === answer.questionId),
+          ),
         player: {
           id: game.gameProgress.players.secondPlayerId,
           login: game.gameProgress.players.secondPlayerLogin,
