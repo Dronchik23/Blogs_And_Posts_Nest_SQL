@@ -36,8 +36,8 @@ export class GamesQueryRepository {
       secondPlayerProgress: {
         answers: game.gameProgress.answers.map((a) => ({
           questionId: a.questionId,
-          answerStatus: a.firstPlayerAnswerStatus,
-          addedAt: a.firstPlayerAddedAt,
+          answerStatus: a.secondPlayerAnswerStatus,
+          addedAt: a.secondPlayerAddedAt,
         })),
         player: {
           id: game.gameProgress.players.secondPlayerId,
