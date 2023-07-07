@@ -19,6 +19,7 @@ export class GamesQueryRepository {
   ) {}
 
   private fromGameDBTypeToGameViewModel(game: Games): GameViewModel {
+    console.log('game', game);
     return {
       id: game.id,
       firstPlayerProgress: {
@@ -35,20 +36,12 @@ export class GamesQueryRepository {
       },
       secondPlayerProgress: {
         answers: game.gameProgress.answers
+          .filter((a) => a.secondPlayerAnswerStatus !== null)
           .map((a) => ({
             questionId: a.questionId,
             answerStatus: a.secondPlayerAnswerStatus,
             addedAt: a.secondPlayerAddedAt,
-          }))
-          .filter(
-            (answer, index, self) =>
-              index ===
-              self.findIndex((a) => a.questionId === answer.questionId),
-          )
-          .filter(
-            (answer) =>
-              answer.questionId && answer.answerStatus && answer.addedAt,
-          ),
+          })),
         player: {
           id: game.gameProgress.players.secondPlayerId,
           login: game.gameProgress.players.secondPlayerLogin,
@@ -68,7 +61,7 @@ export class GamesQueryRepository {
     };
   }
 
-  private fromRawSQLToGameViewModel(game: Games): GameViewModel {
+  /*  private fromRawSQLToGameViewModel(game: Games): GameViewModel {
     return {
       id: game.id,
       firstPlayerProgress: {
@@ -85,20 +78,6 @@ export class GamesQueryRepository {
       },
       secondPlayerProgress: {
         answers: game.gameProgress.answers
-          .map((a) => ({
-            questionId: a.questionId,
-            answerStatus: a.secondPlayerAnswerStatus,
-            addedAt: a.secondPlayerAddedAt,
-          }))
-          .filter(
-            (answer, index, self) =>
-              index ===
-              self.findIndex((a) => a.questionId === answer.questionId),
-          )
-          .filter(
-            (answer) =>
-              answer.questionId && answer.answerStatus && answer.addedAt,
-          ),
 
         player: {
           id: game.gameProgress.players.id,
@@ -115,7 +94,7 @@ export class GamesQueryRepository {
       startGameDate: game.startGameDate,
       finishGameDate: game.finishGameDate,
     };
-  }
+  }*/
 
   private fromRawSQLToGameForOneViewModel(game: Games): GameViewModel {
     return {
