@@ -19,7 +19,7 @@ export class GamesQueryRepository {
   ) {}
 
   private fromGameDBTypeToGameViewModel(game: Games): GameViewModel {
-    console.log('game', game);
+    console.log('answers', game.gameProgress.answers);
     return {
       id: game.id,
       firstPlayerProgress: {
@@ -36,13 +36,20 @@ export class GamesQueryRepository {
       },
       secondPlayerProgress: {
         answers: game.gameProgress.answers
-          .filter((a) => a.secondPlayerAnswerStatus !== null)
-          .map((a) => ({
-            questionId: a.questionId,
-            answerStatus: a.secondPlayerAnswerStatus,
-            addedAt: a.secondPlayerAddedAt,
-          }))
-          .filter((a) => a.questionId !== null && a.answerStatus !== null),
+          .filter(
+            (answer) =>
+              answer.secondPlayerAnswerStatus !== null &&
+              answer.secondPlayerAddedAt !== null,
+          )
+          .map((answer) => {
+            return {
+              id: answer.id,
+              answerStatus: answer.secondPlayerAnswerStatus,
+              questionId: answer.questionId,
+              gameProgressId: answer.gameProgressId,
+              addedAt: answer.secondPlayerAddedAt,
+            };
+          }),
         player: {
           id: game.gameProgress.players.secondPlayerId,
           login: game.gameProgress.players.secondPlayerLogin,
