@@ -44,6 +44,10 @@ export class GamesQueryRepository {
             (answer, index, self) =>
               index ===
               self.findIndex((a) => a.questionId === answer.questionId),
+          )
+          .filter(
+            (answer) =>
+              answer.questionId && answer.answerStatus && answer.addedAt,
           ),
         player: {
           id: game.gameProgress.players.secondPlayerId,
