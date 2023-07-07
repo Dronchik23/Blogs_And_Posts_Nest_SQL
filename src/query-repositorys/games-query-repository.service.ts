@@ -23,11 +23,17 @@ export class GamesQueryRepository {
     return {
       id: game.id,
       firstPlayerProgress: {
-        answers: game.gameProgress.answers.map((a) => ({
-          questionId: a.questionId,
-          answerStatus: a.firstPlayerAnswerStatus,
-          addedAt: a.firstPlayerAddedAt,
-        })),
+        answers: game.gameProgress.answers
+          .filter(
+            (answer) =>
+              answer.firstPlayerAnswerStatus !== null &&
+              answer.firstPlayerAddedAt !== null,
+          )
+          .map((a) => ({
+            questionId: a.questionId,
+            answerStatus: a.firstPlayerAnswerStatus,
+            addedAt: a.firstPlayerAddedAt,
+          })),
         player: {
           id: game.gameProgress.players.firstPlayerId,
           login: game.gameProgress.players.firstPlayerLogin,
