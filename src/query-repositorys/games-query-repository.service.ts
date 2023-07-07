@@ -43,10 +43,8 @@ export class GamesQueryRepository {
           )
           .map((answer) => {
             return {
-              id: answer.id,
               answerStatus: answer.secondPlayerAnswerStatus,
               questionId: answer.questionId,
-              gameProgressId: answer.gameProgressId,
               addedAt: answer.secondPlayerAddedAt,
             };
           }),
