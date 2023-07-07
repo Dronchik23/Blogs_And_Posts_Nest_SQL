@@ -146,9 +146,17 @@ export class GamesQueryRepository {
   }
 
   async findGameByPlayerId(currentUserId: string): Promise<any> {
+    const queryRunner = this.dataSource.createQueryRunner();
+
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
+
     try {
-      const playersEntityArray = await this.playerModel
-        .createQueryBuilder('player')
+      const playersEntityArray = await queryRunner.manager
+        .createQueryBuilder()
+        .select('player')
+        .from(Players, 'player')
         .where(
           'player."firstPlayerId" = :currentUserId OR player."secondPlayerId" = :currentUserId',
           { currentUserId },
@@ -156,13 +164,14 @@ export class GamesQueryRepository {
         .getMany();
 
       if (playersEntityArray.length === 0) {
+        await queryRunner.commitTransaction();
         return null;
       }
 
       let currentGame: Games | undefined;
 
       for (const player of playersEntityArray) {
-        currentGame = await this.gameModel.findOne({
+        currentGame = await queryRunner.manager.findOne(Games, {
           where: {
             gameProgressId: player.gameProgressId,
             status: Not(Equal(GameStatuses.Finished)),
@@ -175,14 +184,20 @@ export class GamesQueryRepository {
       }
 
       if (!currentGame) {
+        await queryRunner.commitTransaction();
         return null;
       } else if (currentGame.gameProgress.players.secondPlayerId === null) {
+        await queryRunner.commitTransaction();
         return this.fromRawSQLToGameForOneViewModel(currentGame);
       }
 
+      await queryRunner.commitTransaction();
       return new GameViewModel(currentGame);
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       return null;
+    } finally {
+      await queryRunner.release();
     }
   }
 
