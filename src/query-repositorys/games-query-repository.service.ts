@@ -41,7 +41,8 @@ export class GamesQueryRepository {
             questionId: a.questionId,
             answerStatus: a.secondPlayerAnswerStatus,
             addedAt: a.secondPlayerAddedAt,
-          })),
+          }))
+          .filter((a) => a.questionId !== null && a.answerStatus !== null),
         player: {
           id: game.gameProgress.players.secondPlayerId,
           login: game.gameProgress.players.secondPlayerLogin,
