@@ -188,7 +188,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       port: 5432,
       autoLoadEntities: true,
       synchronize: true,
-    }),*/
+    }),*/ ///
     TypeOrmModule.forFeature([
       Users,
       Blogs,
