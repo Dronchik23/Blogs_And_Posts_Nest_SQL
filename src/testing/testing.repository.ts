@@ -7,7 +7,8 @@ export class TestingRepository {
   constructor(@InjectDataSource() protected dataSource: DataSource) {}
 
   async deleteAllData() {
-    return await this.dataSource.query(`DELETE FROM public.blogs CASCADE;
+    return await this.dataSource.query(`
+DELETE FROM public.blogs CASCADE;
 
 DELETE FROM public."comments" CASCADE;
 
@@ -21,7 +22,7 @@ DELETE FROM public."refreshTokenBlackList" CASCADE;
 
 DELETE FROM public.users CASCADE;
 
-DELETE FROM public.questions CASCADE;
+DELETE FROM public.questions CASCADE; 
 
 DELETE FROM public.players CASCADE;
 
