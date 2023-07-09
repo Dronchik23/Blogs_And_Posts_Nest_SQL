@@ -12,7 +12,6 @@ import { QuestionsQueryRepository } from '../../query-repositorys/questions-quer
 import { GamesQueryRepository } from '../../query-repositorys/games-query-repository.service';
 import { Games } from '../../entities/games.entity';
 import { isNil } from '@nestjs/common/utils/shared.utils';
-import { Players } from '../../entities/players.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ForbiddenException } from '@nestjs/common';
@@ -29,8 +28,6 @@ export class CreateGameService implements ICommandHandler<CreateGameCommand> {
     private readonly usersRepository: UsersRepository,
     private readonly questionsQueryRepository: QuestionsQueryRepository,
     private readonly gamesQueryRepository: GamesQueryRepository,
-    @InjectRepository(Players)
-    private readonly playerModel: Repository<Players>,
     @InjectRepository(Games)
     private readonly gameModule: Repository<Games>,
   ) {}

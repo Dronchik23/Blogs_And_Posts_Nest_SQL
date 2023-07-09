@@ -201,7 +201,7 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .set('Authorization', `Bearer ${accessToken}`)
           .expect(200);
 
-        const responseFor1stPlayer = responseForGame.body;
+        const responseFor1stPlayer: GameViewModel = responseForGame.body;
 
         expect(responseFor1stPlayer.id).toBeDefined();
         expect(responseFor1stPlayer.status).toEqual(GameStatuses.Active);

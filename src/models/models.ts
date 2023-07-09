@@ -33,7 +33,8 @@ import { Comments } from '../entities/comments.entity';
 import { Users } from '../entities/users.entity';
 import { Questions } from '../entities/questions.entity';
 import { Games } from '../entities/games.entity';
-import { Answers } from '../entities/answers';
+import { FirstPlayerAnswers } from '../entities/firstPlayerAnswers';
+import { SecondPlayerAnswers } from '../entities/secondPlayerAnswers';
 
 export class DefaultPaginationData {
   @Type(() => Number)
@@ -446,38 +447,38 @@ export class GameViewModel {
   constructor(gameDB: Games) {
     this.id = gameDB.id;
     this.firstPlayerProgress = {
-      answers: gameDB.gameProgress.answers
+      answers: gameDB.firstPlayerAnswers
         .map((a) => ({
           questionId: a.questionId,
-          answerStatus: a.firstPlayerAnswerStatus,
-          addedAt: a.firstPlayerAddedAt,
+          answerStatus: a.answerStatus,
+          addedAt: a.addedAt,
         }))
         .filter(
           (answer) =>
             answer.questionId && answer.answerStatus && answer.addedAt,
         ),
       player: {
-        id: gameDB.gameProgress.players.firstPlayerId,
-        login: gameDB.gameProgress.players.firstPlayerLogin,
+        id: gameDB.firstPlayerId,
+        login: gameDB.firstPlayerLogin,
       },
-      score: gameDB.gameProgress.firstPlayerScore,
+      score: gameDB.firstPlayerScore,
     };
     this.secondPlayerProgress = {
-      answers: gameDB.gameProgress.answers
+      answers: gameDB.secondPlayerAnswers
         .map((a) => ({
           questionId: a.questionId,
-          answerStatus: a.secondPlayerAnswerStatus,
-          addedAt: a.secondPlayerAddedAt,
+          answerStatus: a.answerStatus,
+          addedAt: a.addedAt,
         }))
         .filter(
           (answer) =>
             answer.questionId && answer.answerStatus && answer.addedAt,
         ),
       player: {
-        id: gameDB.gameProgress.players.secondPlayerId,
-        login: gameDB.gameProgress.players.secondPlayerLogin,
+        id: gameDB.secondPlayerId,
+        login: gameDB.secondPlayerLogin,
       },
-      score: gameDB.gameProgress.secondPlayerScore,
+      score: gameDB.secondPlayerScore,
     };
     this.questions = gameDB.questions.map((q) => ({ id: q.id, body: q.body }));
     this.status = gameDB.status;
@@ -500,10 +501,10 @@ export class GameForOneViewModel {
     this.firstPlayerProgress = {
       answers: [],
       player: {
-        id: gameDB.gameProgress.players.firstPlayerId,
-        login: gameDB.gameProgress.players.firstPlayerLogin,
+        id: gameDB.firstPlayerId,
+        login: gameDB.firstPlayerLogin,
       },
-      score: gameDB.gameProgress.firstPlayerScore,
+      score: gameDB.firstPlayerScore,
     };
     this.secondPlayerProgress = null;
     this.questions = null;
@@ -522,25 +523,30 @@ export class AnswerViewModel {
   questionId: string;
   answerStatus: AnswerStatuses;
   addedAt: string;
+  constructor(answerDB: FirstPlayerAnswers | SecondPlayerAnswers) {
+    this.questionId = answerDB.questionId;
+    this.answerStatus = answerDB.answerStatus;
+    this.addedAt = answerDB.addedAt;
+  }
 }
 export class FirstPlayerAnswerViewModel {
   questionId: string;
   answerStatus: AnswerStatuses;
   addedAt: string;
-  constructor(answerDB: Answers) {
+  constructor(answerDB: FirstPlayerAnswers) {
     this.questionId = answerDB.questionId;
-    this.answerStatus = answerDB.firstPlayerAnswerStatus;
-    this.addedAt = answerDB.firstPlayerAddedAt;
+    this.answerStatus = answerDB.answerStatus;
+    this.addedAt = answerDB.addedAt;
   }
 }
 export class SecondPlayerAnswerViewModel {
   questionId: string;
   answerStatus: AnswerStatuses;
   addedAt: string;
-  constructor(answerDB: Answers) {
+  constructor(answerDB: SecondPlayerAnswers) {
     this.questionId = answerDB.questionId;
-    this.answerStatus = answerDB.secondPlayerAnswerStatus;
-    this.addedAt = answerDB.secondPlayerAddedAt;
+    this.answerStatus = answerDB.answerStatus;
+    this.addedAt = answerDB.addedAt;
   }
 }
 export class PlayerViewModel {

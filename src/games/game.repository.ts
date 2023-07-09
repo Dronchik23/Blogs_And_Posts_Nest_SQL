@@ -2,7 +2,6 @@ import { Injectable, Scope } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Games } from '../entities/games.entity';
 import { Repository } from 'typeorm';
-import { Players } from '../entities/players.entity';
 import {
   GameForOneViewModel,
   GameViewModel,
@@ -10,8 +9,6 @@ import {
   UserViewModel,
 } from '../models/models';
 import { GameStatuses } from '../types/types';
-import { GameProgresses } from '../entities/game-progresses';
-import { Answers } from '../entities/answers';
 import { Questions } from '../entities/questions.entity';
 import { QuestionsQueryRepository } from '../query-repositorys/questions-query.repository';
 
@@ -22,30 +19,13 @@ export class GamesRepository {
     private readonly gameModel: Repository<Games>,
     @InjectRepository(Questions)
     private readonly questionModel: Repository<Questions>,
-    @InjectRepository(Players)
-    private readonly playersModel: Repository<Players>,
-    @InjectRepository(GameProgresses)
-    private readonly gameProgressModel: Repository<GameProgresses>,
-    @InjectRepository(Answers)
-    private readonly answerModel: Repository<Answers>,
     private readonly questionsQueryRepository: QuestionsQueryRepository,
   ) {}
 
   async createGameWithOnePlayer(user: UserViewModel): Promise<any> {
-    const newGameProgress = GameProgresses.create();
-    const createdGameProgress = await this.gameProgressModel.save(
-      newGameProgress,
-    );
-    const newPlayers = Players.create(user, createdGameProgress.id);
-    const createdPlayers = await this.playersModel.save(newPlayers);
-
-    const createdGame = Games.create(createdGameProgress.id, createdPlayers);
+    const createdGame = Games.create(user);
 
     const savedGame = await this.gameModel.save(createdGame);
-
-    await this.gameProgressModel.update(createdGameProgress.id, {
-      gameId: savedGame.id,
-    }); // add gameId to gameProgress
 
     const rawGameWith1Player = await this.gameModel.findOneBy({
       id: savedGame.id,
@@ -64,26 +44,16 @@ export class GamesRepository {
       id: game.id,
       status: GameStatuses.Active,
       startGameDate: startGameDate,
+      secondPlayerId: user.id,
+      secondPlayerLogin: user.login,
     });
-
-    const updatePlayersPromise = this.playersModel.update(
-      game.gameProgress.players.id,
-      {
-        secondPlayerId: user.id,
-        secondPlayerLogin: user.login,
-      },
-    );
 
     const questionsPromise =
       this.questionsQueryRepository.getFiveRandomQuestions();
 
-    const bigArr = await Promise.all([
-      updateGamePromise,
-      updatePlayersPromise,
-      questionsPromise,
-    ]);
+    const bigArr = await Promise.all([updateGamePromise, questionsPromise]);
 
-    const question: QuestionViewModel[] = bigArr[2];
+    const question: QuestionViewModel[] = bigArr[1];
 
     const questionIds = question.map((question) => question.id);
 

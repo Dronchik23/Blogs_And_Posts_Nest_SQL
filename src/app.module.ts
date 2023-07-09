@@ -94,9 +94,8 @@ import { CreateGameController } from './games/pair-game-quiz.controller';
 import { SendAnswerService } from './use-cases/games/send-answer-use-case';
 import { GamesRepository } from './games/game.repository';
 import { GamesQueryRepository } from './query-repositorys/games-query-repository.service';
-import { Players } from './entities/players.entity';
-import { Answers } from './entities/answers';
-import { GameProgresses } from './entities/game-progresses';
+import { FirstPlayerAnswers } from './entities/firstPlayerAnswers';
+import { SecondPlayerAnswers } from './entities/secondPlayerAnswers';
 
 export const useCases = [
   CreateBlogService,
@@ -172,14 +171,14 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       ttl: 10000,
       limit: 5000,
     }),
-    TypeOrmModule.forRoot({
+    /*    TypeOrmModule.forRoot({
       type: 'postgres',
       url: 'postgres://Dronchik23:LNDFEJKac6Q9@ep-plain-dew-291409.us-east-2.aws.neon.tech/fuckingBD',
       autoLoadEntities: true,
       synchronize: true,
       ssl: true,
-    }),
-    /*    TypeOrmModule.forRoot({
+    }),*/
+    TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       database: 'local',
@@ -188,7 +187,7 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       port: 5432,
       autoLoadEntities: true,
       synchronize: true,
-    }),*/
+    }),
     TypeOrmModule.forFeature([
       Users,
       Blogs,
@@ -199,9 +198,8 @@ export const strategies = [BasicAuthStrategy, JwtStrategy];
       Questions,
       Games,
       RefreshTokenBlackList,
-      GameProgresses,
-      Players,
-      Answers,
+      FirstPlayerAnswers,
+      SecondPlayerAnswers,
     ]),
     MailerModule.forRoot({
       transport: {

@@ -5,16 +5,15 @@ import { ForbiddenException } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { Games } from '../../entities/games.entity';
 import { Users } from '../../entities/users.entity';
-import { GameProgresses } from '../../entities/game-progresses';
-import { Answers } from '../../entities/answers';
-import { Players } from '../../entities/players.entity';
 import {
   AnswerInputModel,
-  FirstPlayerAnswerViewModel,
-  SecondPlayerAnswerViewModel,
+  AnswerViewModel,
+  GameViewModel,
 } from '../../models/models';
 import { AnswerStatuses, GameStatuses } from '../../types/types';
 import { Questions } from '../../entities/questions.entity';
+import { FirstPlayerAnswers } from '../../entities/firstPlayerAnswers';
+import { SecondPlayerAnswers } from '../../entities/secondPlayerAnswers';
 
 export class SendAnswerCommand {
   constructor(public sendAnswerDTO: AnswerInputModel, public userId: string) {}
@@ -30,225 +29,153 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     private readonly questionModule: Repository<Questions>,
     @InjectRepository(Users)
     private readonly uRepository: Repository<Users>,
-    @InjectRepository(Answers)
-    private readonly answersModel: Repository<Answers>,
-    @InjectRepository(GameProgresses)
-    private readonly gameProgressesModel: Repository<GameProgresses>,
-    @InjectRepository(Players)
-    private readonly playerModel: Repository<Players>,
+    @InjectRepository(FirstPlayerAnswers)
+    private readonly firstPlayerAnswersModel: Repository<FirstPlayerAnswers>,
+    @InjectRepository(SecondPlayerAnswers)
+    private readonly secondPlayerAnswersModel: Repository<SecondPlayerAnswers>,
     private readonly gamesQueryRepository: GamesQueryRepository,
   ) {}
 
   private async checkAmountOfAnswersAndFinishGame(game) {
-    const playersAnswers: Answers[] = await this.answersModel.findBy({
-      gameProgressId: game.gameProgressId,
-    });
+    const firstPlayerAnswer = await this.firstPlayerAnswersModel.find();
 
-    const allAnswersNotNull = playersAnswers.every(
-      (answer) =>
-        answer.firstPlayerAnswerStatus !== null &&
-        answer.secondPlayerAnswerStatus !== null,
-    );
+    const secondPlayerAnswer = await this.secondPlayerAnswersModel.find();
 
-    if (playersAnswers.length === 5 && allAnswersNotNull) {
+    if (firstPlayerAnswer.length === 5 && secondPlayerAnswer.length === 5) {
       const finishDate = new Date().toISOString();
 
-      await this.gameModule.update(
-        { id: game.id },
-        {
-          status: GameStatuses.Finished,
-          finishGameDate: finishDate,
-        },
-      );
-    }
+      Promise.all([
+        await this.gameModule.update(
+          { id: game.id },
+          {
+            status: GameStatuses.Finished,
+            finishGameDate: finishDate,
+          },
+        ),
+        await this.firstPlayerAnswersModel.delete({}),
+        await this.secondPlayerAnswersModel.delete({}),
+      ]);
+    } else return;
   }
 
-  async execute(command: SendAnswerCommand): Promise<any> {
+  async execute(command: SendAnswerCommand): Promise<AnswerViewModel> {
     let currentQuestion;
 
-    const rawGame = await this.gamesQueryRepository.findRawSQLGameByPlayerId(
-      command.userId,
-    );
-
-    const game = rawGame[0];
+    const game: GameViewModel =
+      await this.gamesQueryRepository.findGameByPlayerId(command.userId);
 
     if (!game || game.status !== GameStatuses.Active) {
       throw new ForbiddenException();
     }
+
     const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
       gameId: game.id,
     });
 
-    const playersAnswers: Answers[] = await this.answersModel.findBy({
-      gameProgressId: game.gameProgressId,
-    });
-
-    if (command.userId === game.firstPlayerId) {
-      const firstPlayerAnswers = playersAnswers.filter(
-        (a) =>
-          a.firstPlayerAnswerStatus === AnswerStatuses.Correct ||
-          a.firstPlayerAnswerStatus === AnswerStatuses.Incorrect,
-      );
-
+    if (command.userId === game.firstPlayerProgress.player.id) {
+      const firstPlayerAnswers: any = await this.gameModule.findBy({
+        id: game.id,
+      });
       if (firstPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[firstPlayerAnswers.length];
 
-        const currentAnswerEntity = await this.answersModel.findOneBy({
-          gameProgressId: game.gameProgressId,
-          questionId: currentQuestion.id,
-        });
-        if (
-          firstPlayerAnswers.length === 5 &&
-          currentAnswerEntity &&
-          currentAnswerEntity.secondPlayerAnswerStatus === null
-        ) {
-          await this.gameProgressesModel.update(
-            { id: game.gameProgressId },
-            { firstPlayerScore: game.firstPlayerScore + 1 },
+        if (firstPlayerAnswers.length === 5) {
+          await this.gameModule.update(
+            { id: game.id },
+            { firstPlayerScore: game.firstPlayerProgress.score + 1 },
           );
         }
       } else {
         throw new ForbiddenException();
       }
-    }
 
-    if (command.userId === game.secondPlayerId) {
-      const secondPlayerAnswers = playersAnswers.filter(
-        (a) =>
-          a.secondPlayerAnswerStatus === AnswerStatuses.Correct ||
-          a.secondPlayerAnswerStatus === AnswerStatuses.Incorrect,
+      const question: Questions = await this.questionModule.findOneBy({
+        id: currentQuestion.id,
+      }); // question with all nests
+
+      const isAnswerCorrect = question.correctAnswers.some(
+        (answer) => answer === command.sendAnswerDTO.answer,
       );
 
+      if (isAnswerCorrect) {
+        await Promise.all([
+          this.gameModule.update(
+            { id: game.id },
+            { firstPlayerScore: () => 'firstPlayerScore + 1' },
+          ),
+          this.firstPlayerAnswersModel.save({
+            gameId: game.id,
+            questionId: currentQuestion.id,
+            answerStatus: AnswerStatuses.Correct,
+            addedAt: new Date().toISOString(),
+          }),
+        ]);
+      } else {
+        await this.firstPlayerAnswersModel.save({
+          questionId: currentQuestion.id,
+          gameId: game.id,
+          answerStatus: AnswerStatuses.Incorrect,
+          addedAt: new Date().toISOString(),
+        });
+      }
+
+      await this.checkAmountOfAnswersAndFinishGame(game);
+      const actualAnswer = await this.firstPlayerAnswersModel.findOneBy({
+        questionId: currentQuestion.id,
+      });
+      return new AnswerViewModel(actualAnswer);
+    } else {
+      const secondPlayerAnswers: any = await this.gameModule.findBy({
+        id: game.id,
+      });
       if (secondPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[secondPlayerAnswers.length];
 
-        const currentAnswerEntity = await this.answersModel.findOneBy({
-          gameProgressId: game.gameProgressId,
-          questionId: currentQuestion.id,
-        });
-        if (
-          playersAnswers.length === 5 &&
-          currentAnswerEntity &&
-          currentAnswerEntity.firstPlayerAnswerStatus === null
-        ) {
-          await this.gameProgressesModel.update(
-            { id: game.gameProgressId },
-            { firstPlayerScore: game.firstPlayerScore + 1 },
+        if (secondPlayerAnswers.length === 5) {
+          await this.gameModule.update(
+            { id: game.id },
+            { secondPlayerScore: game.secondPlayerProgress.score + 1 },
           );
         }
       } else {
         throw new ForbiddenException();
       }
-    }
 
-    const question: Questions = await this.questionModule.findOneBy({
-      id: currentQuestion.id,
-    }); // take question with all nests
+      const question: Questions = await this.questionModule.findOneBy({
+        id: currentQuestion.id,
+      }); // question with all nests
 
-    const isAnswerCorrect = question.correctAnswers.some(
-      (answer) => answer === command.sendAnswerDTO.answer,
-    );
-
-    if (isAnswerCorrect) {
-      const playerScoreKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerScore'
-          : 'secondPlayerScore';
-
-      await this.gameProgressesModel.update(
-        { id: game.gameProgressId },
-        { [playerScoreKey]: game[playerScoreKey] + 1 },
+      const isAnswerCorrect = question.correctAnswers.some(
+        (answer) => answer === command.sendAnswerDTO.answer,
       );
 
-      const playerAnswerStatusKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerAnswerStatus'
-          : 'secondPlayerAnswerStatus';
-
-      const playerAddedAtKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerAddedAt'
-          : 'secondPlayerAddedAt';
-
-      const answer = await this.answersModel.findOneBy({
-        questionId: currentQuestion.id,
-      });
-
-      if (answer) {
-        await this.answersModel.update(
-          {
+      if (isAnswerCorrect) {
+        await Promise.all([
+          this.gameModule.update(
+            { id: game.id },
+            { secondPlayerScore: () => 'secondPlayerScore + 1' },
+          ),
+          this.secondPlayerAnswersModel.save({
+            gameId: game.id,
             questionId: currentQuestion.id,
-          },
-          {
-            [playerAnswerStatusKey]: AnswerStatuses.Correct,
-            [playerAddedAtKey]: new Date().toISOString(),
-          },
-        );
+            answerStatus: AnswerStatuses.Correct,
+            addedAt: new Date().toISOString(),
+          }),
+        ]);
       } else {
-        await this.answersModel.save({
-          gameProgressId: game.gameProgressId,
+        await this.secondPlayerAnswersModel.save({
           questionId: currentQuestion.id,
-          [playerAnswerStatusKey]: AnswerStatuses.Correct,
-          [playerAddedAtKey]: new Date().toISOString(),
+          gameId: game.id,
+          answerStatus: AnswerStatuses.Incorrect,
+          addedAt: new Date().toISOString(),
         });
       }
 
       await this.checkAmountOfAnswersAndFinishGame(game);
-
-      const actualAnswer = await this.answersModel.findOneBy({
+      const actualAnswer = await this.secondPlayerAnswersModel.findOneBy({
         questionId: currentQuestion.id,
       });
-
-      const answerViewModel =
-        game.firstPlayerId === command.userId
-          ? new FirstPlayerAnswerViewModel(actualAnswer)
-          : new SecondPlayerAnswerViewModel(actualAnswer);
-
-      return answerViewModel;
-    } else {
-      const playerAnswerStatusKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerAnswerStatus'
-          : 'secondPlayerAnswerStatus';
-      const playerAddedAtKey =
-        game.firstPlayerId === command.userId
-          ? 'firstPlayerAddedAt'
-          : 'secondPlayerAddedAt';
-
-      const answer = await this.answersModel.findOneBy({
-        questionId: currentQuestion.id,
-      });
-      if (answer) {
-        await this.answersModel.update(
-          {
-            questionId: currentQuestion.id,
-          },
-          {
-            [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
-            [playerAddedAtKey]: new Date().toISOString(),
-          },
-        );
-      } else {
-        await this.answersModel.save({
-          questionId: currentQuestion.id,
-          gameProgressId: game.gameProgressId,
-          [playerAnswerStatusKey]: AnswerStatuses.Incorrect,
-          [playerAddedAtKey]: new Date().toISOString(),
-        });
-      }
-
-      await this.checkAmountOfAnswersAndFinishGame(game);
-
-      const actualAnswer = await this.answersModel.findOneBy({
-        questionId: currentQuestion.id,
-      });
-
-      const answerViewModel =
-        game.firstPlayerId === command.userId
-          ? new FirstPlayerAnswerViewModel(actualAnswer)
-          : new SecondPlayerAnswerViewModel(actualAnswer);
-
-      return answerViewModel;
+      return new AnswerViewModel(actualAnswer);
     }
   }
 }

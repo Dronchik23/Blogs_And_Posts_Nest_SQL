@@ -8,7 +8,6 @@ import {
   QuestionViewModel,
 } from '../../../models/models';
 import { Questions } from '../../../entities/questions.entity';
-import { Answers } from '../../../entities/answers';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class QuestionRepository {
@@ -16,8 +15,6 @@ export class QuestionRepository {
     @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(Questions)
     private readonly questionModel: Repository<Questions>,
-    @InjectRepository(Answers)
-    private readonly answersModel: Repository<Answers>,
   ) {}
 
   async createQuestion(
