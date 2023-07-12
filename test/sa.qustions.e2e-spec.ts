@@ -107,8 +107,6 @@ describe('sa/games/questions tests (e2e)', () => {
           .auth('admin', 'qwerty')
           .expect(200);
 
-        console.log('answers', req.body.items[0].correctAnswers);
-
         expect(req.body).toEqual({
           pagesCount: 1,
           page: 1,

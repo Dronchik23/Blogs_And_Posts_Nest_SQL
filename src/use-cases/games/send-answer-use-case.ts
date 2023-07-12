@@ -37,23 +37,49 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   ) {}
 
   private async checkAmountOfAnswersAndFinishGame(game) {
-    const firstPlayerAnswer = await this.firstPlayerAnswersModel.find();
+    const firstPlayerAnswers = await this.firstPlayerAnswersModel
+      .createQueryBuilder('answers')
+      .orderBy('answers."addedAt"', 'DESC')
+      .getMany();
 
-    const secondPlayerAnswer = await this.secondPlayerAnswersModel.find();
+    const secondPlayerAnswers = await this.secondPlayerAnswersModel
+      .createQueryBuilder('answers')
+      .orderBy('answers."addedAt"', 'DESC')
+      .getMany();
 
-    if (firstPlayerAnswer.length === 5 && secondPlayerAnswer.length === 5) {
-      const finishDate = new Date().toISOString();
+    if (firstPlayerAnswers.length === 5 && secondPlayerAnswers.length === 5) {
+      if (firstPlayerAnswers[4].addedAt <= secondPlayerAnswers[4].addedAt) {
+        if (
+          secondPlayerAnswers.some(
+            (a) => a.answerStatus === AnswerStatuses.Correct,
+          )
+        )
+          await this.gameModule.update(
+            { id: game.id },
+            { secondPlayerScore: +1 },
+          );
+      } else {
+        if (
+          firstPlayerAnswers.some(
+            (a) => a.answerStatus === AnswerStatuses.Correct,
+          )
+        )
+          await this.gameModule.update(
+            { id: game.id },
+            { firstPlayerScore: +1 },
+          );
+      }
 
       Promise.all([
         await this.gameModule.update(
           { id: game.id },
           {
             status: GameStatuses.Finished,
-            finishGameDate: finishDate,
+            finishGameDate: new Date().toISOString(),
           },
         ),
-        await this.firstPlayerAnswersModel.delete({}),
-        await this.secondPlayerAnswersModel.delete({}),
+        //await this.firstPlayerAnswersModel.delete({}),
+        //await this.secondPlayerAnswersModel.delete({}),
       ]);
     } else return;
   }
@@ -73,9 +99,11 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     });
 
     if (command.userId === game.firstPlayerProgress.player.id) {
-      const firstPlayerAnswers: any = await this.gameModule.findBy({
-        id: game.id,
-      });
+      const firstPlayerAnswers: FirstPlayerAnswers[] =
+        await this.firstPlayerAnswersModel.findBy({
+          gameId: game.id,
+        });
+
       if (firstPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[firstPlayerAnswers.length];
 
@@ -125,9 +153,10 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       });
       return new AnswerViewModel(actualAnswer);
     } else {
-      const secondPlayerAnswers: any = await this.gameModule.findBy({
-        id: game.id,
-      });
+      const secondPlayerAnswers: any =
+        await this.secondPlayerAnswersModel.findBy({
+          gameId: game.id,
+        });
       if (secondPlayerAnswers.length < 5) {
         currentQuestion = allCurrentQuestions[secondPlayerAnswers.length];
 
@@ -172,6 +201,7 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
       }
 
       await this.checkAmountOfAnswersAndFinishGame(game);
+
       const actualAnswer = await this.secondPlayerAnswersModel.findOneBy({
         questionId: currentQuestion.id,
       });

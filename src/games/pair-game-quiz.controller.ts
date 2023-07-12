@@ -65,7 +65,9 @@ export class CreateGameController {
   @HttpCode(200)
   async getCurrentGame(@CurrentUserId() currentUserId): Promise<any> {
     const game: GameViewModel =
-      await this.gamesQueryRepository.findGameByPlayerId(currentUserId);
+      await this.gamesQueryRepository.findNotFinishedGameByPlayerId(
+        currentUserId,
+      );
 
     if (!game || game.status === GameStatuses.Finished) {
       throw new NotFoundException();

@@ -1188,7 +1188,6 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
             .expect(200);
 
           const answer: AnswerViewModel = firstPlayerRequest.body;
-
           expect(answer.questionId).toBeDefined();
           expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
           expect(answer.addedAt).toBeDefined();
@@ -1387,7 +1386,6 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
           .expect(200);
 
         const currentGame2: GameViewModel = responseForCurrentGame2.body;
-        console.log('answers', currentGame2.firstPlayerProgress.answers);
 
         expect(currentGame2.id).toBeDefined();
         expect(currentGame2.status).toEqual(GameStatuses.Active);

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Scope } from '@nestjs/common';
 import { GameStatuses } from '../types/types';
 import { GameForOneViewModel, GameViewModel } from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, Not, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -86,6 +86,26 @@ export class GamesQueryRepository {
         where: [
           { firstPlayerId: currentUserId },
           { secondPlayerId: currentUserId },
+        ],
+      });
+      if (game.secondPlayerId === null) {
+        return new GameForOneViewModel(game);
+      } else {
+        return new GameViewModel(game);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async findNotFinishedGameByPlayerId(
+    currentUserId: string,
+  ): Promise<GameViewModel> {
+    try {
+      const game = await this.gameModel.findOne({
+        where: [
+          { firstPlayerId: currentUserId, status: Not(GameStatuses.Finished) },
+          { secondPlayerId: currentUserId, status: Not(GameStatuses.Finished) },
         ],
       });
       if (game.secondPlayerId === null) {
