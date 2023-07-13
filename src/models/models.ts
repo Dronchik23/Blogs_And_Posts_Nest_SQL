@@ -453,10 +453,11 @@ export class GameViewModel {
           answerStatus: a.answerStatus,
           addedAt: a.addedAt,
         }))
-        .filter(
-          (answer) =>
-            answer.questionId && answer.answerStatus && answer.addedAt,
-        ),
+        .sort((a, b) => {
+          return new Date(a.addedAt)
+            .toLocaleString()
+            .localeCompare(new Date(b.addedAt).toLocaleString());
+        }),
       player: {
         id: gameDB.firstPlayerId,
         login: gameDB.firstPlayerLogin,
@@ -470,10 +471,11 @@ export class GameViewModel {
           answerStatus: a.answerStatus,
           addedAt: a.addedAt,
         }))
-        .filter(
-          (answer) =>
-            answer.questionId && answer.answerStatus && answer.addedAt,
-        ),
+        .sort((a, b) => {
+          return new Date(a.addedAt)
+            .toLocaleString()
+            .localeCompare(new Date(b.addedAt).toLocaleString());
+        }),
       player: {
         id: gameDB.secondPlayerId,
         login: gameDB.secondPlayerLogin,
