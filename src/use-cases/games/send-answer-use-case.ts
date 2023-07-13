@@ -90,6 +90,17 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   }
 
   async execute(command: SendAnswerCommand): Promise<AnswerViewModel> {
+    const rawGame: Games = await this.gameModule.findOne({
+      where: [
+        { firstPlayerId: command.userId },
+        { secondPlayerId: command.userId },
+      ],
+    });
+
+    if (!rawGame || rawGame.status !== GameStatuses.Active) {
+      throw new ForbiddenException();
+    }
+
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -104,11 +115,10 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
         ],
       });
 
-      const game = new GameViewModel(rawGame);
-
-      if (!game || game.status !== GameStatuses.Active) {
+      if (!rawGame || rawGame.status !== GameStatuses.Active) {
         throw new ForbiddenException();
       }
+      const game = new GameViewModel(rawGame);
 
       const allCurrentQuestions: Questions[] = await queryRunner.manager.findBy(
         Questions,
