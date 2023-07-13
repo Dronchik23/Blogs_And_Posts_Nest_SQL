@@ -1524,6 +1524,84 @@ describe('pair-game-quiz/pairs tests (e2e)', () => {
         expect(secondCurrentGame.startGameDate).toBeDefined();
         expect(secondCurrentGame.finishGameDate).toBeNull();
       });
+      it('first player must get additional score for finished first', async () => {
+        for (let i = 0; i < 4; i++) {
+          const firstPlayerRequest = await request(server)
+            .post(sendAnswerUrl)
+            .send({ answer: 'incorrect' })
+            .set('Authorization', `Bearer ${accessToken}`)
+            .expect(200);
+
+          const answer: AnswerViewModel = firstPlayerRequest.body;
+
+          expect(answer.questionId).toBeDefined();
+          expect(answer.answerStatus).toEqual(AnswerStatuses.Incorrect);
+          expect(answer.addedAt).toBeDefined();
+
+          const secondPlayerRequest = await request(server)
+            .post(sendAnswerUrl)
+            .send({ answer: 'incorrect' })
+            .set('Authorization', `Bearer ${accessToken2}`)
+            .expect(200);
+
+          const answer2: AnswerViewModel = secondPlayerRequest.body;
+
+          expect(answer2.questionId).toBeDefined();
+          expect(answer2.answerStatus).toEqual(AnswerStatuses.Incorrect);
+          expect(answer2.addedAt).toBeDefined();
+        }
+
+        const firstPlayerRequest = await request(server)
+          .post(sendAnswerUrl)
+          .send({ answer: 'answer1' })
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const answer: AnswerViewModel = firstPlayerRequest.body;
+
+        expect(answer.questionId).toBeDefined();
+        expect(answer.answerStatus).toEqual(AnswerStatuses.Correct);
+        expect(answer.addedAt).toBeDefined();
+
+        const secondPlayerRequest = await request(server)
+          .post(sendAnswerUrl)
+          .send({ answer: 'incorrect' })
+          .set('Authorization', `Bearer ${accessToken2}`)
+          .expect(200);
+
+        const answer2: AnswerViewModel = secondPlayerRequest.body;
+
+        expect(answer2.questionId).toBeDefined();
+        expect(answer2.answerStatus).toEqual(AnswerStatuses.Incorrect);
+        expect(answer2.addedAt).toBeDefined();
+
+        const responseForFinishedGame = await request(server)
+          .get(gameUrl + `/${game.id}`)
+          .set('Authorization', `Bearer ${accessToken}`)
+          .expect(200);
+
+        const finishedGame = responseForFinishedGame.body;
+        console.log('finishedGame', finishedGame);
+
+        expect(finishedGame.id).toBeDefined();
+        expect(finishedGame.status).toEqual(GameStatuses.Finished);
+        expect(finishedGame.firstPlayerProgress.player.id).toEqual(user.id);
+        expect(finishedGame.firstPlayerProgress.player.login).toEqual(
+          user.login,
+        );
+        expect(finishedGame.firstPlayerProgress.answers.length).toBe(5);
+        expect(finishedGame.firstPlayerProgress.score).toBe(2);
+        expect(finishedGame.secondPlayerProgress.player.id).toEqual(user2.id);
+        expect(finishedGame.secondPlayerProgress.player.login).toEqual(
+          user2.login,
+        );
+        expect(finishedGame.secondPlayerProgress.answers.length).toBe(5);
+        expect(finishedGame.secondPlayerProgress.score).toBe(0);
+        expect(finishedGame.questions.length).toBe(5);
+        expect(finishedGame.pairCreatedDate).toBeDefined();
+        expect(finishedGame.startGameDate).toBeDefined();
+        expect(finishedGame.finishGameDate).toBeDefined();
+      });
     });
   });
 });

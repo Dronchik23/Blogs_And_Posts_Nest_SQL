@@ -4,6 +4,7 @@ import { GameForOneViewModel, GameViewModel } from '../models/models';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Not, Repository } from 'typeorm';
 import { Games } from '../entities/games.entity';
+import { isNil } from '@nestjs/common/utils/shared.utils';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class GamesQueryRepository {
@@ -88,7 +89,11 @@ export class GamesQueryRepository {
           { secondPlayerId: currentUserId },
         ],
       });
-      if (game.secondPlayerId === null) {
+      if (isNil(game)) {
+        throw new NotFoundException();
+      }
+
+      if (game && game.secondPlayerId === null) {
         return new GameForOneViewModel(game);
       } else {
         return new GameViewModel(game);

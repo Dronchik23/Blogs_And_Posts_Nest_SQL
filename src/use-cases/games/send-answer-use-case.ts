@@ -33,45 +33,50 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
     private readonly firstPlayerAnswersModel: Repository<FirstPlayerAnswers>,
     @InjectRepository(SecondPlayerAnswers)
     private readonly secondPlayerAnswersModel: Repository<SecondPlayerAnswers>,
-    private readonly gamesQueryRepository: GamesQueryRepository,
   ) {}
 
-  private async checkAmountOfAnswersAndFinishGame(game) {
-    const firstPlayerAnswers = await this.firstPlayerAnswersModel
-      .createQueryBuilder('answers')
-      .orderBy('answers."addedAt"', 'DESC')
-      .getMany();
-
-    const secondPlayerAnswers = await this.secondPlayerAnswersModel
-      .createQueryBuilder('answers')
-      .orderBy('answers."addedAt"', 'DESC')
-      .getMany();
+  private async checkAmountOfAnswersAndFinishGame(game, queryRunner) {
+    const firstPlayerAnswers = await queryRunner.query(
+      'SELECT * FROM "firstPlayerAnswers" ORDER BY "addedAt" DESC',
+    );
+    const secondPlayerAnswers = await queryRunner.query(
+      'SELECT * FROM "secondPlayerAnswers" ORDER BY "addedAt" DESC',
+    );
 
     if (firstPlayerAnswers.length === 5 && secondPlayerAnswers.length === 5) {
-      if (firstPlayerAnswers[4].addedAt <= secondPlayerAnswers[4].addedAt) {
-        if (
-          secondPlayerAnswers.some(
-            (a) => a.answerStatus === AnswerStatuses.Correct,
-          )
-        )
-          await this.gameModule.update(
-            { id: game.id },
-            { secondPlayerScore: +1 },
-          );
-      } else {
+      debugger;
+      if (
+        new Date(firstPlayerAnswers[4].addedAt) <
+        new Date(secondPlayerAnswers[4].addedAt)
+      ) {
         if (
           firstPlayerAnswers.some(
             (a) => a.answerStatus === AnswerStatuses.Correct,
           )
-        )
-          await this.gameModule.update(
+        ) {
+          await queryRunner.manager.update(
+            Games,
             { id: game.id },
-            { firstPlayerScore: +1 },
+            { firstPlayerScore: () => 'firstPlayerScore + 1' },
           );
+        }
+      } else {
+        if (
+          secondPlayerAnswers.some(
+            (a) => a.answerStatus === AnswerStatuses.Correct,
+          )
+        ) {
+          await queryRunner.manager.update(
+            Games,
+            { id: game.id },
+            { secondPlayerScore: () => 'secondPlayerScore + 1' },
+          );
+        }
       }
 
       Promise.all([
-        await this.gameModule.update(
+        await queryRunner.manager.update(
+          Games,
           { id: game.id },
           {
             status: GameStatuses.Finished,
@@ -85,127 +90,165 @@ export class SendAnswerService implements ICommandHandler<SendAnswerCommand> {
   }
 
   async execute(command: SendAnswerCommand): Promise<AnswerViewModel> {
-    let currentQuestion;
+    const queryRunner = this.dataSource.createQueryRunner();
 
-    const game: GameViewModel =
-      await this.gamesQueryRepository.findGameByPlayerId(command.userId);
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      let currentQuestion;
 
-    if (!game || game.status !== GameStatuses.Active) {
-      throw new ForbiddenException();
-    }
+      const rawGame: Games = await queryRunner.manager.findOne(Games, {
+        where: [
+          { firstPlayerId: command.userId },
+          { secondPlayerId: command.userId },
+        ],
+      });
 
-    const allCurrentQuestions: Questions[] = await this.questionModule.findBy({
-      gameId: game.id,
-    });
+      const game = new GameViewModel(rawGame);
 
-    if (command.userId === game.firstPlayerProgress.player.id) {
-      const firstPlayerAnswers: FirstPlayerAnswers[] =
-        await this.firstPlayerAnswersModel.findBy({
-          gameId: game.id,
-        });
-
-      if (firstPlayerAnswers.length < 5) {
-        currentQuestion = allCurrentQuestions[firstPlayerAnswers.length];
-
-        if (firstPlayerAnswers.length === 5) {
-          await this.gameModule.update(
-            { id: game.id },
-            { firstPlayerScore: game.firstPlayerProgress.score + 1 },
-          );
-        }
-      } else {
+      if (!game || game.status !== GameStatuses.Active) {
         throw new ForbiddenException();
       }
 
-      const question: Questions = await this.questionModule.findOneBy({
-        id: currentQuestion.id,
-      }); // question with all nests
-
-      const isAnswerCorrect = question.correctAnswers.some(
-        (answer) => answer === command.sendAnswerDTO.answer,
+      const allCurrentQuestions: Questions[] = await queryRunner.manager.findBy(
+        Questions,
+        {
+          gameId: game.id,
+        },
       );
 
-      if (isAnswerCorrect) {
-        await Promise.all([
-          this.gameModule.update(
-            { id: game.id },
-            { firstPlayerScore: () => 'firstPlayerScore + 1' },
-          ),
-          this.firstPlayerAnswersModel.save({
+      if (command.userId === game.firstPlayerProgress.player.id) {
+        const firstPlayerAnswers: FirstPlayerAnswers[] =
+          await queryRunner.manager.findBy(FirstPlayerAnswers, {
             gameId: game.id,
-            questionId: currentQuestion.id,
-            answerStatus: AnswerStatuses.Correct,
-            addedAt: new Date().toISOString(),
-          }),
-        ]);
-      } else {
-        await this.firstPlayerAnswersModel.save({
-          questionId: currentQuestion.id,
-          gameId: game.id,
-          answerStatus: AnswerStatuses.Incorrect,
-          addedAt: new Date().toISOString(),
-        });
-      }
+          });
 
-      await this.checkAmountOfAnswersAndFinishGame(game);
-      const actualAnswer = await this.firstPlayerAnswersModel.findOneBy({
-        questionId: currentQuestion.id,
-      });
-      return new AnswerViewModel(actualAnswer);
-    } else {
-      const secondPlayerAnswers: any =
-        await this.secondPlayerAnswersModel.findBy({
-          gameId: game.id,
-        });
-      if (secondPlayerAnswers.length < 5) {
-        currentQuestion = allCurrentQuestions[secondPlayerAnswers.length];
+        if (firstPlayerAnswers.length < 5) {
+          currentQuestion = allCurrentQuestions[firstPlayerAnswers.length];
 
-        if (secondPlayerAnswers.length === 5) {
-          await this.gameModule.update(
-            { id: game.id },
-            { secondPlayerScore: game.secondPlayerProgress.score + 1 },
-          );
+          if (firstPlayerAnswers.length === 5) {
+            await queryRunner.manager.update(
+              Games,
+              { id: game.id },
+              { firstPlayerScore: game.firstPlayerProgress.score + 1 },
+            );
+          }
+        } else {
+          throw new ForbiddenException();
         }
-      } else {
-        throw new ForbiddenException();
-      }
 
-      const question: Questions = await this.questionModule.findOneBy({
-        id: currentQuestion.id,
-      }); // question with all nests
+        const question: Questions = await queryRunner.manager.findOneBy(
+          Questions,
+          {
+            id: currentQuestion.id,
+          },
+        ); // question with all nests
 
-      const isAnswerCorrect = question.correctAnswers.some(
-        (answer) => answer === command.sendAnswerDTO.answer,
-      );
+        const isAnswerCorrect = question.correctAnswers.some(
+          (answer) => answer === command.sendAnswerDTO.answer,
+        );
 
-      if (isAnswerCorrect) {
-        await Promise.all([
-          this.gameModule.update(
-            { id: game.id },
-            { secondPlayerScore: () => 'secondPlayerScore + 1' },
-          ),
-          this.secondPlayerAnswersModel.save({
+        if (isAnswerCorrect) {
+          await Promise.all([
+            queryRunner.manager.update(
+              Games,
+              { id: game.id },
+              { firstPlayerScore: () => 'firstPlayerScore + 1' },
+            ),
+            await queryRunner.manager.save(FirstPlayerAnswers, {
+              gameId: game.id,
+              questionId: currentQuestion.id,
+              answerStatus: AnswerStatuses.Correct,
+              addedAt: new Date().toISOString(),
+            }),
+          ]);
+        } else {
+          await queryRunner.manager.save(FirstPlayerAnswers, {
             gameId: game.id,
             questionId: currentQuestion.id,
-            answerStatus: AnswerStatuses.Correct,
+            answerStatus: AnswerStatuses.Incorrect,
             addedAt: new Date().toISOString(),
-          }),
-        ]);
+          });
+        }
+
+        await this.checkAmountOfAnswersAndFinishGame(game, queryRunner);
+        const actualAnswer = await queryRunner.manager.findOneBy(
+          FirstPlayerAnswers,
+          {
+            questionId: currentQuestion.id,
+          },
+        );
+        await queryRunner.commitTransaction();
+        return new AnswerViewModel(actualAnswer);
       } else {
-        await this.secondPlayerAnswersModel.save({
-          questionId: currentQuestion.id,
-          gameId: game.id,
-          answerStatus: AnswerStatuses.Incorrect,
-          addedAt: new Date().toISOString(),
-        });
+        const secondPlayerAnswers: SecondPlayerAnswers[] =
+          await queryRunner.manager.findBy(SecondPlayerAnswers, {
+            gameId: game.id,
+          });
+        if (secondPlayerAnswers.length < 5) {
+          currentQuestion = allCurrentQuestions[secondPlayerAnswers.length];
+
+          if (secondPlayerAnswers.length === 5) {
+            await queryRunner.manager.update(
+              Games,
+              { id: game.id },
+              { secondPlayerScore: game.secondPlayerProgress.score + 1 },
+            );
+          }
+        } else {
+          throw new ForbiddenException();
+        }
+
+        const question: Questions = await queryRunner.manager.findOneBy(
+          Questions,
+          {
+            id: currentQuestion.id,
+          },
+        ); // question with all nests
+
+        const isAnswerCorrect = question.correctAnswers.some(
+          (answer) => answer === command.sendAnswerDTO.answer,
+        );
+
+        if (isAnswerCorrect) {
+          await Promise.all([
+            await queryRunner.manager.update(
+              Games,
+              { id: game.id },
+              { secondPlayerScore: () => 'secondPlayerScore + 1' },
+            ),
+            await queryRunner.manager.save(SecondPlayerAnswers, {
+              gameId: game.id,
+              questionId: currentQuestion.id,
+              answerStatus: AnswerStatuses.Correct,
+              addedAt: new Date().toISOString(),
+            }),
+          ]);
+        } else {
+          await queryRunner.manager.save(SecondPlayerAnswers, {
+            questionId: currentQuestion.id,
+            gameId: game.id,
+            answerStatus: AnswerStatuses.Incorrect,
+            addedAt: new Date().toISOString(),
+          });
+        }
+
+        await this.checkAmountOfAnswersAndFinishGame(game, queryRunner);
+
+        const actualAnswer = await queryRunner.manager.findOneBy(
+          SecondPlayerAnswers,
+          {
+            questionId: currentQuestion.id,
+          },
+        );
+        await queryRunner.commitTransaction();
+        return new AnswerViewModel(actualAnswer);
       }
-
-      await this.checkAmountOfAnswersAndFinishGame(game);
-
-      const actualAnswer = await this.secondPlayerAnswersModel.findOneBy({
-        questionId: currentQuestion.id,
-      });
-      return new AnswerViewModel(actualAnswer);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 }
