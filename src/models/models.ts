@@ -454,9 +454,9 @@ export class GameViewModel {
           addedAt: a.addedAt,
         }))
         .sort((a, b) => {
-          return new Date(a.addedAt)
+          return new Date(b.addedAt)
             .toLocaleString()
-            .localeCompare(new Date(b.addedAt).toLocaleString());
+            .localeCompare(new Date(a.addedAt).toLocaleString());
         }),
       player: {
         id: gameDB.firstPlayerId,
@@ -472,9 +472,9 @@ export class GameViewModel {
           addedAt: a.addedAt,
         }))
         .sort((a, b) => {
-          return new Date(a.addedAt)
+          return new Date(b.addedAt)
             .toLocaleString()
-            .localeCompare(new Date(b.addedAt).toLocaleString());
+            .localeCompare(new Date(a.addedAt).toLocaleString());
         }),
       player: {
         id: gameDB.secondPlayerId,
